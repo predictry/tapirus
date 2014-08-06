@@ -1,0 +1,7 @@
+Flask==0.10.1
+Flask-HTTPAuth==2.2.1
+Flask-RESTful==0.2.12
+gunicorn==17.5
+py2neo==1.6.4
+chardet==2.2.1
+flask-debugtoolbar-lineprofilerpanel==1.0.2
