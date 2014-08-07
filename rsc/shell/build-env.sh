@@ -7,15 +7,15 @@ REQUIREMENTS=./app/rsc/requirements.txt
 
 virtualenv $ENV
 
-pythonenv=./$ENV/bin
-srcroot=./app/src
+PYTHONENV=./$ENV/bin
+SRCROOT=./app/src
 
 #activate env and add project src to PYTHONPATH
-chmod +x $pythonenv/activate
-$pythonenv/activate
+chmod +x $PYTHONENV/activate
+$PYTHONENV/activate
 
-export PYTHONPATH=$PYTHONPATH:$srcroot
+export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
-$pythonenv/pip install -r $REQUIREMENTS
+$PYTHONENV/pip install -r $REQUIREMENTS
 
 

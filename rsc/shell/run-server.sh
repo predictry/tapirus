@@ -1,18 +1,17 @@
 #!/bin/bash
 
-pythonenv=./tapirus-env/bin
-srcroot=./src
-projecroot=$srcroot/predictry
-#app=$projecroot/api/server/rest-server.py
+cd ../../../
+PROJECTNAME=$(basename `pwd`)
+ENV=$PROJECTNAME-env
 
-
-appname=predictry
+PYTHONENV=./$ENV/bin
+SRCROOT=./app/src
+APPNAME=predictry
 
 #activate env and add project src to PYTHONPATH
-chmod +x $pythonenv/activate
-$pythonenv/activate
+chmod +x $PYTHONENV/activate
+$PYTHONENV/activate
 
-export PYTHONPATH=$PYTHONPATH:$srcroot
+export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
-#$pythonenv/gunicorn -b 0.0.0.0:8080 --debug --workers=5 --name $appname --pythonpath $srcroot predictry.api.server.wsgi:app
-$pythonenv/gunicorn -b 0.0.0.0:5000 --debug --workers=5 --name $appname predictry.api.server.rest-server:app
+$PYTHONENV/gunicorn -b 0.0.0.0:8080 --debug --log-file error_logs.log --access-logfile acclogs.log --log-level debug --workers=5 --name $APPNAME v1.predictry.api.server.rest-server:app
