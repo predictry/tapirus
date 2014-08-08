@@ -17,8 +17,6 @@ class ItemHandler:
 
         args = Text.encode(args)
 
-        #args["organization"] = "redmart"
-
         qgen = ItemQueryGenerator()
         qexec = QueryExecutor()
 
@@ -102,8 +100,6 @@ class UserHandler:
 
         args = Text.encode(args)
 
-        #args["organization"] = "redmart"
-
         qgen = UserQueryGenerator()
         qexec = QueryExecutor()
         commit = False
@@ -176,7 +172,6 @@ class ActionHandler:
 
         args = Text.encode(args)
 
-        #args["organization"] = "redmart"
         flags = {"item": {}, "user": {}}
 
         qgen = ActionQueryGenerator()

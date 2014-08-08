@@ -56,69 +56,8 @@ class NodeQueryGenerator():
     #TODO: match(exactly equal {var,value}), searchpattern(string{var,pattern},"case-sensitivity"), higher/lower(numerical), within range ({var, range})
     def read(self, labels, properties, limit=10, skip=0, merge=False, name="x"):
 
-        qbuild = []
-        params = {}
 
-        strlabels = ""
-        strproperties = ""
-
-        c = 0
-        sep = lambda: ", " if c > 0 else " "
-
-        if properties and type(properties) is dict:
-            for p in properties:
-                strproperties += "%s %s : {%s} " % (sep(), p, p)
-                params[p] = properties[p]
-                c += 1
-
-        if labels and type(labels) is list:
-            for l in labels:
-                if type(l) is str:
-                    strlabels += " :%s " % l.upper()
-
-        if merge:
-            qbuild.append("MERGE (%s %s { %s })\n" % (name, strlabels, strproperties))
-        else:
-            qbuild.append("MATCH (%s %s { %s })\n" % (name, strlabels, strproperties))
-
-        #TODO: [URGENT] FIX THIS
-        if newlabels and type(newlabels) is list:
-            for l in newlabels:
-                if type(l) is str:
-                    qbuild.append("SET %s :%s\n" % (name, l.upper()))
-
-        if newproperties and type(newproperties) is dict:
-            for p in newproperties:
-                qbuild.append("SET %s.%s = {%s}\n" % (name, p, p))
-                params[p] = newproperties[p]
-
-        pr = True
-        if properties and type(properties) is dict:
-            pr = False
-            qbuild.append("RETURN ")
-            for p in properties:
-                qbuild.append("%s i.%s AS %s" % (sep(), p, p))
-                c += 1
-
-        if newproperties and type(newproperties) is dict:
-            if pr:
-                qbuild.append("RETURN ")
-                c = 0
-            pr = False
-            for p in newproperties:
-                qbuild.append("%s i.%s AS %s" % (sep(), p, p))
-                c += 1
-        if pr:
-            qbuild.append("RETURN x")
-
-        qbuild.append("\n")
-
-        query = ''.join(qbuild)
-
-        #print 'query: ', query
-        #print 'params: ', params
-
-        return query, params
+        return None, None
 
     def update(self, labels, properties, newlabels=None, newproperties=None, merge=False, name="x"):
 
@@ -180,17 +119,10 @@ class NodeQueryGenerator():
 
         query = ''.join(qbuild)
 
-        #print 'query: ', query
-        #print 'params: ', params
-
         return query, params
 
     def delete(self, labels, properties, name="x"):
-
-        #query.append("WITH i, i.id AS id\n")
-        #query.append("OPTIONAL MATCH (i)-[r]-()\n")
-        #query.append("DELETE r,i\n")
-        #query.append("RETURN id\n")
+        #TODO: split operation (delete rels first, and then run a second query to delete nodes). For cases where number of # of nodes and rels that match pattern is very high
 
         qbuild = []
         params = {}

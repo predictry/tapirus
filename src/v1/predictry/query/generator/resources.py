@@ -23,7 +23,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strlabels = " :ITEM :%s " % organization
+        strlabels = " :%s:ITEM " % organization
         strproperties = " id : {%s} " % "id"
 
         params["id"] = args["id"]
@@ -62,12 +62,12 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
         if "id" in args:
             #single item GET
-            query.append("MATCH (i :%s :ITEM { id : {id}})\n" % organization)
+            query.append("MATCH (i :%s:ITEM { id : {id}})\n" % organization)
             params["id"] = args["id"]
 
         else:
             #multiple items GET
-            query.append("MATCH (i :%s :ITEM)\n" % organization)
+            query.append("MATCH (i :%s:ITEM)\n" % organization)
 
             c = 0
             s = lambda: "WHERE" if c == 0 else "AND"
@@ -176,7 +176,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s :ITEM { id : {id}})\n" % organization)
+        query.append("MATCH (i :%s:ITEM { id : {id}})\n" % organization)
         params["id"] = args["id"]
 
         for p in ItemSchema.get_properties():
@@ -207,7 +207,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s :ITEM { id : {id}})\n" % organization)
+        query.append("MATCH (i :%s:ITEM { id : {id}})\n" % organization)
         params["id"] = args["id"]
 
         query.append("WITH i, i.id AS id\n")
@@ -232,7 +232,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strlabels = " :%s :USER " % organization
+        strlabels = " :%s:USER " % organization
         strproperties = " id : {%s} " % "id"
         params["id"] = args["id"]
 
@@ -270,12 +270,12 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         params = {}
 
         if "id" in args:
-            query.append("MATCH (i :%s :USER { id : {id}})\n" % organization)
+            query.append("MATCH (i :%s:USER { id : {id}})\n" % organization)
             params["id"] = args["id"]
 
         else:
             #multiple items GET
-            query.append("MATCH (i :%s :USER )\n" % organization)
+            query.append("MATCH (i :%s:USER )\n" % organization)
 
         #RETURN
         query.append("RETURN ")
@@ -330,7 +330,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s :USER { id : {id}})\n" % organization)
+        query.append("MATCH (i :%s:USER { id : {id}})\n" % organization)
         params["id"] = args["id"]
 
         for p in UserSchema.get_properties():
@@ -361,7 +361,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s :USER { id : {id}})\n" % organization)
+        query.append("MATCH (i :%s:USER { id : {id}})\n" % organization)
         params["id"] = args["id"]
 
         query.append("WITH i, i.id AS id\n")
@@ -447,7 +447,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         if "id" in args:
             #single item GET
-            query.append("MATCH (u :%s:USER )-[r {id: {id}}]->(i :%s :ITEM )\n" % (organization, organization))
+            query.append("MATCH (u :%s:USER )-[r {id: {id}}]->(i :%s:ITEM )\n" % (organization, organization))
             params["id"] = args["id"]
 
         else:
@@ -456,9 +456,9 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             s = lambda: "WHERE" if c == 0 else "AND"
 
             if "q" in args:
-                query.append("MATCH (u :%s:USER)-[r :%s]->(i :ITEM :%s)\n" % (organization, label(args["q"]), organization))
+                query.append("MATCH (u :%s:USER)-[r :%s]->(i :%s:ITEM)\n" % (organization, label(args["q"]), organization))
             else:
-                query.append("MATCH (u :%s:USER)-[r]->(i :ITEM :%s)\n" % (organization, organization))
+                query.append("MATCH (u :%s:USER)-[r]->(i :%s:ITEM)\n" % (organization, organization))
 
             if "occurredBefore" in args:
                 query.append("%s r.timestamp < {timeCeiling} " % s())
@@ -525,7 +525,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :ITEM :%s)\n" % (organization, organization))
+        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :%s:ITEM)\n" % (organization, organization))
         params["id"] = args["id"]
 
         properties = ["timestamp", "ipAddress", "sessionId", "guid", "agent", "quantum"]
@@ -560,7 +560,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :ITEM :%s)\n" % (organization, organization))
+        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :%s:ITEM)\n" % (organization, organization))
         params["id"] = args["id"]
         query.append("WITH r, r.id AS id\n")
         query.append("DELETE r\n")

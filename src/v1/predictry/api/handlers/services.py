@@ -20,8 +20,6 @@ class RecommendationHandler:
         #go
 
 
-        #args["organization"] = "redmart"
-
         qgen = RecommendationQueryGenerator()
         qexec = QueryExecutor()
 
