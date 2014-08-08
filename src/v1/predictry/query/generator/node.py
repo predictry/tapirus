@@ -156,7 +156,7 @@ class NodeQueryGenerator():
             qbuild.append("\n")
 
         qbuild.append("OPTIONAL MATCH (%s)-[r]-()\n" % name)
-        qbuild.append("DELETE %s,r\n" % name)
+        qbuild.append("DELETE r\n")
 
         if properties and type(properties) is dict:
             qbuild.append("RETURN")
@@ -171,16 +171,4 @@ class NodeQueryGenerator():
 
         query = ''.join(qbuild)
 
-        #print 'query: ', query
-        #print 'params: ', params
-
         return query, params
-
-qg = NodeQueryGenerator()
-
-qg.create(labels=["user", "redmart"], properties={"name": "Josh", "age": 25, "dob": 56986356996}, merge=False, name="i")
-
-qg.update(labels=["user", "redmart"], properties={"name": "Josh", "age": 25, "dob": 56986356996},
-          newlabels=["my"], newproperties={"address": "BLVD 64384"}, merge=False, name="i")
-
-qg.delete(labels=["user", "redmart"], properties={"name": "Josh", "age": 25, "dob": 56986356996}, name="i")

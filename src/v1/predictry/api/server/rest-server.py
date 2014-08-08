@@ -34,7 +34,7 @@ api.add_resource(ActionListAPI, '/predictry/api/v1/actions/', endpoint='actions'
 api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend/', endpoint='recommend')
 
 if __name__ == '__main__':
-    app.run(port=8080)
+    app.run(port=5000)
 
 
 #TODO: log performance, and queries (i.e. the requests. the queries can be regenerated from them. The reverse is not as easy)

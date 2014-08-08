@@ -99,26 +99,25 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["itemId"] = args["itemId"]
             params["limit"] = 100
 
-        elif qtype in ["vip", "piv"]:
+        #elif qtype in ["vip", "piv"]:
 
-            action = []
-            if qtype == "vip":
-                action.append("BOUGHT")
-                action.append("VIEWED")
-            else:
-                action.append("VIEWED")
-                action.append("BOUGHT")
+        #    action = []
+        #    if qtype == "vip":
+        #        action.append("BOUGHT")
+        #        action.append("VIEWED")
+        #    else:
+        #        action.append("VIEWED")
+        #        action.append("BOUGHT")
 
-            query.append("MATCH (u :%s:USER)-[first_rel :%s]->(i :%s:ITEM {id: {itemId}})\n" % (organization, action[0], organization))
-            query.append("WITH u,first_rel,i\n")
-            query.append("MATCH (u)-[sec_rel :%s]->(i2 :%s:ITEM)\n" % (action[1], organization))
-            query.append("WHERE i <> i2\n")
-            query.append("RETURN i.id AS collectionId, COLLECT(DISTINCT sec_rel.sessionid) AS collections, COLLECT(i2.id) AS items\n")
-            #query.append("ORDER BY COALESCE(collectionId, -5000) DESC\n")
-            query.append("LIMIT {limit}")
+        #    query.append("MATCH (u :%s:USER)-[first_rel :%s]->(i :%s:ITEM {id: {itemId}})\n" % (organization, action[0], organization))
+        #    query.append("WITH u,first_rel,i\n")
+        #    query.append("MATCH (u)-[sec_rel :%s]->(i2 :%s:ITEM)\n" % (action[1], organization))
+        #    query.append("WHERE i <> i2 AND first_rel.timestamp < sec_rel.timestamp\n")
+        #    query.append("RETURN i.id AS collectionId, COLLECT(DISTINCT sec_rel.sessionid) AS collections, COLLECT(i2.id) AS items\n")
+        #    query.append("LIMIT {limit}")
 
-            params["itemId"] = args["itemId"]
-            params["limit"] = 100
+        #    params["itemId"] = args["itemId"]
+        #    params["limit"] = 100
 
         #print 'query: ', ''.join(query)
         #print 'params: ', params

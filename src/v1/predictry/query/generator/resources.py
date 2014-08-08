@@ -423,7 +423,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         s = lambda: ", " if c > 0 else " "
 
         for p in ActionSchema.get_properties(True):
-            query.append("%s i.%s AS %s" % (s(), p, p))
+            query.append("%s r.%s AS %s" % (s(), p, p))
             c += 1
 
         query.append("\n")
@@ -492,7 +492,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             c = 0
             s = lambda: ", " if c > 0 else " "
             for p in ActionSchema.get_properties(True):
-                query.append("%s i.%s AS %s" % (s(), p, p))
+                query.append("%s r.%s AS %s" % (s(), p, p))
                 c += 1
 
         query.append("\n")
@@ -513,8 +513,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
                 #not a 1 item request (cap response)
                 params["limit"] = 10
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
@@ -543,7 +543,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         c = 0
         s = lambda: ", " if c > 0 else " "
         for p in ActionSchema.get_properties(True):
-            query.append("%s i.%s AS %s" % (s(), p, p))
+            query.append("%s r.%s AS %s" % (s(), p, p))
             c += 1
 
         query.append("\n")

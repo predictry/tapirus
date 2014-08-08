@@ -14,10 +14,6 @@ if Conn.is_db_running(url) is False:
     print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
                     status=500)
 
-    #return {}, dict(error="Internal server error", message="There was an error with internal server processes",
-    #                status=500)
-
-
 session = cypher.Session(url)
 tx = session.create_transaction()
 
@@ -89,19 +85,3 @@ class QueryExecutor(QueryExecutorBase):
                 collection.append(records)
 
             return collection, None
-
-#batch = [
-#    dict(query="MATCH (i :ITEM :REDMART {id: {id}}) RETURN i.description AS description", params=dict(id=5550)),
-#    dict(query="MATCH (i :ITEM :REDMART {id: {id}}) RETURN i.description AS description", params=dict(id=8000)),
-#    dict(query="MATCH (i :ITEM :REDMART {id: {id}}) RETURN i.description AS description", params=dict(id=8317)),
-#    dict(query="MATCH (i :ITEM :REDMART {id: {id}}) RETURN i.description AS description", params=dict(id=9965))
-#]
-
-#coll, err = QueryExecutor().run(batch)
-
-#if err:
-#    print err
-#else:
-#    for records in coll:
-#        print records
-

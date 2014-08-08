@@ -256,7 +256,7 @@ class ActionAPI(Resource):
         self.reqparse.add_argument('guid', type=str, location='json')
         self.reqparse.add_argument('agent', type=str, location='json')
         self.reqparse.add_argument('quantum', type=float, location='json')
-        self.reqparse.add_argument('type', type=str, requiredlocation='json', choices=['view', 'buy', 'rate', 'addToCart'])
+        self.reqparse.add_argument('type', type=str, location='json', choices=['view', 'buy', 'rate', 'addToCart'])
         self.reqparse.add_argument('userId', type=int, location='json')
         self.reqparse.add_argument('itemId', type=int, location='json')
 
@@ -277,6 +277,8 @@ class ActionAPI(Resource):
         args["id"] = id
         args["method"] = "get"
         handler = ActionHandler()
+
+        print args
 
         response = handler.handle_request(args)
 

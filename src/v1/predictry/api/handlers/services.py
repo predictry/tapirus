@@ -13,13 +13,6 @@ class RecommendationHandler:
 
     def handle_request(self, args):
 
-        #start = datetime.now()
-
-        #authenticate user, append organization parameter
-        #verify request
-        #go
-
-
         qgen = RecommendationQueryGenerator()
         qexec = QueryExecutor()
 
@@ -39,7 +32,7 @@ class RecommendationHandler:
 
         response = {"data": None, "message": None, "error": None, "status": 200}
 
-        if args["type"] in ["oivt", "oipt", "oiv", "oip", "pav", "vap", "vip", "piv"]:
+        if args["type"] in ["oivt", "oipt", "oiv", "oip", "pav", "vap"]:
 
             collections = []
             #sessionId, items, basketSize

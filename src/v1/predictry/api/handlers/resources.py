@@ -127,7 +127,7 @@ class UserHandler:
             commit = True
 
         #read/delete/update/output is the same
-        output, err = qexec.run(query, params, commit)
+        output, err = qexec.run(query, params, commit=commit)
 
         if err:
             return err
@@ -185,7 +185,7 @@ class ActionHandler:
 
             for p in ["type", "userId", "itemId"]:
                 if p not in args:
-                    return error('ResourceDoesNotExist', self.resource, p)
+                    return error('MissingParameter', self.resource, p)
 
             exists, err = Node.exists(labels=[args["organization"].upper(), ItemSchema.get_label()],
                                       properties={"id": args["itemId"]})
@@ -225,7 +225,7 @@ class ActionHandler:
             query, params = qgen.delete(args)
             commit = True
 
-        output, err = qexec.run(query, params, commit)
+        output, err = qexec.run(query, params, commit=commit)
 
         if err:
             return err

@@ -1,6 +1,7 @@
 __author__ = 'guilherme'
 
 from v1.predictry.query.executor.queryexecutor import QueryExecutor
+from v1.predictry.utils.helpers import text as Text
 
 #TODO: [LATER][R: py2neo] create utility (helper) functions for nodes (exists, get labels, has label, get properties, etc)
 #TODO: [LATER][R: py2neo] look into the viability of using py2neo instead of cypher( e.g. find on takes 1 label and 1 parameter to match)

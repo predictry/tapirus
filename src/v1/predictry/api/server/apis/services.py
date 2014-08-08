@@ -16,7 +16,7 @@ class RecommendationAPI(Resource):
         self.reqparse.add_argument('itemId', type=int, location='args')
         self.reqparse.add_argument('userId', type=int, location='args')
         self.reqparse.add_argument('type', type=str, location='args', required=True,
-                                   choices=['oiv', 'oivt', 'oip', 'oipt', 'pav', 'vap', 'piv', 'vip'])
+                                   choices=['oiv', 'oivt', 'oip', 'oipt', 'pav', 'vap'])
         self.reqparse.add_argument('fields', type=str, location='args')
         self.reqparse.add_argument('limit', type=int, location='args')
         self.reqparse.add_argument('offset', type=int, location='args')
