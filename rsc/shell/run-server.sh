@@ -14,4 +14,5 @@ $PYTHONENV/activate
 
 export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
-$PYTHONENV/gunicorn -b 0.0.0.0:8080 --debug --log-file error_logs.log --access-logfile acclogs.log --log-level debug --workers=5 --name $APPNAME v1.predictry.api.server.rest-server:app
+#$PYTHONENV/gunicorn -b 0.0.0.0:8080 --debug --workers=5 --name $APPNAME predictry.server:app
+$PYTHONENV/gunicorn -b 0.0.0.0:8080 --debug --log-file error_logs.log --access-logfile acclogs.log --log-level debug --workers=5 --name $APPNAME predictry.server:app
