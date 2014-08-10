@@ -53,21 +53,3 @@ class RecommendationAPI(Resource):
         #print "Handler:", (end-start).microseconds/1000.0, 'ms\n'
 
         return response
-
-class SystemAPI(Resource):
-    #decorators = [auth.login_required]
-
-    def __init__(self):
-
-        super(SystemAPI, self).__init__()
-
-    def shutdown_server(self):
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is None:
-            raise RuntimeError('Not running with the Werkzeug Server')
-        func()
-
-    def get(self):
-        #requestargs = self.reqparse.parse_args()
-        self.shutdown_server()
-        return {'message': 'Server shutting down...'}
