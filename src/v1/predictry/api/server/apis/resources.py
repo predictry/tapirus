@@ -4,22 +4,7 @@ from flask.ext.restful import Resource, reqparse
 
 from v1.predictry.api.handlers.resources import ItemHandler, UserHandler, ActionHandler
 
-'''
-auth = HTTPBasicAuth()
-
-@auth.get_password
-def get_password(username):
-    if username == 'username':
-        return 'password'
-    return None
-
-@auth.error_handler
-def unauthorized():
-    return make_response(jsonify({'message': 'Unauthorized access'}), 403)
-'''
-
 class ItemAPI(Resource):
-    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -46,7 +31,6 @@ class ItemAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "get"
@@ -63,7 +47,6 @@ class ItemAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "put"
@@ -79,7 +62,6 @@ class ItemAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "delete"
@@ -91,7 +73,6 @@ class ItemAPI(Resource):
 
 
 class ItemListAPI(Resource):
-    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -107,7 +88,6 @@ class ItemListAPI(Resource):
         self.reqparse.add_argument('dateAdded', type=float, location='json')
         self.reqparse.add_argument('itemURL', type=str, location='json')
         self.reqparse.add_argument('imageURL', type=str, location='json')
-        #self.reqparse.add_argument('organization', type=str, location='json')
 
         self.reqparse.add_argument('fields', type=str, location='args')
         self.reqparse.add_argument('limit', type=int, location='args')
@@ -128,7 +108,6 @@ class ItemListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "post"
         handler = ItemHandler()
@@ -144,7 +123,6 @@ class ItemListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "get"
         handler = ItemHandler()
@@ -173,10 +151,25 @@ class UserAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "get"
+        handler = UserHandler()
+
+        response = handler.handle_request(args)
+
+        return response
+
+    def put(self, id):
+
+        requestargs = self.reqparse.parse_args()
+        args = {}
+        for k, v in requestargs.iteritems():
+            if v is not None:
+                args[k] = v
+
+        args["id"] = id
+        args["method"] = "put"
         handler = UserHandler()
 
         response = handler.handle_request(args)
@@ -189,7 +182,6 @@ class UserAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "delete"
@@ -221,7 +213,6 @@ class UserListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "post"
         handler = UserHandler()
@@ -236,7 +227,6 @@ class UserListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "get"
         handler = UserHandler()
@@ -246,7 +236,6 @@ class UserListAPI(Resource):
         return response
 
 class ActionAPI(Resource):
-    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -290,7 +279,6 @@ class ActionAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "put"
@@ -306,7 +294,6 @@ class ActionAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["id"] = id
         args["method"] = "delete"
@@ -318,7 +305,6 @@ class ActionAPI(Resource):
 
 
 class ActionListAPI(Resource):
-    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -350,7 +336,6 @@ class ActionListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "post"
         handler = ActionHandler()
@@ -366,7 +351,6 @@ class ActionListAPI(Resource):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
 
         args["method"] = "get"
         handler = ActionHandler()

@@ -31,7 +31,7 @@ class UserSchema:
 
     @staticmethod
     def get_properties(identifiers=False):
-        p = []
+        p = ['email']
 
         if identifiers:
             p.extend(["id", "organization"])

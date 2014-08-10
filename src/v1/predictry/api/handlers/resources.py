@@ -47,7 +47,6 @@ class ItemHandler:
             query, params = qgen.delete(args)
             commit = True
 
-        #read/delete/update/output is the same
         output, err = qexec.run(query, params, commit=commit)
 
         if err:
@@ -71,7 +70,6 @@ class ItemHandler:
 
         elif method == "get":
             if len(output) == 0:
-                #item not found
                 return error('ResourceDoesNotExist', self.resource)
             else:
                 response["data"] = {}
@@ -79,7 +77,6 @@ class ItemHandler:
 
         elif method == "put":
             if len(output) == 0:
-                #item not found
                 return error('ResourceDoesNotExist', self.resource)
             else:
                 response["data"] = {}
@@ -119,6 +116,10 @@ class UserHandler:
             query, params = qgen.create(args)
             commit = True
 
+        elif args["method"] == "put":
+            query, params = qgen.update(args)
+            commit = True
+
         if args["method"] == "get":
             query, params = qgen.read(args)
 
@@ -126,7 +127,6 @@ class UserHandler:
             query, params = qgen.delete(args)
             commit = True
 
-        #read/delete/update/output is the same
         output, err = qexec.run(query, params, commit=commit)
 
         if err:
@@ -151,6 +151,13 @@ class UserHandler:
         elif method == "get":
             if len(output) == 0:
                 #item not found
+                return error('ResourceDoesNotExist', self.resource)
+            else:
+                response["data"] = {}
+                response["data"]["users"] = output
+
+        elif method == "put":
+            if len(output) == 0:
                 return error('ResourceDoesNotExist', self.resource)
             else:
                 response["data"] = {}
@@ -193,9 +200,6 @@ class ActionHandler:
                 return err
             if not exists:
                 return error('ResourceDoesNotExist', o='item')
-                #flags["item"]["created"] = False
-            #else:
-                #flags["item"]["created"] = True
 
             exists, err = Node.exists(labels=[args["organization"].upper(), UserSchema.get_label()],
                                       properties={"id": args["userId"]})
@@ -203,9 +207,6 @@ class ActionHandler:
                 return err
             if not exists:
                 return error('ResourceDoesNotExist', o='user')
-                #flags["user"]["created"] = False
-            #else:
-                #flags["user"]["created"] = True
 
             query, params = qgen.create(args)
             commit = True
@@ -251,7 +252,6 @@ class ActionHandler:
 
         elif method == "get":
             if len(output) == 0:
-                #item not found
                 return error('ResourceDoesNotExist', self.resource)
             else:
                 response["data"] = {}
@@ -259,7 +259,6 @@ class ActionHandler:
 
         elif method == "put":
             if len(output) == 0:
-                #item not found
                 return error('ResourceDoesNotExist', self.resource)
             else:
                 response["data"] = {}

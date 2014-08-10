@@ -8,7 +8,6 @@ from v1.predictry.api.handlers.services import RecommendationHandler
 
 
 class RecommendationAPI(Resource):
-    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -32,24 +31,13 @@ class RecommendationAPI(Resource):
 
     def get(self):
 
-        #start = datetime.now()
         requestargs = self.reqparse.parse_args()
         args = {}
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
-                #print k, ":", v
-        #end = datetime.now()
-        #print "Argumen:", (end-start).microseconds/1000.0, "ms\n"
 
-        #start = datetime.now()
         handler = RecommendationHandler()
-        #end = datetime.now()
-        #print "Constru:", (end-start).microseconds/1000.0, "ms\n"
-
-        #start = datetime.now()
         response = handler.handle_request(args)
-        #end = datetime.now()
-        #print "Handler:", (end-start).microseconds/1000.0, 'ms\n'
 
         return response

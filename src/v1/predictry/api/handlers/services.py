@@ -18,13 +18,8 @@ class RecommendationHandler:
 
         query, params = qgen.generate(args)
         output, err = qexec.run(query, params)
-        #return dict(o=output, e=err)
 
         response = self.generate_response(args, output)
-
-        #end = datetime.now()
-
-        #print (end-start).microseconds/1000.0, 'ms\n\n'
 
         return response
 
@@ -35,7 +30,6 @@ class RecommendationHandler:
         if args["type"] in ["oivt", "oipt", "oiv", "oip", "pav", "vap"]:
 
             collections = []
-            #sessionId, items, basketSize
             for record in output:
                 collections.append({"id": record["collectionId"],
                                     "items": record["items"]})
