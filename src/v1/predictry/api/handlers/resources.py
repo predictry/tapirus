@@ -4,7 +4,7 @@ from v1.predictry.query.generator.resources import ItemQueryGenerator, UserQuery
 from v1.predictry.query.executor.queryexecutor import QueryExecutor
 from v1.predictry.models.schema import ItemSchema, UserSchema
 from v1.predictry.api.server.errors import error
-import v1.predictry.utils.graph.node as Node
+import v1.predictry.utils.neo4j.node as Node
 import v1.predictry.utils.helpers.text as Text
 import v1.predictry.utils.helpers.payload as Payload
 

@@ -1,25 +1,27 @@
+from v1.predictry.utils.neo4j import conn
+
 __author__ = 'guilherme'
 
 #internal modules
 from v1.predictry.query.executor.base import QueryExecutorBase
-from v1.predictry.utils.helpers import text as Text
-import v1.predictry.utils.config.conn as Conn
+from v1.predictry.utils.helpers import text
+from v1.predictry.utils.neo4j import conn
 
 from py2neo import cypher
 
-
+tx = None
 url = 'http://localhost:7474/db/data/'
-
-if Conn.is_db_running(url) is False:
-    print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
-                    status=500)
-
-session = cypher.Session(url)
-tx = session.create_transaction()
 
 def new_session():
     global tx
-    tx = session.create_transaction()
+
+    if not tx:
+        if conn.is_db_running(url) is False:
+            print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
+                        status=500)
+        else:
+            session = cypher.Session(url)
+            tx = session.create_transaction()
 
 class QueryExecutor(QueryExecutorBase):
 
@@ -28,19 +30,13 @@ class QueryExecutor(QueryExecutorBase):
 
     def run(self, query=None, params=None, batch=None, commit=False):
 
-        query = Text.encode(query)
+        query = text.encode(query)
 
-        #url = 'http://localhost:7474/db/data/'
-
-        #if Conn.is_db_running(url) is False:
-        #    print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
-        #                    status=500)
-
-        #    return {}, dict(error="Internal server error", message="There was an error with internal server processes",
-        #                    status=500)
-
-        session = cypher.Session(url)
-        tx = session.create_transaction()
+        if not tx:
+            new_session()
+            if not tx:
+                return {}, dict(error="Internal server error", message="There was an error with internal server processes",
+                            status=500)
 
         if query is not None:
             tx.append(query, params)
