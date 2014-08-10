@@ -15,6 +15,6 @@ def rank_most_popular_items(collections, key, n=5):
 
     itemsrank = []
     for i in counter.most_common(n):
-        itemsrank.append({"id": i[0], "rank": i[1]})
+        itemsrank.append({"id": i[0], "score": i[1]})
 
-    return sorted(itemsrank, key=itemgetter("rank"), reverse=True)
+    return sorted(itemsrank, key=itemgetter("score"), reverse=True)
