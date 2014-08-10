@@ -42,7 +42,7 @@ class NodeQueryGenerator():
                 qbuild.append("%s %s.%s AS %s" % (sep(), name, p, p))
                 c += 1
         else:
-            qbuild.append("RETURN %s", name)
+            qbuild.append("RETURN %s" % name)
 
         qbuild.append("\n")
 

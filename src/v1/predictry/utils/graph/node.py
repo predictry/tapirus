@@ -26,15 +26,11 @@ def exists(labels, properties):
 
     query = Text.encode(''.join(q))
 
-    #print query
-
     qexec = QueryExecutor()
     output, err = qexec.run(query, params)
 
     if err:
         return {}, err
-
-    #print query, params
 
     if len(output) == 0:
         return False, None

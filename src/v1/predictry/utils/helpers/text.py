@@ -36,9 +36,7 @@ def encode(e, charset='utf-8'):
 
     if type(e) is str:
         encoding = chardet.detect(e)["encoding"]
-        #print "Found charset %s" % encoding
         if encoding == charset:
-            #print encoding + " is equal to " + charset
             pass
         else:
             e = e.decode(encoding).encode(charset)

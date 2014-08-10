@@ -21,8 +21,6 @@ def is_db_running(url):
         try:
             js = json.loads(body)
 
-            #print js
-
             if "node" in js:
                 if js["node"] is not None:
                     return True

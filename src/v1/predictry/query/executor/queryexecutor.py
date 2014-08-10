@@ -30,14 +30,14 @@ class QueryExecutor(QueryExecutorBase):
 
         query = Text.encode(query)
 
-        url = 'http://localhost:7474/db/data/'
+        #url = 'http://localhost:7474/db/data/'
 
-        if Conn.is_db_running(url) is False:
-            print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
-                            status=500)
+        #if Conn.is_db_running(url) is False:
+        #    print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
+        #                    status=500)
 
-            return {}, dict(error="Internal server error", message="There was an error with internal server processes",
-                            status=500)
+        #    return {}, dict(error="Internal server error", message="There was an error with internal server processes",
+        #                    status=500)
 
         session = cypher.Session(url)
         tx = session.create_transaction()

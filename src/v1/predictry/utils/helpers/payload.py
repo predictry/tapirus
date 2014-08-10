@@ -22,11 +22,11 @@ print minify(p)
 def minify(payload):
 
     if type(payload) is list:
-        nlist = []
+        newlist = []
         for i in range(0, len(payload)):
             if payload[i] is not None:
-                nlist.append(minify(payload[i]))
-        return nlist
+                newlist.append(minify(payload[i]))
+        return newlist
 
     if type(payload) is tuple:
         l = list(payload)
@@ -37,11 +37,11 @@ def minify(payload):
         payload = set(minify(l))
 
     if type(payload) is dict:
-        ndict = {}
+        newdict = {}
         for key in payload:
             if payload[key] is not None:
-                ndict[key] = minify(payload[key])
+                newdict[key] = minify(payload[key])
 
-        return ndict
+        return newdict
 
     return payload
