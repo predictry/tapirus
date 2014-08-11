@@ -1,9 +1,9 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.errors import error
-from predictry.query.generator.resources.item import ItemQueryGenerator
-from predictry.query.executor.queryexecutor import QueryExecutor
-from predictry.models.resources.item import ItemSchema
+from predictry.engine.graph.query.generator.resources.item import ItemQueryGenerator
+from predictry.engine.graph.query.executor.executor import QueryExecutor
+from predictry.engine.models.resources.item import ItemSchema
 from predictry.utils.neo4j import node
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload

@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
-from predictry.query.generator.resources.base import ResourceQueryGeneratorBase
-from predictry.models.resources.action import ActionSchema
+from predictry.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
+from predictry.engine.models.resources.action import ActionSchema
 
 
 class ActionQueryGenerator(ResourceQueryGeneratorBase):

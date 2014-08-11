@@ -3,7 +3,7 @@ from predictry.utils.helpers import text
 __author__ = 'guilherme'
 
 #internal modules
-from predictry.query.executor.base import QueryExecutorBase
+from predictry.engine.graph.query.executor.base import QueryExecutorBase
 from predictry.utils.neo4j import conn
 
 from py2neo import cypher

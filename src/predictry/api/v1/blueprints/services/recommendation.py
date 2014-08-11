@@ -9,23 +9,24 @@ class RecommendationAPI(Resource):
     def __init__(self):
         super(RecommendationAPI, self).__init__()
 
-    def get(self):
+    def post(self):
 
         reqparser = reqparse.RequestParser()
-        reqparser.add_argument('itemId', type=int, location='args')
-        reqparser.add_argument('userId', type=int, location='args')
-        reqparser.add_argument('type', type=str, location='args', required=True,
-                                   choices=['oiv', 'oivt', 'oip', 'oipt', 'pav', 'vap'])
-        reqparser.add_argument('fields', type=str, location='args')
-        reqparser.add_argument('limit', type=int, location='args')
-        reqparser.add_argument('offset', type=int, location='args')
-        reqparser.add_argument('q', type=str, location='args')
-        reqparser.add_argument('priceFloor', type=float, location='args')
-        reqparser.add_argument('priceCeiling', type=float, location='args')
-        reqparser.add_argument('tags', type=str, location='args')
-        reqparser.add_argument('appid', type=str, location='args', required=True,
+        reqparser.add_argument('itemId', type=int, location='json')
+        reqparser.add_argument('userId', type=int, location='json')
+        reqparser.add_argument('type', type=str, location='json', required=True,
+                                   choices=['oiv', 'oivt', 'oip', 'oipt'])
+        reqparser.add_argument('fields', type=str, location='json')
+        reqparser.add_argument('limit', type=int, location='json')
+        reqparser.add_argument('priceFloor', type=float, location='json')
+        reqparser.add_argument('priceCeiling', type=float, location='json')
+        reqparser.add_argument('locations', type=str, location='json')
+        reqparser.add_argument('category', type=str, location='json')
+        reqparser.add_argument('subcategory', type=str, location='json')
+        reqparser.add_argument('tags', type=str, location='json')
+        reqparser.add_argument('appid', type=str, location='json', required=True,
                                choices=['pongo'])
-        reqparser.add_argument('domain', type=str, location='args', required=True)
+        reqparser.add_argument('domain', type=str, location='json', required=True)
 
         requestargs = reqparser.parse_args()
         args = {}
@@ -33,6 +34,6 @@ class RecommendationAPI(Resource):
             if v is not None:
                 args[k] = v
 
-        response = RecommendationAPI.get(args)
+        response = RecommendationHandler.post(args)
 
         return response, response['status']

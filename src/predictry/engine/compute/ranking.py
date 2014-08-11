@@ -6,7 +6,6 @@ from operator import itemgetter
 
 def rank_most_popular_items(collections, key, n=5):
 
-    #find items that pop up the most
     allItems = []
 
     for collection in collections:

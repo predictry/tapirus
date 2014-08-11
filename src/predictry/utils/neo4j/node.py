@@ -1,8 +1,8 @@
-from predictry.utils.helpers import text as Text
+from predictry.utils.helpers import text
 
 __author__ = 'guilherme'
 
-from predictry.query.executor.queryexecutor import QueryExecutor
+from predictry.engine.graph.query.executor.executor import QueryExecutor
 
 #TODO: [LATER][R: py2neo] create utility (helper) functions for nodes (exists, get labels, has label, get properties, etc)
 #TODO: [LATER][R: py2neo] look into the viability of using py2neo instead of cypher( e.g. find on takes 1 label and 1 parameter to match)
@@ -25,7 +25,7 @@ def exists(labels, properties):
 
     q = ["MATCH (x %s { %s })\n" % (l, p), "RETURN x"]
 
-    query = Text.encode(''.join(q))
+    query = text.encode(''.join(q))
 
     qexec = QueryExecutor()
     output, err = qexec.run(query, params)
@@ -37,3 +37,39 @@ def exists(labels, properties):
         return False, None
     else:
         return True, None
+
+
+def get_node_properties(ids, properties, label, domain):
+
+    if type(ids) is not list or not ids:
+        return None
+
+    if not properties:
+        return None
+
+    q = []
+    params = dict(ids=ids)
+
+    q.append("MATCH (x:%s:%s)\n" % (domain, label))
+    q.append("WHERE x.id IN {ids}\n")
+    q.append("RETURN x.id AS id")
+
+    for p in properties:
+        q.append(", x.%s AS %s" % (p, p))
+
+    query = text.encode(''.join(q))
+
+    qexec = QueryExecutor()
+    output, err = qexec.run(query, params)
+
+    if err:
+        return {}, err
+
+    if len(output) == 0:
+        return None, err
+    else:
+        return output, err
+
+
+#print get_node_properties([5550], ["price"], "ITEM", "REDMART")
+
