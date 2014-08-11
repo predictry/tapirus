@@ -1,11 +1,10 @@
-from predictry.compute import basket
-
 __author__ = 'guilherme'
 
 from predictry.query.generator.processes.recommendation import RecommendationQueryGenerator
 from predictry.query.executor.queryexecutor import QueryExecutor
 from predictry.utils.helpers import text
 from predictry.api.v1.errors import error
+from predictry.compute import basket
 
 class RecommendationHandler:
 

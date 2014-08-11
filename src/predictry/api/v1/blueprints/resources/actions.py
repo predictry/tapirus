@@ -84,7 +84,7 @@ class ActionListAPI(Resource):
 
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('id', type=int, location='json', required=True)
-        reqparser.add_argument('timestamp', type=float, location='json')
+        reqparser.add_argument('timestamp', type=long, location='json')
         reqparser.add_argument('ipAddress', type=str, location='json')
         reqparser.add_argument('sessionId', type=str, location='json')
         reqparser.add_argument('guid', type=str, location='json')
@@ -114,8 +114,8 @@ class ActionListAPI(Resource):
         reqparser.add_argument('limit', type=int, location='args')
         reqparser.add_argument('offset', type=int, location='args')
         reqparser.add_argument('type', type=str, location='args', choices=['view', 'buy', 'rate', 'addToCart'])
-        reqparser.add_argument('occurredBefore', type=float, location='args')
-        reqparser.add_argument('occurredAfter', type=float, location='args')
+        reqparser.add_argument('occurredBefore', type=long, location='args')
+        reqparser.add_argument('occurredAfter', type=long, location='args')
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
         reqparser.add_argument('domain', type=str, location='args', required=True)

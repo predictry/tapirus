@@ -3,7 +3,6 @@ __author__ = 'guilherme'
 from predictry.api.v1.handlers.resources.items import ItemHandler
 from flask_restful import Resource, reqparse
 
-
 class ItemAPI(Resource):
 
     def __init__(self):
@@ -31,6 +30,7 @@ class ItemAPI(Resource):
 
     def put(self, id):
 
+
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('name', type=str, location='json')
         reqparser.add_argument('brand', type=str, location='json')
@@ -39,9 +39,13 @@ class ItemAPI(Resource):
         reqparser.add_argument('tags', type=str, location='json')
         reqparser.add_argument('price', type=float, location='json')
         reqparser.add_argument('category', type=str, location='json')
-        reqparser.add_argument('dateAdded', type=float, location='json')
+        reqparser.add_argument('subcategory', type=str, location='json')
+        reqparser.add_argument('dateAdded', type=long, location='json')
         reqparser.add_argument('itemURL', type=str, location='json')
         reqparser.add_argument('imageURL', type=str, location='json')
+        reqparser.add_argument('startDate', type=long, location='json')
+        reqparser.add_argument('endDate', type=long, location='json')
+        reqparser.add_argument('locations', type=str, location='json')
 
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
@@ -119,9 +123,13 @@ class ItemListAPI(Resource):
         reqparser.add_argument('tags', type=str, location='json')
         reqparser.add_argument('price', type=float, location='json')
         reqparser.add_argument('category', type=str, location='json')
-        reqparser.add_argument('dateAdded', type=float, location='json')
+        reqparser.add_argument('subcategory', type=str, location='json')
+        reqparser.add_argument('dateAdded', type=long, location='json')
         reqparser.add_argument('itemURL', type=str, location='json')
         reqparser.add_argument('imageURL', type=str, location='json')
+        reqparser.add_argument('startDate', type=long, location='json')
+        reqparser.add_argument('endDate', type=long, location='json')
+        reqparser.add_argument('locations', type=str, location='json')
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
         reqparser.add_argument('domain', type=str, location='args', required=True)

@@ -7,21 +7,22 @@ import time
 import unittest
 
 
-now = time.time().real
+now = long(time.time().real)
 
 class ItemTestCase(unittest.TestCase):
 
     def setUp(self):
-        assert type(now) is float
+        assert type(now) is long
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.item = dict(domain=self.domain, id=123456, name="TestItem", brand="TestBrand", model="TestModel",
-             tags="Test,Item", description="This is a test item",
-             price=1.0, category="TestItem", dateAdded=now,
-             itemURL="http://localhostL7474/",
-             imageURL="images.google.com")
+        self.item = dict(domain=self.domain, id=123456, name="TestItem",
+                         brand="TestBrand", model="TestModel", tags="Test,Item",
+                         description="This is a test item", price=1.0, category="TestItem",
+                         dateAdded=now, subcategory="SubCategory", startDate=now, endDate=now+60480000,
+                         itemURL="http://localhostL7474/", imageURL="images.google.com",
+                         locations="Singapore,Indonesia")
 
 
     def tearDown(self):
@@ -82,7 +83,8 @@ class ItemTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/items/%s/?appid=%s&domain=%s" % (self.item['id'], self.appid, self.domain)
 
-        payload = dict(category="UpdatedTestItem", imageURL="images.yahoo.com", tags="Updated,Test,Item")
+        payload = dict(category="UpdatedTestItem", imageURL="images.yahoo.com", tags="Updated,Test,Item",
+                       subcategory="UpdatedSubcategory", endDate=now+60480000*2, locations="Vermont,Singapore")
         data = json.dumps(payload, ensure_ascii=False)
         resp = self.app.put(url, data=data, content_type='application/json')
 
@@ -121,7 +123,7 @@ class ItemTestCase(unittest.TestCase):
 class UserTestCase(unittest.TestCase):
 
     def setUp(self):
-        assert type(now) is float
+        assert type(now) is long
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.appid = "pongo"
@@ -222,12 +224,13 @@ class UserTestCase(unittest.TestCase):
 class ActionTestCase(unittest.TestCase):
 
     def setUp(self):
-        assert type(now) is float
+        assert type(now) is long
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.action = dict(domain=self.domain, id=123456, type="view", timestamp=1800, ipAddress="192.168.24.0", sessionId="xYz47Q",
+        self.action = dict(domain=self.domain, id=123456, type="view", timestamp=long(1800),
+                           ipAddress="192.168.24.0", sessionId="xYz47Q",
                            guid="someGUID", agent="Mozilla") #quantum for rated
         self.item = dict(domain=self.domain, id=123456, name="TestItem", brand="TestBrand", model="TestModel",
              tags="Test,Item", description="This is a test item",

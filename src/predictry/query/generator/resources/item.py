@@ -26,7 +26,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                 if type(args[p]) is str:
                     args[p] = args[p].strip()
 
-                if p in ["tags"]:
+                if p in ["tags", "locations"]:
                     args[p] = args[p].split(',')
 
                 params[p] = args[p]
@@ -89,6 +89,11 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
             if "tags" in args:
                 query.append("%s ANY(tag in i.tags WHERE tag in {tags}) " % s())
                 params["tags"] = args["tags"].split(',')
+                c += 1
+
+            if "locations" in args:
+                query.append("%s ANY(location in i.locations WHERE location in {locations}) " % s())
+                params["locations"] = args["locations"].split(',')
                 c += 1
 
             #priceFloor
@@ -161,7 +166,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         for p in ItemSchema.get_properties():
             if p in args:
                 query.append("SET i.%s = {%s}\n" % (p, p))
-                if p == "tags":
+                if p in ["tags", "locations"]:
                     args[p] = args[p].split(',')
                 params[p] = args[p]
 
