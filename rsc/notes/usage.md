@@ -58,7 +58,7 @@ The recommendation searches above can be limited to transcations that took place
 |---|---|---|
 | POST | /v1/recommend/?appid={string}&domain={string} | Use this method to get a recommendation | 
 
-**Note the protocol:** We use POST to generate recomendations, as opposed to GET. The reasoning is that, despite not pushing any data into the database, the process does create a new resource (i.e. recommendation).
+**Note on protocol:** We use POST to generate recomendations, as opposed to GET. The reasoning is that, despite not pushing any data into the database, the process does create a new resource (i.e. recommendation).
 
 ####Payload
 | Protocol method | REST API URL  | JSON Payload  |
@@ -127,3 +127,4 @@ The resource endpoints are using to store, and if necessary, read, update and de
 |---|---|---|
 | POST | /v1/actions/?appid={string}&domain={string} | {id:{int}, userId:{int}, itemId:{int}, type:{string}, [timestamp:{long}], [ipAddress:{string}], [sessionId:{string}], [guid:{string}], [agent:{string}], [quantum:{float}]}|
 | PUT | /v1/actions/{actionId}/?appid={string}&domain={string} | {[timestamp:{long}], [ipAddress:{string}], [sessionId:{string}], [guid:{string}], [agent:{string}], [quantum:{float}]}|
+
