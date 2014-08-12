@@ -71,11 +71,11 @@ The recommendation searches above can be limited to transcations that took place
 | Other items viewed | type=oiv | What other items were most viewed by people that viewed x?| 
 | Other items viewed together | type=oivt | What other items were most viewed together, by people that viewed x?| 
 | Other items purchased | type=oip | What other items were most purchased by people that purchased x?| 
-| Other purchased viewed | type=oipt | What other items were most purchased together, by people that purchased x?| 
+| Other purchased together | type=oipt | What other items were most purchased together, by people that purchased x?| 
 
 ##Resource Endpoints
 
-The resource endpoints are using to store, and if necessary, read, update and delete data on users, items, and their actions.
+The resource endpoints are used to store, and if necessary, read, update and delete data on users, items, and their actions.
 
 ###Item
 
