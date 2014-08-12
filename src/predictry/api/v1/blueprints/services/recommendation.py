@@ -13,7 +13,7 @@ class RecommendationAPI(Resource):
 
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('itemId', type=int, location='json')
-        reqparser.add_argument('userId', type=int, location='json')
+        #reqparser.add_argument('userId', type=int, location='json')
         reqparser.add_argument('type', type=str, location='json', required=True,
                                    choices=['oiv', 'oivt', 'oip', 'oipt'])
         reqparser.add_argument('fields', type=str, location='json')

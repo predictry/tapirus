@@ -3,6 +3,7 @@ __author__ = 'guilherme'
 from predictry.engine.graph.query.generator.processes.recommendation import RecommendationQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.utils.helpers import text
+from predictry.utils.helpers import payload
 from predictry.api.v1.errors import error
 from predictry.engine.compute import ranking
 from predictry.utils.neo4j import node
@@ -62,4 +63,4 @@ class RecommendationHandler:
                 response["data"] = {}
                 response["data"]["items"] = most_popular_items
 
-        return response
+        return payload.minify(response)
