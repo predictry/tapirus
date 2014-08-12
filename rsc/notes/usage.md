@@ -63,7 +63,7 @@ The recommendation searches above can be limited to transcations that took place
 ####Payload
 | Protocol method | REST API URL  | JSON Payload  |
 |---|---|---|
-| POST | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [fields:{string}], [limit:{int}], [priceFloor:{float}], [priceCeiling:{float}], [locations:{string}], [tags:{string}], [category:{string}], [subcategory:{string}]  | 
+| POST | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [fields:{string}], [limit:{int}], [priceFloor:{float}], [priceCeiling:{float}], [locations:{string}], [tags:{string}], [category:{string}], [subcategory:{string}] | 
 
 ####Recommendation Types
 | Recommendation Type | Code  | Description |
@@ -71,7 +71,7 @@ The recommendation searches above can be limited to transcations that took place
 | Other items viewed | type=oiv | What other items were most viewed by people that viewed x?| 
 | Other items viewed together | type=oivt | What other items were most viewed together, by people that viewed x?| 
 | Other items purchased | type=oip | What other items were most purchased by people that purchased x?| 
-| Other purchased together | type=oipt | What other items were most purchased together, by people that purchased x?| 
+| Other items purchased together | type=oipt | What other items were most purchased together, by people that purchased x?| 
 
 ##Resource Endpoints
 
