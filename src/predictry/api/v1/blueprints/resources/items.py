@@ -98,6 +98,7 @@ class ItemListAPI(Resource):
         reqparser.add_argument('priceFloor', type=float, location='args')
         reqparser.add_argument('priceCeiling', type=float, location='args')
         reqparser.add_argument('tags', type=str, location='args')
+        reqparser.add_argument('locations', type=str, location='args')
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
         reqparser.add_argument('domain', type=str, location='args', required=True)

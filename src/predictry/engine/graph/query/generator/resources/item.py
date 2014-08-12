@@ -96,6 +96,11 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                 params["locations"] = args["locations"].split(',')
                 c += 1
 
+            if "locations" in args:
+                query.append("%s ANY(location in i.locations WHERE location in {locations}) " % s())
+                params["locations"] = args["locations"].split(',')
+                c += 1
+
             #priceFloor
             if "priceFloor" in args:
                 query.append("%s i.price >= {priceFloor} " % s())
