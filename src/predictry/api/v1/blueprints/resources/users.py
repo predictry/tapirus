@@ -96,6 +96,8 @@ class UserListAPI(Resource):
 
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('fields', type=str, location='args')
+        reqparser.add_argument('limit', type=int, location='args')
+        reqparser.add_argument('offset', type=int, location='args')
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
         reqparser.add_argument('domain', type=str, location='args', required=True)
@@ -106,6 +108,6 @@ class UserListAPI(Resource):
             if v is not None:
                 args[k] = v
 
-        response = UserHandler.post(args)
+        response = UserHandler.get(args)
 
         return response, response['status']

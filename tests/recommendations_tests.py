@@ -20,7 +20,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: OIV"
 
-        url = "/predictry/api/v1/recommend/"
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
         data = json.dumps(dict(itemId=9095, type="oiv", appid=self.appid,
                                domain=self.domain, fields="price,description",
@@ -47,7 +47,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: OIP"
 
-        url = "/predictry/api/v1/recommend/"
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
         data = json.dumps(dict(itemId=9095, type="oip", appid=self.appid,
                                domain=self.domain, fields="price,description"),
@@ -65,7 +65,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: OIVT"
 
-        url = "/predictry/api/v1/recommend/"
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
         data = json.dumps(dict(itemId=9095, type="oivt", appid=self.appid,
                                domain=self.domain, fields="price,description"),
@@ -83,7 +83,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: OIPT"
 
-        url = "/predictry/api/v1/recommend/"
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
         data = json.dumps(dict(itemId=9095, type="oipt", appid=self.appid,
                                domain=self.domain, fields="price,description"),

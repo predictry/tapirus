@@ -24,9 +24,9 @@ class RecommendationAPI(Resource):
         reqparser.add_argument('category', type=str, location='json')
         reqparser.add_argument('subcategory', type=str, location='json')
         reqparser.add_argument('tags', type=str, location='json')
-        reqparser.add_argument('appid', type=str, location='json', required=True,
+        reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
-        reqparser.add_argument('domain', type=str, location='json', required=True)
+        reqparser.add_argument('domain', type=str, location='args', required=True)
 
         requestargs = reqparser.parse_args()
         args = {}
