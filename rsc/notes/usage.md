@@ -30,12 +30,13 @@ The `data` object has fields that are specific to each request. For example, if 
 
 ```json
 {
-    "data":
-        "items":{
+    "data": {
+        "items":[
             {"id": 1, "price": 14.5},
             {"id": 2, "price": 27.5},
             {"id": 2, "price": 8.95}
-        }
+        ]
+    },
     "status": 200
 }
 ```
