@@ -8,9 +8,10 @@ from predictry.engine.models.resources.item import ItemSchema
 from predictry.utils.neo4j import node
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
+from predictry.utils.log.logger import Logger
 
 
-class ActionHandler:
+class ActionHandler():
 
     def __init__(self):
         pass
@@ -43,7 +44,9 @@ class ActionHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', ActionHandler.resource)
+            err = error('ResourceDoesNotExist', ActionHandler.resource)
+            Logger.warning(err)
+            return err
         else:
             response["data"] = {}
 
@@ -64,7 +67,9 @@ class ActionHandler:
         qexec = QueryExecutor()
 
         if "id" not in args:
-            return error('ResourceIdNotProvided', ActionHandler.resource)
+            err = error('ResourceIdNotProvided', ActionHandler.resource)
+            Logger.warning(err)
+            return err
 
         query, params = qgen.update(args)
         commit = True
@@ -77,7 +82,9 @@ class ActionHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', ActionHandler.resource)
+            err = error('ResourceDoesNotExist', ActionHandler.resource)
+            Logger.warning(err)
+            return err
         else:
             response["data"] = {}
 
@@ -97,25 +104,33 @@ class ActionHandler:
         qexec = QueryExecutor()
 
         if "id" not in args:
-            return error('ResourceIdNotProvided', ActionHandler.resource)
+            err = error('ResourceIdNotProvided', ActionHandler.resource)
+            Logger.warning(err)
+            return err
 
         for p in ["type", "userId", "itemId"]:
             if p not in args:
-                return error('MissingParameter', ActionHandler.resource, p)
+                err = error('MissingParameter', ActionHandler.resource, p)
+                Logger.warning(err)
+                return err
 
         exists, err = node.exists(labels=[args["domain"].upper(), ItemSchema.get_label()],
                                   properties={"id": args["itemId"]})
         if err:
             return err
         if not exists:
-            return error('ResourceDoesNotExist', object='item')
+            err = error('ResourceDoesNotExist', object='item')
+            Logger.warning(err)
+            return err
 
         exists, err = node.exists(labels=[args["domain"].upper(), UserSchema.get_label()],
                                   properties={"id": args["userId"]})
         if err:
             return err
         if not exists:
-            return error('ResourceDoesNotExist', object='user')
+            err = error('ResourceDoesNotExist', object='user')
+            Logger.warning(err)
+            return err
 
         query, params = qgen.create(args)
         commit = True
@@ -128,7 +143,10 @@ class ActionHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('Unknown')
+            err = error('Unknown')
+            Logger.warning(err)
+            return err
+
         response["data"] = {}
 
         for action in output:
@@ -148,7 +166,10 @@ class ActionHandler:
         qexec = QueryExecutor()
 
         if "id" not in args:
-            return error('ResourceIdNotProvided', ActionHandler.resource)
+            err = error('ResourceIdNotProvided', ActionHandler.resource)
+            Logger.warning(err)
+            return err
+
         query, params = qgen.delete(args)
         commit = True
 
@@ -160,7 +181,10 @@ class ActionHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', ActionHandler.resource)
+            err = error('ResourceDoesNotExist', ActionHandler.resource)
+            Logger.warning(err)
+            return err
+
         response["data"] = {}
 
         for action in output:

@@ -1,10 +1,11 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.actions import ActionHandler
-from flask_restful import Resource, reqparse
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from flask_restful import reqparse
 
 
-class ActionAPI(Resource):
+class ActionAPI(BlueprintBase):
 
     def __init__(self):
         super(ActionAPI, self).__init__()
@@ -77,7 +78,7 @@ class ActionAPI(Resource):
         return response, response['status']
 
 
-class ActionListAPI(Resource):
+class ActionListAPI(BlueprintBase):
 
     def __init__(self):
         super(ActionListAPI, self).__init__()

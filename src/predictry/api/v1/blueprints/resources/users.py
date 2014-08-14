@@ -1,10 +1,11 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.users import UserHandler
-from flask_restful import Resource, reqparse
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from flask_restful import reqparse
 
 
-class UserAPI(Resource):
+class UserAPI(BlueprintBase):
 
     def __init__(self):
         super(UserAPI, self).__init__()
@@ -69,7 +70,7 @@ class UserAPI(Resource):
         return response, response['status']
 
 
-class UserListAPI(Resource):
+class UserListAPI(BlueprintBase):
     def __init__(self):
         super(UserListAPI, self).__init__()
 

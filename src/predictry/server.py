@@ -13,8 +13,8 @@ from predictry.api.v1.blueprints.resources.items import ItemAPI, ItemListAPI
 from predictry.api.v1.blueprints.resources.users import UserAPI, UserListAPI
 from predictry.api.v1.blueprints.resources.actions import ActionAPI, ActionListAPI
 from predictry.api.v1.blueprints.services.recommendation import RecommendationAPI
+from predictry.utils.log.logger import Logger
 
-#app = Flask(__name__, static_url_path="")
 app = Flask(__name__)
 app.debug = False
 
@@ -31,6 +31,10 @@ api.add_resource(ActionListAPI, '/predictry/api/v1/actions/', endpoint='actions'
 #recommendations
 api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend/', endpoint='recommend')
 
+#setup logging
+Logger.setup_logging("../../rsc/conf/logging-config.json")
+
+#run application
 if __name__ == '__main__':
     app.run(port=5000)
 

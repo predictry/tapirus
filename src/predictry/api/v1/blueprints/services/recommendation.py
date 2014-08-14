@@ -1,10 +1,11 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.services.recommendation import RecommendationHandler
-from flask_restful import Resource, reqparse
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from flask_restful import reqparse
 
 
-class RecommendationAPI(Resource):
+class RecommendationAPI(BlueprintBase):
 
     def __init__(self):
         super(RecommendationAPI, self).__init__()
@@ -34,8 +35,6 @@ class RecommendationAPI(Resource):
             if v is not None:
                 args[k] = v
 
-        #print "In"
-        #print args
         response = RecommendationHandler.post(args)
 
         return response, response['status']

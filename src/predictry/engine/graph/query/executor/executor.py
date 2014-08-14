@@ -1,10 +1,9 @@
-from predictry.utils.helpers import text
-
 __author__ = 'guilherme'
 
-#internal modules
 from predictry.engine.graph.query.executor.base import QueryExecutorBase
 from predictry.utils.neo4j import conn
+from predictry.utils.helpers import text
+from predictry.utils.log.logger import Logger
 
 from py2neo import cypher
 
@@ -17,8 +16,9 @@ def new_session(force=True):
 
     if not tx or force:
         if conn.is_db_running(url) is False:
-            print dict(error="Database connection error", message="The database at " + url + " seems to be offline",
+            err = dict(error="Database connection error", message="The database at " + url + " seems to be offline",
                        status=500)
+            Logger.critical(err)
         else:
             session = cypher.Session(url)
             tx = session.create_transaction()
@@ -36,8 +36,10 @@ class QueryExecutor(QueryExecutorBase):
         if not tx:
             new_session()
             if not tx:
-                return {}, dict(error="Internal server error",
+                err = dict(error="Internal server error",
                                 message="There was an error with internal server processes", status=500)
+                Logger.error(err)
+                return {}, err
 
         if query is not None:
             tx.append(query, params)

@@ -7,6 +7,7 @@ from predictry.utils.helpers import payload
 from predictry.api.v1.errors import error
 from predictry.engine.compute import ranking
 from predictry.utils.neo4j import node
+from predictry.utils.log.logger import Logger
 
 
 class RecommendationHandler:
@@ -20,13 +21,19 @@ class RecommendationHandler:
 
         if args["type"] in ["oivt", "oipt", "oiv", "oip"]:
             if "itemId" not in args:
-                return error('MissingParameter', RecommendationHandler.resource, "itemId")
+                err = error('MissingParameter', RecommendationHandler.resource, "itemId")
+                Logger.warning(err)
+                error
 
         qgen = RecommendationQueryGenerator()
         qexec = QueryExecutor()
 
         query, params = qgen.generate(args)
         output, err = qexec.run(query, params)
+
+        if err:
+            Logger.error(err)
+            return err
 
         response = {"data": None, "message": None, "error": None, "status": 200}
 
@@ -50,7 +57,7 @@ class RecommendationHandler:
 
                     #print items
                     if err:
-                        pass
+                        Logger.error(err)
                         #log error
                     else:
                         for p in most_popular_items:

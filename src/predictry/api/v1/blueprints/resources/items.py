@@ -1,9 +1,11 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.items import ItemHandler
-from flask_restful import Resource, reqparse
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from flask_restful import reqparse
 
-class ItemAPI(Resource):
+
+class ItemAPI(BlueprintBase):
 
     def __init__(self):
         super(ItemAPI, self).__init__()
@@ -83,7 +85,7 @@ class ItemAPI(Resource):
         return response, response['status']
 
 
-class ItemListAPI(Resource):
+class ItemListAPI(BlueprintBase):
 
     def __init__(self):
         super(ItemListAPI, self).__init__()

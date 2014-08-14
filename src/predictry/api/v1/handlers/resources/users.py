@@ -7,9 +7,10 @@ from predictry.engine.models.resources.user import UserSchema
 from predictry.utils.neo4j import node
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
+from predictry.utils.log.logger import Logger
 
 
-class UserHandler:
+class UserHandler():
 
     def __init__(self):
         pass
@@ -35,7 +36,9 @@ class UserHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', UserHandler.resource)
+            err = error('ResourceDoesNotExist', UserHandler.resource)
+            Logger.warning(err)
+            return err
         else:
             response["data"] = {}
             response["data"]["users"] = output
@@ -51,14 +54,18 @@ class UserHandler:
         qexec = QueryExecutor()
 
         if "id" not in args:
-            return error('ResourceIdNotProvided', UserHandler.resource)
+            err = error('ResourceIdNotProvided', UserHandler.resource)
+            Logger.warning(err)
+            return err
 
         exists, err = node.exists(labels=[args["domain"].upper(), UserSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err
         if not exists:
-            return error('ResourceDoesNotExist', UserHandler.resource)
+            err = error('ResourceDoesNotExist', UserHandler.resource)
+            Logger.warning(err)
+            return err
 
         query, params = qgen.update(args)
         commit = True
@@ -71,7 +78,9 @@ class UserHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', UserHandler.resource)
+            err = error('ResourceDoesNotExist', UserHandler.resource)
+            Logger.warning(err)
+            return err
         else:
             response["data"] = {}
             response["data"]["users"] = output
@@ -87,14 +96,18 @@ class UserHandler:
         qexec = QueryExecutor()
 
         if "id" not in args:
-            return error('ResourceIdNotProvided', UserHandler.resource)
+            err = error('ResourceIdNotProvided', UserHandler.resource)
+            Logger.warning(err)
+            return err
 
         exists, err = node.exists(labels=[args["domain"].upper(), UserSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err
         if exists:
-            return error('ResourceAlreadyExists', UserHandler.resource)
+            err = error('ResourceAlreadyExists', UserHandler.resource)
+            Logger.warning(err)
+            return err
 
         query, params = qgen.create(args)
         commit = True
@@ -107,7 +120,10 @@ class UserHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('Unknown', UserHandler.resource)
+            err = error('Unknown', UserHandler.resource)
+            Logger.warning(err)
+            return err
+
         response["data"] = {}
         response["data"]["users"] = output
 
@@ -132,7 +148,10 @@ class UserHandler:
         response = {"data": None, "message": None, "error": None, "status": 200}
 
         if len(output) == 0:
-            return error('ResourceDoesNotExist', UserHandler.resource)
+            err = error('ResourceDoesNotExist', UserHandler.resource)
+            Logger.warning(err)
+            return err
+
         response["data"] = {}
         response["data"]["users"] = output
 
