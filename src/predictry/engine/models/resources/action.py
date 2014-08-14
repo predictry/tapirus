@@ -1,6 +1,7 @@
 __author__ = 'guilherme'
 
 
+#TODO: separate schema by action type
 class ActionSchema:
 
     resource = "action"
@@ -10,7 +11,7 @@ class ActionSchema:
 
     @staticmethod
     def get_properties(identifiers=False):
-        p = ["timestamp", "ipAddress", "sessionId", "guid", "agent", "quantum"]
+        p = ["timestamp", "ipAddress", "sessionId", "guid", "agent", "quantum", "cartId"]
 
         if identifiers:
             p.extend(["id", "domain"])

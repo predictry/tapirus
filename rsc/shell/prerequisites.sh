@@ -22,7 +22,7 @@ sudo service neo4j-service restart
 
 echo "Installing prerequisites..."
 sudo apt-get install python-dev python-pip python-virtualenv -y
-sudo apt-get install gunicorn -y
+sudo apt-get install gunicorn libevent-dev -y
 sudo aptitude install nginx -y
 
 echo "Starting nginx.."

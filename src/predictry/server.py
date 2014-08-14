@@ -16,7 +16,7 @@ from predictry.api.v1.blueprints.services.recommendation import RecommendationAP
 
 #app = Flask(__name__, static_url_path="")
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 
 api = Api(app)
 

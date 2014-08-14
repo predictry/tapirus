@@ -63,4 +63,6 @@ class RecommendationHandler:
                 response["data"] = {}
                 response["data"]["items"] = most_popular_items
 
+        print response
+
         return payload.minify(response)

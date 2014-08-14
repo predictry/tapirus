@@ -34,6 +34,8 @@ class RecommendationAPI(Resource):
             if v is not None:
                 args[k] = v
 
+        #print "In"
+        #print args
         response = RecommendationHandler.post(args)
 
         return response, response['status']

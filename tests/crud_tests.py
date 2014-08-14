@@ -228,9 +228,10 @@ class ActionTestCase(unittest.TestCase):
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.action = dict(domain=self.domain, id=123456, type="view", timestamp=long(1800),
+        self.action = dict(domain=self.domain, id=123456, type="buy", timestamp=long(1800),
                            ipAddress="192.168.24.0", sessionId="xYz47Q",
-                           guid="someGUID", agent="Mozilla") #quantum for rated
+                           guid="someGUID", agent="Mozilla", cartId=1) #quantum for rated
+
         self.item = dict(domain=self.domain, id=123456, name="TestItem", brand="TestBrand", model="TestModel",
              tags="Test,Item", description="This is a test item",
              price=1.0, category="TestItem", dateAdded=now,
