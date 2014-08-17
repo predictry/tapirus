@@ -64,7 +64,7 @@ The recommendation searches above can be limited to transcations that took place
 ####Payload
 | Protocol method | REST API URL  | JSON Payload  |
 |---|---|---|
-| POST | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [fields:{string}], [limit:{int}], [priceFloor:{float}], [priceCeiling:{float}], [locations:{string}], [tags:{string}], [category:{string}], [subcategory:{string}] | 
+| POST | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [itemId:{int}], [userId:{int}], [fields:{string}], [limit:{int}], [priceFloor:{float}], [priceCeiling:{float}], [locations:{string}], [tags:{string}], [category:{string}], [subcategory:{string}] | 
 
 ####Recommendation Types
 | Recommendation Type | Code  | Description |
