@@ -4,6 +4,7 @@ from predictry.utils.log.logger import Logger
 from flask_restful import Resource
 from flask import request
 
+
 class BlueprintBase(Resource):
 
     def __init__(self):

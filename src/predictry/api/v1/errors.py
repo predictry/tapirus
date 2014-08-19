@@ -18,10 +18,13 @@ def error(err, object=None, property=None):
                                       status=400),
         'ResourceAlreadyExists': dict(error="Resource already exists",
                                       message="Resource " + ent(object) + "with that ID already exists", status=400),
+        'UndefinedParameter': dict(error="Undefined parameter value",
+                                   message="The parameter " + ent(property) + "must have a value", status=400),
         'MissingParameter': dict(error="Missing parameter",
                                        message="The parameter " + ent(property) + "is missing from your request", status=400),
         'Unknown': dict(error="An unknown error has occurred",
                         message="For unknown reasons, the transaction has failed", status=500)
+
     }
 
     if err in errors:

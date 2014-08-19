@@ -4,7 +4,6 @@ from predictry.api.v1.handlers.resources.items import ItemHandler
 from predictry.api.v1.blueprints.blueprint import BlueprintBase
 from flask_restful import reqparse
 
-
 class ItemAPI(BlueprintBase):
 
     def __init__(self):
