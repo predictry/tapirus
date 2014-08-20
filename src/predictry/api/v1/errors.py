@@ -8,7 +8,7 @@ def ent(x):
         return x + ' '
 
 
-def error(err, object=None, property=None):
+def error(err, object=None, property=None, message=None):
 
     errors = {
         'ResourceDoesNotExist': dict(error="Resource " + ent(object) + "not found",
@@ -22,6 +22,8 @@ def error(err, object=None, property=None):
                                    message="The parameter " + ent(property) + "must have a value.", status=400),
         'MissingParameter': dict(error="Missing parameter",
                                        message="The parameter " + ent(property) + "is missing from your request.", status=400),
+        'InvalidParameter': dict(error="Invalid parameter",
+                                       message="The parameter " + ent(property) + "is invalid.", status=400),
         'Unknown': dict(error="An unknown error has occurred",
                         message="For unknown reasons, the transaction has failed.", status=500)
 

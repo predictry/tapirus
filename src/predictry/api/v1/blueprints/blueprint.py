@@ -1,10 +1,10 @@
 __author__ = 'guilherme'
 
+from flask_restful import Resource
+from flask import request
+import re
 from predictry.utils.log.logger import Logger
 from predictry.api.v1.errors import error
-from flask_restful import Resource
-from flask import request, make_response, jsonify
-
 
 class BlueprintBase(Resource):
 
@@ -28,5 +28,12 @@ def validate_request(args):
         return error('MissingParameter', property='domain')
     if not args['domain']:
         return error('UndefinedParameter', property='domain')
+
+    regex = "^[a-zA-Z]{1,}([a-zA-Z0-9]{0,})?$"
+
+    re.compile(regex)
+
+    if not re.match(regex, args['domain']):
+        return error('InvalidParameter', property='domain')
 
     return None
