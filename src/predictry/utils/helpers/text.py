@@ -34,7 +34,7 @@ print chardet.detect(o["others"][1][1])
 
 def encode(e, charset='utf-8'):
 
-    if type(e) is str:
+    if type(e) is str and e:
         encoding = chardet.detect(e)["encoding"]
         if encoding == charset:
             pass
