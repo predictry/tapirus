@@ -34,6 +34,8 @@ def validate_request(args):
     re.compile(regex)
 
     if not re.match(regex, args['domain']):
-        return error('InvalidParameter', property='domain')
+        err = error('InvalidParameter', property='domain')
+        Logger.info(err)
+        return err
 
     return None

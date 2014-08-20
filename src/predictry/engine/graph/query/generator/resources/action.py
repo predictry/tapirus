@@ -143,7 +143,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def update(self, args):
 
-        domain = args["domain"]
+        domain = args["domain"].upper()
 
         query = []
         params = {}
@@ -181,7 +181,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def delete(self, args):
 
-        domain = args["domain"]
+        domain = args["domain"].upper()
 
         query = []
         params = {}

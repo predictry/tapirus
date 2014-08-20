@@ -119,7 +119,7 @@ class ActionHandler():
         if err:
             return err
         if not exists:
-            err = error('ResourceDoesNotExist', object='item')
+            err = error('ResourceDoesNotExist', e='item')
             Logger.warning(err)
             return err
 
@@ -128,7 +128,7 @@ class ActionHandler():
         if err:
             return err
         if not exists:
-            err = error('ResourceDoesNotExist', object='user')
+            err = error('ResourceDoesNotExist', e='user')
             Logger.warning(err)
             return err
 
