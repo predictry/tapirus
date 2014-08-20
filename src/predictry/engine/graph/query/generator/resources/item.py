@@ -15,14 +15,14 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strlabels = " :%s:ITEM " % domain
-        strproperties = ""
+        str_labels = " :%s:ITEM " % domain
+        strp_roperties = ""
 
         c = 0
         s = lambda: ", " if c > 0 else " "
         for p in ItemSchema.get_properties(True):
             if p in args:
-                strproperties += "%s %s : {%s} " % (s(), p, p)
+                strp_roperties += "%s %s : {%s} " % (s(), p, p)
                 if type(args[p]) is str:
                     args[p] = args[p].strip()
 
@@ -32,7 +32,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                 params[p] = args[p]
                 c += 1
 
-        query.append("CREATE (i %s { %s })\n" % (strlabels, strproperties))
+        query.append("CREATE (i %s { %s })\n" % (str_labels, strp_roperties))
         query.append("RETURN ")
 
         c = 0
@@ -84,6 +84,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
                 c += 1
                 query.append(" ) ")
+
 
             #tags
             if "tags" in args:

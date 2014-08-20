@@ -39,11 +39,9 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
                 c += 1
 
         query.append("MATCH (u :%s:USER)\n" % domain)
-        query.append("USING INDEX u:USER(id)\n")
         query.append("WHERE u.id = {userId}\n")
         query.append("WITH u AS u\n")
         query.append("  MATCH (i:%s:ITEM)\n" % domain)
-        query.append("  USING INDEX i:ITEM(id)\n")
         query.append("  WHERE i.id = {itemId}\n")
         query.append("  WITH u AS u, i AS i\n")
         query.append("      CREATE (u)-[r :%s { %s }]->(i)\n" %

@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.items import ItemHandler
-from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.blueprints.blueprint import BlueprintBase, validate_request
 from flask_restful import reqparse
 
 class ItemAPI(BlueprintBase):
@@ -24,6 +24,10 @@ class ItemAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ItemHandler.get(args)
 
@@ -60,6 +64,10 @@ class ItemAPI(BlueprintBase):
 
         args["id"] = id
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = ItemHandler.put(args)
 
         return response, response['status']
@@ -78,6 +86,10 @@ class ItemAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ItemHandler.delete(args)
 
@@ -110,6 +122,10 @@ class ItemListAPI(BlueprintBase):
             if v is not None:
                 args[k] = v
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = ItemHandler.get(args)
 
         return response, response['status']
@@ -141,6 +157,10 @@ class ItemListAPI(BlueprintBase):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ItemHandler.post(args)
 

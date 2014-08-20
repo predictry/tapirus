@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.actions import ActionHandler
-from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.blueprints.blueprint import BlueprintBase, validate_request
 from flask_restful import reqparse
 
 
@@ -26,6 +26,10 @@ class ActionAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ActionHandler.get(args)
 
@@ -54,6 +58,10 @@ class ActionAPI(BlueprintBase):
 
         args["id"] = id
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = ActionHandler.put(args)
 
         return response, response['status']
@@ -72,6 +80,10 @@ class ActionAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ActionHandler.delete(args)
 
@@ -109,6 +121,10 @@ class ActionListAPI(BlueprintBase):
             if v is not None:
                 args[k] = v
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = ActionHandler.post(args)
 
         return response, response['status']
@@ -132,6 +148,10 @@ class ActionListAPI(BlueprintBase):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = ActionHandler.get(args)
 

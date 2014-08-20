@@ -7,7 +7,6 @@ from predictry import server
 
 now = long(time.time().real)
 
-
 class ItemTestCase(unittest.TestCase):
 
     def setUp(self):

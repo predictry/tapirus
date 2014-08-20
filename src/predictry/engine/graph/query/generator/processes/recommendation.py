@@ -78,7 +78,6 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             }[x]
 
             query.append("MATCH (i :%s:ITEM)\n" % domain)
-            query.append("USING INDEX i:ITEM(id)\n")
             query.append("WHERE i.id = {itemId}\n")
             query.append("WITH i AS i\n")
             query.append("    MATCH (u :%s:USER)-[:%s]->(i)\n" % (domain, action(qtype)))

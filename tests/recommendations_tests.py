@@ -1,9 +1,9 @@
 __author__ = 'guilherme'
 
 import json
-import time
 import unittest
 from predictry import server
+
 
 class RecommendationTestCase(unittest.TestCase):
 

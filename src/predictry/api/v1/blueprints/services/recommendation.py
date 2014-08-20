@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.services.recommendation import RecommendationHandler
-from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.blueprints.blueprint import BlueprintBase, validate_request
 from flask_restful import reqparse
 
 
@@ -34,6 +34,10 @@ class RecommendationAPI(BlueprintBase):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = RecommendationHandler.post(args)
 

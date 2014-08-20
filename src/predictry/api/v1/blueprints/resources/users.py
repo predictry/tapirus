@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.users import UserHandler
-from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.blueprints.blueprint import BlueprintBase, validate_request
 from flask_restful import reqparse
 
 
@@ -26,6 +26,10 @@ class UserAPI(BlueprintBase):
 
         args["id"] = id
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = UserHandler.get(args)
 
         return response, response['status']
@@ -46,6 +50,10 @@ class UserAPI(BlueprintBase):
 
         args["id"] = id
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = UserHandler.put(args)
 
         return response, response['status']
@@ -64,6 +72,10 @@ class UserAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = UserHandler.delete(args)
 
@@ -89,6 +101,10 @@ class UserListAPI(BlueprintBase):
             if v is not None:
                 args[k] = v
 
+        err = validate_request(args)
+        if err:
+            return err, err['status']
+
         response = UserHandler.post(args)
 
         return response, response['status']
@@ -108,6 +124,10 @@ class UserListAPI(BlueprintBase):
         for k, v in requestargs.iteritems():
             if v is not None:
                 args[k] = v
+
+        err = validate_request(args)
+        if err:
+            return err, err['status']
 
         response = UserHandler.get(args)
 
