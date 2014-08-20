@@ -58,7 +58,7 @@ class UserHandler():
             Logger.warning(err)
             return err
 
-        exists, err = node.exists(labels=[args["domain"].upper(), UserSchema.get_label()],
+        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err
@@ -100,7 +100,7 @@ class UserHandler():
             Logger.warning(err)
             return err
 
-        exists, err = node.exists(labels=[args["domain"].upper(), UserSchema.get_label()],
+        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err

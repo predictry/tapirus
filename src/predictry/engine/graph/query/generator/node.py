@@ -28,7 +28,7 @@ class NodeQueryGenerator():
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l.upper()
+                    strlabels += " :%s " % l
 
         if merge:
             qbuild.append("MERGE (%s %s { %s })\n" % (name, strlabels, strproperties))
@@ -79,7 +79,7 @@ class NodeQueryGenerator():
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l.upper()
+                    strlabels += " :%s " % l
 
         if merge:
             qbuild.append("MERGE (%s %s { %s })\n" % (name, strlabels, strproperties))
@@ -89,7 +89,7 @@ class NodeQueryGenerator():
         if newlabels and type(newlabels) is list:
             for l in newlabels:
                 if type(l) is str:
-                    qbuild.append("SET %s :%s\n" % (name, l.upper()))
+                    qbuild.append("SET %s :%s\n" % (name, l))
 
         if newproperties and type(newproperties) is dict:
             for p in newproperties:
@@ -143,7 +143,7 @@ class NodeQueryGenerator():
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l.upper()
+                    strlabels += " :%s " % l
 
         qbuild.append("MATCH (%s %s { %s })\n" % (name, strlabels, strproperties))
 

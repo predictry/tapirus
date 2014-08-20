@@ -10,7 +10,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
     def create(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -49,7 +49,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
     def read(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -161,7 +161,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
     def update(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -194,7 +194,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
     def delete(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}

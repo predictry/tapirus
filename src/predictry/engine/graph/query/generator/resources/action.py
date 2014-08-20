@@ -10,7 +10,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def create(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -64,7 +64,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def read(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -143,7 +143,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def update(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -181,7 +181,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def delete(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}

@@ -9,7 +9,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
     def generate(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
