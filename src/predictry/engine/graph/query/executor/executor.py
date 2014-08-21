@@ -1,27 +1,13 @@
 __author__ = 'guilherme'
 
+from py2neo import cypher
+from py2neo.packages.httpstream.http import SocketError
+
 from predictry.engine.graph.query.executor.base import QueryExecutorBase
-from predictry.utils.neo4j import conn
 from predictry.utils.helpers import text
 from predictry.utils.log.logger import Logger
 
-from py2neo import cypher
-
-tx = None
 url = 'http://localhost:7474/db/data/'
-
-
-def new_session(force=True):
-    global tx
-
-    if not tx or force:
-        if conn.is_db_running(url) is False:
-            err = dict(error="Database connection error", message="The database at " + url + " seems to be offline",
-                       status=500)
-            Logger.critical(err)
-        else:
-            session = cypher.Session(url)
-            tx = session.create_transaction()
 
 
 class QueryExecutor(QueryExecutorBase):
@@ -31,15 +17,15 @@ class QueryExecutor(QueryExecutorBase):
 
     def run(self, query=None, params=None, batch=None, commit=False):
 
-        query = text.encode(query)
+        try:
+            session = cypher.Session(url)
+            tx = session.create_transaction()
+        except SocketError as err:
+            Logger.error(err)
+            return None, dict(error="Internal server error",
+                            message="There was an error with internal server processes", status=500)
 
-        if not tx:
-            new_session()
-            if not tx:
-                err = dict(error="Internal server error",
-                                message="There was an error with internal server processes", status=500)
-                Logger.error(err)
-                return {}, err
+        query = text.encode(query)
 
         if query is not None:
             tx.append(query, params)
@@ -47,7 +33,6 @@ class QueryExecutor(QueryExecutorBase):
 
             if commit:
                 tx.commit()
-                new_session()
 
             records = []
             for row in result:
@@ -69,7 +54,6 @@ class QueryExecutor(QueryExecutorBase):
 
             if commit:
                 tx.commit()
-                new_session()
 
             collection = []
             for r in result:
