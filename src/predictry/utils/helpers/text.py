@@ -2,6 +2,7 @@ __author__ = 'guilherme'
 
 import chardet
 
+
 def encode(e, charset='utf-8'):
 
     if type(e) is str and e:

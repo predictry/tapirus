@@ -1,7 +1,8 @@
 __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.actions import ActionHandler
-from predictry.api.v1.blueprints.blueprint import BlueprintBase, validate_request
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.request import validate_request
 from flask_restful import reqparse
 
 
@@ -57,6 +58,8 @@ class ActionAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
+
+        print args
 
         err = validate_request(args)
         if err:

@@ -13,27 +13,27 @@ class NodeQueryGenerator():
         qbuild = []
         params = {}
 
-        strlabels = ""
-        strproperties = ""
+        strlabels = []
+        strproperties = []
 
         c = 0
         sep = lambda: ", " if c > 0 else " "
 
         if properties and type(properties) is dict:
             for p in properties:
-                strproperties += "%s %s : {%s} " % (sep(), p, p)
+                strproperties.append("%s %s : {%s} " % (sep(), p, p))
                 params[p] = properties[p]
                 c += 1
 
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l
+                    strlabels.append(" :%s " % l)
 
         if merge:
-            qbuild.append("MERGE (%s %s { %s })\n" % (name, strlabels, strproperties))
+            qbuild.append("MERGE (%s %s { %s })\n" % (name, ''.join(strlabels), ''.join(strproperties)))
         else:
-            qbuild.append("CREATE (%s %s { %s })\n" % (name, strlabels, strproperties))
+            qbuild.append("CREATE (%s %s { %s })\n" % (name, ''.join(strlabels), ''.join(strproperties)))
 
         if properties and type(properties) is dict:
             c = 0
@@ -64,27 +64,27 @@ class NodeQueryGenerator():
         qbuild = []
         params = {}
 
-        strlabels = ""
-        strproperties = ""
+        strlabels = []
+        strproperties = []
 
         c = 0
         sep = lambda: ", " if c > 0 else " "
 
         if properties and type(properties) is dict:
             for p in properties:
-                strproperties += "%s %s : {%s} " % (sep(), p, p)
+                strproperties.append("%s %s : {%s} " % (sep(), p, p))
                 params[p] = properties[p]
                 c += 1
 
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l
+                    strlabels.append(" :%s " % l)
 
         if merge:
-            qbuild.append("MERGE (%s %s { %s })\n" % (name, strlabels, strproperties))
+            qbuild.append("MERGE (%s %s { %s })\n" % (name, ''.join(strlabels), ''.join(strproperties)))
         else:
-            qbuild.append("MATCH (%s %s { %s })\n" % (name, strlabels, strproperties))
+            qbuild.append("MATCH (%s %s { %s })\n" % (name, ''.join(strlabels), ''.join(strproperties)))
 
         if newlabels and type(newlabels) is list:
             for l in newlabels:
@@ -127,8 +127,8 @@ class NodeQueryGenerator():
         qbuild = []
         params = {}
 
-        strlabels = ""
-        strproperties = ""
+        strlabels = []
+        strproperties = []
 
         c = 0
         sep = lambda: ", " if c > 0 else " "
@@ -136,16 +136,16 @@ class NodeQueryGenerator():
         if properties and type(properties) is dict:
             c = 0
             for p in properties:
-                strproperties += "%s %s : {%s} " % (sep(), p, p)
+                strproperties.append("%s %s : {%s} " % (sep(), p, p))
                 params[p] = properties[p]
                 c += 1
 
         if labels and type(labels) is list:
             for l in labels:
                 if type(l) is str:
-                    strlabels += " :%s " % l
+                    strlabels.append(" :%s " % l)
 
-        qbuild.append("MATCH (%s %s { %s })\n" % (name, strlabels, strproperties))
+        qbuild.append("MATCH (%s %s { %s })\n" % (name, ''.join(strlabels), ''.join(strproperties)))
 
         if properties and type(properties) is dict:
             qbuild.append("WITH %s" % name)

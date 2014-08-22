@@ -27,6 +27,8 @@ class QueryExecutor(QueryExecutorBase):
 
         query = text.encode(query)
 
+        print "connection is set..."
+
         if query is not None:
             tx.append(query, params)
             result = tx.execute()[0]

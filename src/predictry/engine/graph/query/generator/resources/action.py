@@ -15,7 +15,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strproperties = ""
+        str_properties = []
 
         s = lambda: ", " if c > 0 else " "
 
@@ -32,7 +32,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         c = 0
         for p in ActionSchema.get_properties(True):
             if p in args:
-                strproperties += "%s %s : {%s} " % (s(), p, p)
+                str_properties.append("%s %s : {%s} " % (s(), p, p))
                 if type(args[p]) is str:
                     args[p] = args[p].strip()
                 params[p] = args[p]
@@ -45,7 +45,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query.append("  WHERE i.id = {itemId}\n")
         query.append("  WITH u AS u, i AS i\n")
         query.append("      CREATE (u)-[r :%s { %s }]->(i)\n" %
-                     (reltype(args["type"]), strproperties))
+                     (reltype(args["type"]), ''.join(str_properties)))
 
         query.append("      RETURN ")
 
@@ -143,7 +143,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
     def update(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}
@@ -174,14 +174,14 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
     def delete(self, args):
 
-        domain = args["domain"].upper()
+        domain = args["domain"]
 
         query = []
         params = {}

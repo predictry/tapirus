@@ -1,12 +1,15 @@
 __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.processes.base import ProcessQueryGeneratorBase
+from predictry.utils import timer
+
 
 class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
     def __init__(self):
         pass
 
+    @timer.timefunc
     def generate(self, args):
 
         domain = args["domain"]

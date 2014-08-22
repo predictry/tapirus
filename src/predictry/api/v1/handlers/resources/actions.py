@@ -61,6 +61,7 @@ class ActionHandler():
     @staticmethod
     def put(args):
 
+        print "int put..."
         args = text.encode(args)
 
         qgen = ActionQueryGenerator()
@@ -74,8 +75,9 @@ class ActionHandler():
         query, params = qgen.update(args)
         commit = True
 
+        print "string built"
         output, err = qexec.run(query, params, commit=commit)
-
+        print output, err
         if err:
             return err
 

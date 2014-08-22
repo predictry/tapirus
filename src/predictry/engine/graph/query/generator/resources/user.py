@@ -16,19 +16,19 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         params = {}
 
         strlabels = " :%s:USER " % domain
-        strproperties = ""
+        strproperties = []
 
         c = 0
         s = lambda: ", " if c > 0 else " "
         for p in UserSchema.get_properties(True):
             if p in args:
-                strproperties += "%s %s : {%s} " % (s(), p, p)
+                strproperties.append("%s %s : {%s} " % (s(), p, p))
                 if type(args[p]) is str:
                     args[p] = args[p].strip()
                 params[p] = args[p]
                 c += 1
 
-        query.append("CREATE (u %s { %s })\n" % (strlabels, strproperties))
+        query.append("CREATE (u %s { %s })\n" % (strlabels, ''.join(strproperties)))
 
         query.append("RETURN ")
 
