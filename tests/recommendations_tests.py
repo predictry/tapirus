@@ -22,7 +22,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
-        data = json.dumps(dict(itemId=9095, type="oiv", appid=self.appid,
+        data = json.dumps(dict(item_id=9095, type="oiv", appid=self.appid,
                                domain=self.domain, fields="price,description",
                                priceFloor=10), ensure_ascii=False)
         resp = self.app.post(url, data=data, content_type='application/json')
@@ -49,7 +49,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
-        data = json.dumps(dict(itemId=9095, type="oip", appid=self.appid,
+        data = json.dumps(dict(item_id=9095, type="oip", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
         resp = self.app.post(url, data=data, content_type='application/json')
@@ -67,7 +67,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
-        data = json.dumps(dict(itemId=9095, type="oivt", appid=self.appid,
+        data = json.dumps(dict(item_id=9095, type="oivt", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
         resp = self.app.post(url, data=data, content_type='application/json')
@@ -85,7 +85,7 @@ class RecommendationTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
 
-        data = json.dumps(dict(itemId=9095, type="oipt", appid=self.appid,
+        data = json.dumps(dict(item_id=9095, type="oipt", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
         resp = self.app.post(url, data=data, content_type='application/json')
