@@ -20,4 +20,4 @@ class UserSchema:
 
     @staticmethod
     def get_label():
-        return UserSchema.resource.upper()
+        return UserSchema.resource

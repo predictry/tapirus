@@ -53,7 +53,7 @@ class RecommendationHandler:
                     ids = [item["id"] for item in most_popular_items]
 
                     #print ids
-                    items, err = node.get_node_properties(ids, args['fields'].split(','), "ITEM", args['domain'])
+                    items, err = node.get_node_properties(ids, args['fields'].split(','), "item", args['domain'])
 
                     #print items
                     if err:

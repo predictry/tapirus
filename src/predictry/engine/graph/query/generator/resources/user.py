@@ -15,7 +15,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strlabels = " :%s:USER " % domain
+        strlabels = " :%s:%s " % (domain, UserSchema.get_label())
         strproperties = []
 
         c = 0
@@ -54,11 +54,13 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         s = lambda: ", " if c > 0 else " "
 
         if "id" in args:
-            query.append("MATCH (u :%s:USER { id : {id}})\n" % domain)
+            query.append("MATCH (u :%s:%s { id : {id}})\n" %
+                         (domain, UserSchema.get_label()))
             params["id"] = args["id"]
 
         else:
-            query.append("MATCH (u :%s:USER )\n" % domain)
+            query.append("MATCH (u :%s:%s )\n" %
+                         (domain, UserSchema.get_label()))
 
         #RETURN
         query.append("RETURN ")
@@ -102,7 +104,8 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER { id : {id}})\n" % domain)
+        query.append("MATCH (u :%s:%s { id : {id}})\n" %
+                     (domain, UserSchema.get_label()))
         params["id"] = args["id"]
 
         c = 0
@@ -137,7 +140,8 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER { id : {id}})\n" % domain)
+        query.append("MATCH (u :%s:%s { id : {id}})\n" %
+                     (domain, UserSchema.get_label()))
         params["id"] = args["id"]
 
         query.append("WITH u, u.id AS id\n")

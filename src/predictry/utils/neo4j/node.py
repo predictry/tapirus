@@ -71,5 +71,5 @@ def get_node_properties(ids, properties, label, domain):
         return output, err
 
 
-#print get_node_properties([5550], ["price"], "ITEM", "REDMART")
+#print get_node_properties([5550], ["price"], "item", "REDMART")
 

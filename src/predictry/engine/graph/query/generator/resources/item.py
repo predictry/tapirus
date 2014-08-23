@@ -15,7 +15,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        str_labels = " :%s:ITEM " % domain
+        str_labels = " :%s:%s " % (domain, ItemSchema.get_label())
         str_properties = []
 
         c = 0
@@ -55,12 +55,14 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         params = {}
 
         if "id" in args:
-            query.append("MATCH (i :%s:ITEM { id : {id}})\n" % domain)
+            query.append("MATCH (i :%s:%s { id : {id}})\n" %
+                         (domain, ItemSchema.get_label()))
             params["id"] = args["id"]
 
         else:
             #multiple items GET
-            query.append("MATCH (i :%s:ITEM)\n" % domain)
+            query.append("MATCH (i :%s:%s)\n" %
+                         (domain, ItemSchema.get_label()))
 
             c = 0
             s = lambda: "WHERE" if c == 0 else "AND"
@@ -165,7 +167,8 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s:ITEM { id : {id}})\n" % domain)
+        query.append("MATCH (i :%s:%s { id : {id}})\n" %
+                     (domain, ItemSchema.get_label()))
         params["id"] = args["id"]
 
         for p in ItemSchema.get_properties():
@@ -198,7 +201,8 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (i :%s:ITEM { id : {id}})\n" % domain)
+        query.append("MATCH (i :%s:%s { id : {id}})\n" %
+                     (domain, ItemSchema.get_label()))
         params["id"] = args["id"]
 
         query.append("WITH i, i.id AS id\n")

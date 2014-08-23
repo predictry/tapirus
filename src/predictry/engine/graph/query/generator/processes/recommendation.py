@@ -2,6 +2,8 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.processes.base import ProcessQueryGeneratorBase
 from predictry.utils import timer
+from predictry.engine.models.resources.user import UserSchema
+from predictry.engine.models.resources.item import ItemSchema
 
 
 class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
@@ -29,8 +31,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oipt": "BOUGHT"
             }[x]
 
-            query.append("MATCH (u :%s:USER)-[r1 :%s]->(i :%s:ITEM {id: {item_id}})\n" % (domain, action(qtype), domain))
-            query.append("MATCH (u)-[r2 :%s]->(x :%s:ITEM)\n" % (action(qtype), domain))
+            query.append("MATCH (u :%s:%s)-[r1 :%s]->(i :%s:%s {id: {item_id}})\n" %
+                         (domain, UserSchema.get_label(), action(qtype), domain, ItemSchema.get_label()))
+            query.append("MATCH (u)-[r2 :%s]->(x :%s:%s)\n" %
+                         (action(qtype), domain, ItemSchema.get_label()))
             query.append("WHERE r1.session_id = r2.session_id AND x <> i ")
             c += 1
 
@@ -80,12 +84,14 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oip": "BOUGHT"
             }[x]
 
-            query.append("MATCH (i :%s:ITEM)\n" % domain)
+            query.append("MATCH (i :%s:%s)\n" %
+                         (domain, ItemSchema.get_label()))
             query.append("WHERE i.id = {item_id}\n")
             query.append("WITH i AS i\n")
             query.append("    MATCH (u :%s:USER)-[:%s]->(i)\n" % (domain, action(qtype)))
             query.append("    WITH i AS i, u AS u\n")
-            query.append("        MATCH (u)-[:%s]->(x :%s:ITEM)\n" % (action(qtype), domain))
+            query.append("        MATCH (u)-[:%s]->(x :%s:%s)\n" %
+                         (action(qtype), domain, ItemSchema.get_label()))
             query.append("        WHERE x <> i ")
             c += 1
 

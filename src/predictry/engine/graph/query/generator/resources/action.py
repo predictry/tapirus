@@ -2,6 +2,8 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
 from predictry.engine.models.resources.action import ActionSchema
+from predictry.engine.models.resources.user import UserSchema
+from predictry.engine.models.resources.item import ItemSchema
 
 
 class ActionQueryGenerator(ResourceQueryGeneratorBase):
@@ -38,10 +40,10 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
                 params[p] = args[p]
                 c += 1
 
-        query.append("MATCH (u :%s:USER)\n" % domain)
+        query.append("MATCH (u :%s:%s)\n" % (domain, UserSchema.get_label()))
         query.append("WHERE u.id = {user_id}\n")
         query.append("WITH u AS u\n")
-        query.append("  MATCH (i:%s:ITEM)\n" % domain)
+        query.append("  MATCH (i:%s:%s)\n" % (domain, ItemSchema.get_label()))
         query.append("  WHERE i.id = {item_id}\n")
         query.append("  WITH u AS u, i AS i\n")
         query.append("      CREATE (u)-[r :%s { %s }]->(i)\n" %
@@ -77,7 +79,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         if "id" in args:
             #single item GET
-            query.append("MATCH (u :%s:USER )-[r {id: {id}}]->(i :%s:ITEM )\n" % (domain, domain))
+            query.append("MATCH (u :%s:%s )-[r {id: {id}}]->(i :%s:%s )\n" %
+                         (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
             params["id"] = args["id"]
 
         else:
@@ -86,9 +89,11 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             s = lambda: "WHERE" if c == 0 else "AND"
 
             if "type" in args:
-                query.append("MATCH (u :%s:USER)-[r :%s]->(i :%s:ITEM)\n" % (domain, label(args["type"]), domain))
+                query.append("MATCH (u :%s:%s)-[r :%s]->(i :%s:%s)\n" %
+                             (domain, UserSchema.get_label(), label(args["type"]), domain, ItemSchema.get_label()))
             else:
-                query.append("MATCH (u :%s:USER)-[r]->(i :%s:ITEM)\n" % (domain, domain))
+                query.append("MATCH (u :%s:%s)-[r]->(i :%s:%s)\n" %
+                             (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
 
             if "occurred_before" in args:
                 query.append("%s r.timestamp < {time_ceiling} " % s())
@@ -148,7 +153,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :%s:ITEM)\n" % (domain, domain))
+        query.append("MATCH (u :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
+                     (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
         params["id"] = args["id"]
 
         properties = ActionSchema.get_properties()
@@ -186,7 +192,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:USER)-[r {id: {id}}]->(i :%s:ITEM)\n" % (domain, domain))
+        query.append("MATCH (u :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
+                     (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
         params["id"] = args["id"]
         query.append("WITH r, r.id AS id\n")
         query.append("DELETE r\n")

@@ -20,4 +20,4 @@ class ItemSchema:
 
     @staticmethod
     def get_label():
-        return ItemSchema.resource.upper()
+        return ItemSchema.resource
