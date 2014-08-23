@@ -11,7 +11,7 @@ class ActionSchema:
 
     @staticmethod
     def get_properties(identifiers=False):
-        p = ["timestamp", "ipAddress", "sessionId", "guid", "agent", "quantum", "cartId"]
+        p = ["timestamp", "ip_address", "session_id", "guid", "agent", "quantum", "cart_id"]
 
         if identifiers:
             p.extend(["id", "domain"])

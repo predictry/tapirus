@@ -101,16 +101,16 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                 params["locations"] = args["locations"].split(',')
                 c += 1
 
-            #priceFloor
-            if "priceFloor" in args:
-                query.append("%s i.price >= {priceFloor} " % s())
-                params["priceFloor"] = args["priceFloor"]
+            #price_floor
+            if "price_floor" in args:
+                query.append("%s i.price >= {price_floor} " % s())
+                params["price_floor"] = args["price_floor"]
                 c += 1
 
-                #priceCeiling
-            if "priceCeiling" in args:
-                query.append("%s i.price <= {priceCeiling} " % s())
-                params["priceCeiling"] = args["priceCeiling"]
+                #price_ceiling
+            if "price_ceiling" in args:
+                query.append("%s i.price <= {price_ceiling} " % s())
+                params["price_ceiling"] = args["price_ceiling"]
                 c += 1
 
             if c > 0:

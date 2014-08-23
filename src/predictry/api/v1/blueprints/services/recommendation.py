@@ -14,14 +14,14 @@ class RecommendationAPI(BlueprintBase):
     def post(self):
 
         reqparser = reqparse.RequestParser()
-        reqparser.add_argument('itemId', type=int, location='json')
+        reqparser.add_argument('item_id', type=int, location='json')
         #reqparser.add_argument('userId', type=int, location='json')
         reqparser.add_argument('type', type=str, location='json', required=True,
                                    choices=['oiv', 'oivt', 'oip', 'oipt'])
         reqparser.add_argument('fields', type=str, location='json')
         reqparser.add_argument('limit', type=int, location='json')
-        reqparser.add_argument('priceFloor', type=float, location='json')
-        reqparser.add_argument('priceCeiling', type=float, location='json')
+        reqparser.add_argument('price_floor', type=float, location='json')
+        reqparser.add_argument('price_ceiling', type=float, location='json')
         reqparser.add_argument('locations', type=str, location='json')
         reqparser.add_argument('category', type=str, location='json')
         reqparser.add_argument('subcategory', type=str, location='json')

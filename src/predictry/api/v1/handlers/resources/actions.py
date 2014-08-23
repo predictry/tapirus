@@ -61,7 +61,6 @@ class ActionHandler():
     @staticmethod
     def put(args):
 
-        print "int put..."
         args = text.encode(args)
 
         qgen = ActionQueryGenerator()
@@ -75,9 +74,7 @@ class ActionHandler():
         query, params = qgen.update(args)
         commit = True
 
-        print "string built"
         output, err = qexec.run(query, params, commit=commit)
-        print output, err
         if err:
             return err
 
@@ -110,14 +107,14 @@ class ActionHandler():
             Logger.warning(err)
             return err
 
-        for p in ["type", "userId", "itemId"]:
+        for p in ["type", "user_id", "item_id"]:
             if p not in args:
                 err = error('MissingParameter', ActionHandler.resource, p)
                 Logger.warning(err)
                 return err
 
         exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
-                                  properties={"id": args["itemId"]})
+                                  properties={"id": args["item_id"]})
         if err:
             return err
         if not exists:
@@ -126,7 +123,7 @@ class ActionHandler():
             return err
 
         exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
-                                  properties={"id": args["userId"]})
+                                  properties={"id": args["user_id"]})
         if err:
             return err
         if not exists:

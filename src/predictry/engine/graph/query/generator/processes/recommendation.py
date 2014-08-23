@@ -29,19 +29,19 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oipt": "BOUGHT"
             }[x]
 
-            query.append("MATCH (u :%s:USER)-[r1 :%s]->(i :%s:ITEM {id: {itemId}})\n" % (domain, action(qtype), domain))
+            query.append("MATCH (u :%s:USER)-[r1 :%s]->(i :%s:ITEM {id: {item_id}})\n" % (domain, action(qtype), domain))
             query.append("MATCH (u)-[r2 :%s]->(x :%s:ITEM)\n" % (action(qtype), domain))
-            query.append("WHERE r1.sessionId = r2.sessionId AND x <> i ")
+            query.append("WHERE r1.session_id = r2.session_id AND x <> i ")
             c += 1
 
-            if "priceFloor" in args:
-                query.append(" %s x.price >= {priceFloor} " % (sep()))
-                params["priceFloor"] = args["priceFloor"]
+            if "price_floor" in args:
+                query.append(" %s x.price >= {price_floor} " % (sep()))
+                params["price_floor"] = args["price_floor"]
                 c += 1
 
-            if "priceCeiling" in args:
-                query.append(" %s x.price <= {priceCeiling} " % (sep()))
-                params["priceCeiling"] = args["priceCeiling"]
+            if "price_ceiling" in args:
+                query.append(" %s x.price <= {price_ceiling} " % (sep()))
+                params["price_ceiling"] = args["price_ceiling"]
                 c += 1
 
             if "locations" in args:
@@ -65,11 +65,11 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 c += 1
 
             query.append("\n")
-            query.append("RETURN u.id AS collectionId, COLLECT(DISTINCT r1.sessionId) AS sessions, "
-                         "COLLECT(DISTINCT x.id) AS items, COUNT(x.id) AS basketSize\n")
+            query.append("RETURN u.id AS collection_id, COLLECT(DISTINCT r1.session_id) AS sessions, "
+                         "COLLECT(DISTINCT x.id) AS items, COUNT(x.id) AS basket_size\n")
             query.append("LIMIT {limit}\n")
 
-            params["itemId"] = args["itemId"]
+            params["item_id"] = args["item_id"]
             params["limit"] = 100
 
         #other items viewed
@@ -81,7 +81,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             }[x]
 
             query.append("MATCH (i :%s:ITEM)\n" % domain)
-            query.append("WHERE i.id = {itemId}\n")
+            query.append("WHERE i.id = {item_id}\n")
             query.append("WITH i AS i\n")
             query.append("    MATCH (u :%s:USER)-[:%s]->(i)\n" % (domain, action(qtype)))
             query.append("    WITH i AS i, u AS u\n")
@@ -89,14 +89,14 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             query.append("        WHERE x <> i ")
             c += 1
 
-            if "priceFloor" in args:
-                query.append(" %s x.price >= {priceFloor} " % (sep()))
-                params["priceFloor"] = args["priceFloor"]
+            if "price_floor" in args:
+                query.append(" %s x.price >= {price_floor} " % (sep()))
+                params["price_floor"] = args["price_floor"]
                 c += 1
 
-            if "priceCeiling" in args:
-                query.append(" %s x.price <= {priceCeiling} " % (sep()))
-                params["priceCeiling"] = args["priceCeiling"]
+            if "price_ceiling" in args:
+                query.append(" %s x.price <= {price_ceiling} " % (sep()))
+                params["price_ceiling"] = args["price_ceiling"]
                 c += 1
 
             if "locations" in args:
@@ -121,10 +121,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
             query.append("\n")
             query.append("        WITH i AS i, u AS u, x AS x\n")
-            query.append("        RETURN u.id AS collectionId, COLLECT(DISTINCT x.id) AS items\n")
+            query.append("        RETURN u.id AS collection_id, COLLECT(DISTINCT x.id) AS items\n")
             query.append("        LIMIT {limit}\n")
 
-            params["itemId"] = args["itemId"]
+            params["item_id"] = args["item_id"]
             params["limit"] = 100
 
         return ''.join(query), params

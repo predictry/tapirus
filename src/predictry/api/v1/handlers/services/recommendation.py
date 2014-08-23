@@ -20,8 +20,8 @@ class RecommendationHandler:
         args = text.encode(args)
 
         if args["type"] in ["oivt", "oipt", "oiv", "oip"]:
-            if "itemId" not in args:
-                err = error('MissingParameter', RecommendationHandler.resource, "itemId")
+            if "item_id" not in args:
+                err = error('MissingParameter', RecommendationHandler.resource, "item_id")
                 Logger.warning(err)
                 error
 
@@ -41,7 +41,7 @@ class RecommendationHandler:
 
             collections = []
             for record in output:
-                collections.append({"id": record["collectionId"],
+                collections.append({"id": record["collection_id"],
                                     "items": record["items"]})
 
             if collections:
@@ -69,7 +69,5 @@ class RecommendationHandler:
 
                 response["data"] = {}
                 response["data"]["items"] = most_popular_items
-
-        print response
 
         return payload.minify(response)

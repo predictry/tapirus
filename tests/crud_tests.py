@@ -18,8 +18,8 @@ class ItemTestCase(unittest.TestCase):
         self.item = dict(domain=self.domain, id=123456, name="TestItem",
                          brand="TestBrand", model="TestModel", tags="Test,Item",
                          description="This is a test item", price=1.0, category="TestItem",
-                         dateAdded=now, subcategory="SubCategory", startDate=now, endDate=now+60480000,
-                         itemURL="http://localhostL7474/", imageURL="images.google.com",
+                         date_added=now, subcategory="SubCategory", start_date=now, end_date=now+60480000,
+                         item_url="http://localhostL7474/", image_url="images.google.com",
                          locations="Singapore,Indonesia")
 
 
@@ -81,8 +81,8 @@ class ItemTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/items/%s/?appid=%s&domain=%s" % (self.item['id'], self.appid, self.domain)
 
-        payload = dict(category="UpdatedTestItem", imageURL="images.yahoo.com", tags="Updated,Test,Item",
-                       subcategory="UpdatedSubcategory", endDate=now+60480000*2, locations="Vermont,Singapore")
+        payload = dict(category="UpdatedTestItem", image_url="images.yahoo.com", tags="Updated,Test,Item",
+                       subcategory="UpdatedSubcategory", end_date=now+60480000*2, locations="Vermont,Singapore")
         data = json.dumps(payload, ensure_ascii=False)
         resp = self.app.put(url, data=data, content_type='application/json')
 
@@ -228,13 +228,13 @@ class ActionTestCase(unittest.TestCase):
         self.appid = "pongo"
         self.domain = "verve"
         self.action = dict(domain=self.domain, id=123456, type="view", timestamp=long(1800),
-                           ipAddress="192.168.24.0", sessionId="xYz47Q",
+                           ip_address="192.168.24.0", session_id="xYz47Q",
                            guid="someGUID", agent="Mozilla") #quantum for rated
         self.item = dict(domain=self.domain, id=123456, name="TestItem", brand="TestBrand", model="TestModel",
              tags="Test,Item", description="This is a test item",
-             price=1.0, category="TestItem", dateAdded=now,
-             itemURL="http://localhostL7474/",
-             imageURL="images.google.com")
+             price=1.0, category="TestItem", date_added=now,
+             item_url="http://localhostL7474/",
+             image_url="images.google.com")
         self.user = dict(domain=self.domain, id=123456, email="user@mail.domain.com")
 
 
@@ -294,7 +294,7 @@ class ActionTestCase(unittest.TestCase):
         url = "/predictry/api/v1/actions/?appid=%s&domain=%s" % (self.appid, self.domain)
 
 
-        data = json.dumps(dict(self.action.items() + dict(userId=123456, itemId=123456).items()),
+        data = json.dumps(dict(self.action.items() + dict(user_id=123456, item_id=123456).items()),
                           ensure_ascii=False)
         resp = self.app.post(url, data=data, content_type='application/json')
 

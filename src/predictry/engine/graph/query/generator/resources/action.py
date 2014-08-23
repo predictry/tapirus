@@ -19,14 +19,14 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         s = lambda: ", " if c > 0 else " "
 
-        params["userId"] = args["userId"]
-        params["itemId"] = args["itemId"]
+        params["user_id"] = args["user_id"]
+        params["item_id"] = args["item_id"]
 
         reltype = lambda x: {
             "view": "VIEWED",
             "buy": "BOUGHT",
             "rate": "RATED",
-            "addToCart": "ADDED_TO_CART"
+            "add_to_cart": "ADDED_TO_CART"
         }[x]
 
         c = 0
@@ -39,10 +39,10 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
                 c += 1
 
         query.append("MATCH (u :%s:USER)\n" % domain)
-        query.append("WHERE u.id = {userId}\n")
+        query.append("WHERE u.id = {user_id}\n")
         query.append("WITH u AS u\n")
         query.append("  MATCH (i:%s:ITEM)\n" % domain)
-        query.append("  WHERE i.id = {itemId}\n")
+        query.append("  WHERE i.id = {item_id}\n")
         query.append("  WITH u AS u, i AS i\n")
         query.append("      CREATE (u)-[r :%s { %s }]->(i)\n" %
                      (reltype(args["type"]), ''.join(str_properties)))
@@ -72,7 +72,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             "view": "VIEWED",
             "buy": "BOUGHT",
             "rate": "RATED",
-            "addToCart": "ADDED_TO_CART"
+            "add_to_cart": "ADDED_TO_CART"
         }[x]
 
         if "id" in args:
@@ -90,13 +90,13 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             else:
                 query.append("MATCH (u :%s:USER)-[r]->(i :%s:ITEM)\n" % (domain, domain))
 
-            if "occurredBefore" in args:
-                query.append("%s r.timestamp < {timeCeiling} " % s())
-                params["timeCeiling"] = args["occurredBefore"]
+            if "occurred_before" in args:
+                query.append("%s r.timestamp < {time_ceiling} " % s())
+                params["time_ceiling"] = args["occurred_before"]
                 c += 1
-            if "occurredAfter" in args:
+            if "occurred_after" in args:
                 query.append("%s r.timestamp > {floor} " % s())
-                params["timeFloor"] = args["occurredAfter"]
+                params["time_floor"] = args["occurred_after"]
                 c += 1
 
         c = 0
@@ -174,8 +174,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 

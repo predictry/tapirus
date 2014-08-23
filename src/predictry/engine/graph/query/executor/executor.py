@@ -2,10 +2,11 @@ __author__ = 'guilherme'
 
 from py2neo import cypher
 from py2neo.packages.httpstream.http import SocketError
-
+from datetime import datetime
 from predictry.engine.graph.query.executor.base import QueryExecutorBase
 from predictry.utils.helpers import text
 from predictry.utils.log.logger import Logger
+
 
 url = 'http://localhost:7474/db/data/'
 
@@ -17,6 +18,7 @@ class QueryExecutor(QueryExecutorBase):
 
     def run(self, query=None, params=None, batch=None, commit=False):
 
+        #start_session = datetime.now()
         try:
             session = cypher.Session(url)
             tx = session.create_transaction()
@@ -24,10 +26,19 @@ class QueryExecutor(QueryExecutorBase):
             Logger.error(err)
             return None, dict(error="Internal server error",
                             message="There was an error with internal server processes", status=500)
+        #end_session = datetime.now()
+
+        #print "creating session took", (end_session - start_session).microseconds/1000.0, "ms"
+
+        #start_encode_query = datetime.now()
 
         query = text.encode(query)
 
-        print "connection is set..."
+        #end_encode_query = datetime.now()
+
+        #print "encoding query took", (end_encode_query-start_encode_query).microseconds/1000.0, "ms"
+
+        #start_exec_query = datetime.now()
 
         if query is not None:
             tx.append(query, params)
@@ -36,6 +47,12 @@ class QueryExecutor(QueryExecutorBase):
             if commit:
                 tx.commit()
 
+            #end_exec_query = datetime.now()
+
+            #print "executing query took", (end_exec_query-start_exec_query).microseconds/1000.0, "ms"
+
+            #start_parse_query_result = datetime.now()
+
             records = []
             for row in result:
                 record = {}
@@ -43,6 +60,10 @@ class QueryExecutor(QueryExecutorBase):
                 for i in range(0, len(row.columns)):
                     record[row.columns[i]] = row.values[i]
                 records.append(record)
+
+            #end_parse_query_result = datetime.now()
+
+            #print "parsing query result took", (end_parse_query_result-start_parse_query_result).microseconds/1000.0, "ms"
 
             return records, None
 

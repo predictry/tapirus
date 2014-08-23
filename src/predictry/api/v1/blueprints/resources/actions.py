@@ -40,12 +40,12 @@ class ActionAPI(BlueprintBase):
 
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('timestamp', type=float, location='json')
-        reqparser.add_argument('ipAddress', type=str, location='json')
-        reqparser.add_argument('sessionId', type=str, location='json')
+        reqparser.add_argument('ip_address', type=str, location='json')
+        reqparser.add_argument('session_id', type=str, location='json')
         reqparser.add_argument('guid', type=str, location='json')
         reqparser.add_argument('agent', type=str, location='json')
         reqparser.add_argument('quantum', type=float, location='json')
-        reqparser.add_argument('cartId', type=int, location='json')
+        reqparser.add_argument('cart_id', type=int, location='json')
 
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
@@ -58,8 +58,6 @@ class ActionAPI(BlueprintBase):
                 args[k] = v
 
         args["id"] = id
-
-        print args
 
         err = validate_request(args)
         if err:
@@ -102,17 +100,17 @@ class ActionListAPI(BlueprintBase):
 
         reqparser = reqparse.RequestParser()
         reqparser.add_argument('id', type=int, location='json', required=True)
-        reqparser.add_argument('userId', type=int, location='json', required=True)
-        reqparser.add_argument('itemId', type=int, location='json', required=True)
-        reqparser.add_argument('type', type=str, location='json', choices=['view', 'buy', 'rate', 'addToCart'],
+        reqparser.add_argument('user_id', type=int, location='json', required=True)
+        reqparser.add_argument('item_id', type=int, location='json', required=True)
+        reqparser.add_argument('type', type=str, location='json', choices=['view', 'buy', 'rate', 'add_to_cart'],
                                required=True)
         reqparser.add_argument('timestamp', type=long, location='json')
-        reqparser.add_argument('ipAddress', type=str, location='json')
-        reqparser.add_argument('sessionId', type=str, location='json')
+        reqparser.add_argument('ip_address', type=str, location='json')
+        reqparser.add_argument('session_id', type=str, location='json')
         reqparser.add_argument('guid', type=str, location='json')
         reqparser.add_argument('agent', type=str, location='json')
         reqparser.add_argument('quantum', type=float, location='json')
-        reqparser.add_argument('cartId', type=int, location='json')
+        reqparser.add_argument('cart_id', type=int, location='json')
 
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])
@@ -138,9 +136,9 @@ class ActionListAPI(BlueprintBase):
         reqparser.add_argument('fields', type=str, location='args')
         reqparser.add_argument('limit', type=int, location='args')
         reqparser.add_argument('offset', type=int, location='args')
-        reqparser.add_argument('type', type=str, location='args', choices=['view', 'buy', 'rate', 'addToCart'])
-        reqparser.add_argument('occurredBefore', type=long, location='args')
-        reqparser.add_argument('occurredAfter', type=long, location='args')
+        reqparser.add_argument('type', type=str, location='args', choices=['view', 'buy', 'rate', 'add_to_cart'])
+        reqparser.add_argument('occurred_before', type=long, location='args')
+        reqparser.add_argument('occurred_after', type=long, location='args')
 
         reqparser.add_argument('appid', type=str, location='args', required=True,
                                choices=['pongo'])

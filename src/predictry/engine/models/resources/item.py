@@ -11,7 +11,7 @@ class ItemSchema:
     @staticmethod
     def get_properties(identifiers=False):
         p = ["name", "brand", "model", "tags", "description", "price", "category", "subcategory",
-             "dateAdded", "itemURL", "imageURL", "startDate", "endDate", "locations"]
+             "date_added", "item_url", "image_url", "start_date", "end_date", "locations"]
 
         if identifiers:
             p.extend(["id", "domain"])
