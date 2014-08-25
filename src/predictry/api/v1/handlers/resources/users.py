@@ -46,7 +46,7 @@ class UserHandler():
         return payload.minify(response)
 
     @staticmethod
-    def put(args):
+    def put(args, data={}):
 
         args = text.encode(args)
 
@@ -67,7 +67,7 @@ class UserHandler():
             Logger.warning(err)
             return err
 
-        query, params = qgen.update(args)
+        query, params = qgen.update(args, data)
         commit = True
 
         output, err = qexec.run(query, params, commit=commit)
@@ -88,20 +88,20 @@ class UserHandler():
         return payload.minify(response)
 
     @staticmethod
-    def post(args):
+    def post(args, data={}):
 
         args = text.encode(args)
 
         qgen = UserQueryGenerator()
         qexec = QueryExecutor()
 
-        if "id" not in args:
+        if "id" not in data:
             err = error('ResourceIdNotProvided', UserHandler.resource)
             Logger.warning(err)
             return err
 
         exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
-                                  properties={"id": args["id"]})
+                                  properties={"id": data["id"]})
         if err:
             return err
         if exists:
@@ -109,7 +109,7 @@ class UserHandler():
             Logger.warning(err)
             return err
 
-        query, params = qgen.create(args)
+        query, params = qgen.create(args, data)
         commit = True
 
         output, err = qexec.run(query, params, commit=commit)

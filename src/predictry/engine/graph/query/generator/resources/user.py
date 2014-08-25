@@ -8,7 +8,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def create(self, args):
+    def create(self, args, data={}):
 
         domain = args["domain"]
 
@@ -20,21 +20,21 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         c = 0
         s = lambda: ", " if c > 0 else " "
-        for p in UserSchema.get_properties(True):
-            if p in args:
-                strproperties.append("%s %s : {%s} " % (s(), p, p))
-                if type(args[p]) is str:
-                    args[p] = args[p].strip()
-                params[p] = args[p]
-                c += 1
+
+        for k, v in data.iteritems():
+            strproperties.append("%s %s : {%s} " % (s(), k, k))
+            if type(data[k]) is str:
+                data[k] = data[k].strip()
+            params[k] = data[k]
+            c += 1
 
         query.append("CREATE (u %s { %s })\n" % (strlabels, ''.join(strproperties)))
 
         query.append("RETURN ")
 
         c = 0
-        for p in UserSchema.get_properties(True):
-            query.append("%s u.%s AS %s" % (s(), p, p))
+        for k, v in data.iteritems():
+            query.append("%s u.%s AS %s" % (s(), k, k))
             c += 1
 
         query.append("\n")
@@ -71,10 +71,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
                 query.append("%s u.%s AS %s " % (s(), field, field))
                 c += 1
         else:
-            c = 0
-            for p in UserSchema.get_properties(True):
-                query.append("%s u.%s AS %s" % (s(), p, p))
-                c += 1
+            query.append(" u.id AS id ")
 
         query.append("\n")
 
@@ -97,7 +94,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         return ''.join(query), params
 
-    def update(self, args):
+    def update(self, args, data={}):
 
         domain = args["domain"]
 
@@ -110,11 +107,11 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         c = 0
         s = lambda: "SET" if c == 0 else ","
-        for p in UserSchema.get_properties():
-            if p in args:
-                query.append("%s u.%s = {%s} " % (s(), p, p))
-                params[p] = args[p]
-                c += 1
+
+        for k, v in data.iteritems():
+            query.append("%s u.%s = {%s} " % (s(), k, k))
+            params[k] = data[k]
+            c += 1
 
         query.append("\n")
 
@@ -122,8 +119,8 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         c = 0
         s = lambda: ", " if c > 0 else " "
-        for p in UserSchema.get_properties(True):
-            query.append("%s u.%s AS %s" % (s(), p, p))
+        for k, v in data.iteritems():
+            query.append("%s u.%s AS %s" % (s(), k, k))
             c += 1
 
         query.append("\n")

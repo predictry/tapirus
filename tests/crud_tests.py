@@ -7,7 +7,8 @@ from predictry import server
 
 now = long(time.time().real)
 
-class ItemTestCase(unittest.TestCase):
+#class ItemTestCase(unittest.TestCase):
+class ItemTestCase():
 
     def setUp(self):
         assert type(now) is long
@@ -126,7 +127,8 @@ class UserTestCase(unittest.TestCase):
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.user = dict(domain=self.domain, id=123456, email="user@mail.domain.com")
+        self.user = dict(domain=self.domain, id=123456,
+                         email="user@mail.domain.com", schools=["School A", "School B"])
 
 
     def tearDown(self):
@@ -151,17 +153,17 @@ class UserTestCase(unittest.TestCase):
         user = content['data']['users'][0]
 
         for k in self.user:
-            if type(user[k]) is list:
-                text = ','.join(user[k])
-                assert self.user[k] == text
-            else:
-                assert self.user[k] == user[k]
+            #if type(user[k]) is list:
+            #    text = ','.join(user[k])
+            #    assert self.user[k] == text
+            #else:
+            assert self.user[k] == user[k]
 
     def test_2_get_user(self):
 
         print "RETRIEVE USER"
 
-        url = "/predictry/api/v1/users/%s/?appid=%s&domain=%s" % (self.user['id'], self.appid, self.domain)
+        url = "/predictry/api/v1/users/%s/?appid=%s&domain=%s&fields=id,domain,email,schools" % (self.user['id'], self.appid, self.domain)
 
         resp = self.app.get(url)
 
@@ -174,12 +176,14 @@ class UserTestCase(unittest.TestCase):
 
         user = content['data']['users'][0]
 
+        print user
+
         for k in self.user:
-            if type(user[k]) is list:
-                text = ','.join(user[k])
-                assert self.user[k] == text
-            else:
-                assert self.user[k] == user[k]
+            #if type(user[k]) is list:
+            #    text = ','.join(user[k])
+            #    assert self.user[k] == text
+            #else:
+            assert self.user[k] == user[k]
 
     def test_3_update_user(self):
 
@@ -187,7 +191,7 @@ class UserTestCase(unittest.TestCase):
 
         url = "/predictry/api/v1/users/%s/?appid=%s&domain=%s" % (self.user['id'], self.appid, self.domain)
 
-        payload = dict(email="updated@mail.domain.com")
+        payload = dict(email="updated@mail.domain.com", schools=["School C", "School D"])
         data = json.dumps(payload, ensure_ascii=False)
         resp = self.app.put(url, data=data, content_type='application/json')
 
@@ -196,11 +200,11 @@ class UserTestCase(unittest.TestCase):
 
         print content
         for k in payload:
-            if type(user[k]) is list:
-                text = ','.join(user[k])
-                assert payload[k] == text
-            else:
-                assert payload[k] == user[k]
+            #if type(user[k]) is list:
+            #    text = ','.join(user[k])
+            #    assert payload[k] == text
+            #else:
+            assert payload[k] == user[k]
 
     def test_4_delete_user(self):
 
@@ -219,7 +223,8 @@ class UserTestCase(unittest.TestCase):
         for k in content['data']['users'][0]:
             assert content['data']['users'][0][k] == self.user[k]
 
-class ActionTestCase(unittest.TestCase):
+#class ActionTestCase(unittest.TestCase):
+class ActionTestCase():
 
     def setUp(self):
         assert type(now) is long

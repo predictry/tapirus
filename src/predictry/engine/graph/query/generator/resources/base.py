@@ -6,7 +6,7 @@ class ResourceQueryGeneratorBase(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def create(self, args):
+    def create(self, args, data=None):
 
         return
 
@@ -16,7 +16,7 @@ class ResourceQueryGeneratorBase(object):
         return
 
     @abc.abstractmethod
-    def update(self, args):
+    def update(self, args, data=None):
 
         return
 
