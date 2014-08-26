@@ -4,7 +4,7 @@ from predictry.api.v1.errors import error
 from predictry.utils.log.logger import Logger
 import re
 
-NEO_VAR_REGEX = "^[a-zA-Z]{1,}([a-zA-Z0-9]{0,})?$"
+NEO_VAR_REGEX = "^[a-zA-Z]{1,}(_){0,}([a-zA-Z0-9]{0,})?$"
 POSITIVE_INTEGER_REGEX = "^\d+$"
 NUMBER_REGEX = "(?:\d*\.)?\d+"
 
@@ -15,7 +15,7 @@ re.compile(POSITIVE_INTEGER_REGEX)
 re.compile(NUMBER_REGEX)
 
 
-def validate_request(args, data=None):
+def parse_params(args, data=None):
     if 'appid' not in args:
         return error('MissingParameter', property='appid')
     if not args['appid']:
@@ -24,6 +24,8 @@ def validate_request(args, data=None):
         return error('MissingParameter', property='domain')
     if not args['domain']:
         return error('UndefinedParameter', property='domain')
+
+    print args
 
     #domain
     if not re.match(NEO_VAR_REGEX, args['domain']):
@@ -51,6 +53,8 @@ def validate_request(args, data=None):
             Logger.info(err)
             return err
 
+        args["limit"] = int(args["limit"])
+
     #offset
     if "offset" in args:
         if not re.match(POSITIVE_INTEGER_REGEX, args["offset"]):
@@ -58,6 +62,8 @@ def validate_request(args, data=None):
                                                                        % POSITIVE_INTEGER_REGEX)
             Logger.info(err)
             return err
+
+        args["offset"] = int(args["offset"])
 
     if data and type(data) is dict:
         if "fields" in data:
@@ -77,6 +83,7 @@ def validate_request(args, data=None):
                 Logger.info(err)
                 return err
 
+            data["limit"] = int(data["limit"])
 
         if "offset" in data:
             if not re.match(POSITIVE_INTEGER_REGEX, data["offset"]):
@@ -84,6 +91,8 @@ def validate_request(args, data=None):
                                                                            % POSITIVE_INTEGER_REGEX)
                 Logger.info(err)
                 return err
+
+            data["offset"] = int(data["offset"])
 
     #if data:
     #    for k, v in data.iteritems():

@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 from predictry.api.v1.handlers.resources.users import UserHandler
 from predictry.api.v1.blueprints.blueprint import BlueprintBase
-from predictry.api.v1.request import validate_request
+from predictry.api.v1.request import parse_params
 from flask_restful import request
 
 
@@ -15,7 +15,7 @@ class UserAPI(BlueprintBase):
 
         args = dict(request.values.iteritems())
 
-        err = validate_request(args)
+        err = parse_params(args)
 
         if err:
             return err, err['status']
@@ -29,13 +29,12 @@ class UserAPI(BlueprintBase):
     def put(self, id):
 
         args = dict(request.values.iteritems())
+        data = request.json
 
-        err = validate_request(args)
+        err = parse_params(args, data)
 
         if err:
             return err, err['status']
-
-        data = request.json
 
         args["id"] = id
 
@@ -47,7 +46,7 @@ class UserAPI(BlueprintBase):
 
         args = dict(request.values.iteritems())
 
-        err = validate_request(args)
+        err = parse_params(args)
 
         if err:
             return err, err['status']
@@ -66,13 +65,12 @@ class UserListAPI(BlueprintBase):
     def post(self):
 
         args = dict(request.values.iteritems())
+        data = request.json
 
-        err = validate_request(args)
+        err = parse_params(args, data)
 
         if err:
             return err, err['status']
-
-        data = request.json
 
         response = UserHandler.post(args, data)
 
@@ -82,7 +80,7 @@ class UserListAPI(BlueprintBase):
 
         args = dict(request.values.iteritems())
 
-        err = validate_request(args)
+        err = parse_params(args)
 
         if err:
             return err, err['status']
