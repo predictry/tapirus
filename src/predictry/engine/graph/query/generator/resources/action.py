@@ -89,7 +89,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query.append("WITH i, s, b\n")
 
         if connect_flags["user"]:
-            query.append("MATCH (u :%s:%s {id:{user_id}})")
+            query.append("MATCH (u :%s:%s {id:{user_id}})\n"
+                         % (domain, UserSchema.get_label()))
             query.append("WITH i, s, b, u\n")
 
         #connection

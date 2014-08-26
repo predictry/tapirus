@@ -75,7 +75,7 @@ class ActionListAPI(BlueprintBase):
 
         data = request.json
 
-        response = post(args, data)
+        response = ActionHandler.post(args, data)
 
         return response, response['status']
 

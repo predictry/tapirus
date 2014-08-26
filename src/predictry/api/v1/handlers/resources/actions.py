@@ -132,69 +132,69 @@ class ActionHandler():
 
         return payload.minify(response)
 
+    @staticmethod
+    def post(args, data={}):
 
-def post(args, data={}):
+        args = text.encode(args)
 
-    args = text.encode(args)
-
-    if "id" not in data:
-        err = error('ResourceIdNotProvided', ActionHandler.resource)
-        Logger.warning(err)
-        return err
-
-    qgen = ActionQueryGenerator()
-    qexec = QueryExecutor()
-
-    for p in ["type", "browser_id", "session_id", "item_id"]:
-        if p not in data:
-            err = error('MissingParameter', ActionHandler.resource, p)
+        if "id" not in data:
+            err = error('ResourceIdNotProvided', ActionHandler.resource)
             Logger.warning(err)
             return err
 
-    #only the item must exist
+        qgen = ActionQueryGenerator()
+        qexec = QueryExecutor()
 
-    exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
-                              properties={"id": data["item_id"]})
-    if err:
-        return err
-    if not exists:
-        err = error('ResourceDoesNotExist', e='item')
-        Logger.warning(err)
-        return err
+        for p in ["type", "browser_id", "session_id", "item_id"]:
+            if p not in data:
+                err = error('MissingParameter', ActionHandler.resource, p)
+                Logger.warning(err)
+                return err
 
-    #if user_id is given
+        #only the item must exist
 
-    if "user_id" in data:
-        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
-                                  properties={"id": data["user_id"]})
+        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
+                                  properties={"id": data["item_id"]})
         if err:
             return err
         if not exists:
-            err = error('ResourceDoesNotExist', e='user')
+            err = error('ResourceDoesNotExist', e='item')
             Logger.warning(err)
             return err
 
-    query, params = qgen.create(args, data)
-    commit = True
+        #if user_id is given
 
-    output, err = qexec.run(query, params, commit=commit)
+        if "user_id" in data:
+            exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
+                                      properties={"id": data["user_id"]})
+            if err:
+                return err
+            if not exists:
+                err = error('ResourceDoesNotExist', e='user')
+                Logger.warning(err)
+                return err
 
-    if err:
-        return err
+        query, params = qgen.create(args, data)
+        commit = True
 
-    response = {"data": None, "message": None, "error": None, "status": 200}
+        output, err = qexec.run(query, params, commit=commit)
 
-    if len(output) == 0:
-        err = error('Unknown')
-        Logger.warning(err)
-        return err
+        if err:
+            return err
 
-    response["data"] = {}
+        response = {"data": None, "message": None, "error": None, "status": 200}
 
-    for action in output:
-        if "type" in action:
-            action['type'] = ActionHandler.type(action['type'])
+        if len(output) == 0:
+            err = error('Unknown')
+            Logger.warning(err)
+            return err
 
-    response["data"]["actions"] = output
+        response["data"] = {}
 
-    return payload.minify(response)
+        for action in output:
+            if "type" in action:
+                action['type'] = ActionHandler.type(action['type'])
+
+        response["data"]["actions"] = output
+
+        return payload.minify(response)
