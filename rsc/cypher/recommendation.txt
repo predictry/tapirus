@@ -1,0 +1,31 @@
+#params are based on example data at ../data/sample.txt
+#other items viewed
+
+MATCH (i:verve:item {id:5})
+WITH i
+MATCH (s:verve:session)-[r :VIEW]->(i)
+WITH i,s
+MATCH (s)-[r :BY]->(u:verve:user)
+WITH i,s,u
+MATCH (s2 :verve:session)-[r :BY]->(u)
+WITH i,s,u,s2
+MATCH (s2)-[r :VIEW]->(x :verve:item)
+WHERE x <> i
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+#LIMIT 100
+#RETURN s2.id AS collection_id, COLLECT(DISTINCT x.id) AS items
+#LIMIT 100
+
+#other items viewed together
+MATCH (i:verve:item {id:5})
+WITH i
+MATCH (s:verve:session)-[r :VIEW]->(i)
+WITH i,s
+MATCH (s)-[r :VIEW]->(x:verve:item)
+WHERE x <> i
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5

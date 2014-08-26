@@ -11,7 +11,7 @@ class RecommendationTestCase(unittest.TestCase):
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.appid = "pongo"
-        self.domain = "redmart"
+        self.domain = "verve"
 
     def tearDown(self):
         pass
@@ -20,12 +20,13 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: OIV"
 
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" \
+              % (self.appid, self.domain)
 
-        data = json.dumps(dict(item_id=9095, type="oiv", appid=self.appid,
-                               domain=self.domain, fields="price,description",
-                               priceFloor=10), ensure_ascii=False)
-        resp = post(url, data=data, content_type='application/json')
+        data = json.dumps(dict(item_id=6, type="oiv", fields="brand,model"),
+                          ensure_ascii=False)
+
+        resp = self.app.post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 
@@ -35,42 +36,20 @@ class RecommendationTestCase(unittest.TestCase):
         assert resp.status_code == 200
 
         #item = content['data']['items'][0]
-        #for k in self.item:
-        #    if type(item[k]) is list:
-        #        text = ','.join(item[k])
-        #        assert self.item[k] == text
-        #    else:
-        #        assert self.item[k] == item[k]
+        #for k in ["id", "matches"]:
+        #    assert item[k]
 
-
-    def test_2_oip(self):
-
-        print "RECOMMENDATION: OIP"
-
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
-
-        data = json.dumps(dict(item_id=9095, type="oip", appid=self.appid,
-                               domain=self.domain, fields="price,description"),
-                          ensure_ascii=False)
-        resp = post(url, data=data, content_type='application/json')
-
-        content = json.loads(resp.data)
-
-        print content
-        assert 'status' in content
-        assert content['status'] == resp.status_code
-        assert resp.status_code == 200
-
-    def test_3_oivt(self):
+    def test_2_oivt(self):
 
         print "RECOMMENDATION: OIVT"
 
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" \
+              % (self.appid, self.domain)
 
-        data = json.dumps(dict(item_id=9095, type="oivt", appid=self.appid,
-                               domain=self.domain, fields="price,description"),
+        data = json.dumps(dict(item_id=6, type="oivt", fields="brand,model,size"),
                           ensure_ascii=False)
-        resp = post(url, data=data, content_type='application/json')
+
+        resp = self.app.post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 
@@ -79,20 +58,6 @@ class RecommendationTestCase(unittest.TestCase):
         assert content['status'] == resp.status_code
         assert resp.status_code == 200
 
-    def test_4_oipt(self):
-
-        print "RECOMMENDATION: OIPT"
-
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s" % (self.appid, self.domain)
-
-        data = json.dumps(dict(item_id=9095, type="oipt", appid=self.appid,
-                               domain=self.domain, fields="price,description"),
-                          ensure_ascii=False)
-        resp = post(url, data=data, content_type='application/json')
-
-        content = json.loads(resp.data)
-
-        print content
-        assert 'status' in content
-        assert content['status'] == resp.status_code
-        assert resp.status_code == 200
+        #item = content['data']['items'][0]
+        #for k in ["id", "matches"]:
+        #    assert item[k]

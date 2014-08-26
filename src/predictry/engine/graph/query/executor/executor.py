@@ -2,7 +2,6 @@ __author__ = 'guilherme'
 
 from py2neo import cypher
 from py2neo.packages.httpstream.http import SocketError
-from datetime import datetime
 from predictry.engine.graph.query.executor.base import QueryExecutorBase
 from predictry.utils.helpers import text
 from predictry.utils.log.logger import Logger

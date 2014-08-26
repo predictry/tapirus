@@ -11,7 +11,7 @@ class BrowserSchema:
     @staticmethod
     def get_properties(identifiers=False):
 
-        p = {}
+        p = []
 
         if identifiers:
             p.extend(["id", "domain"])

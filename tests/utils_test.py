@@ -15,12 +15,12 @@ class UtilsTest(unittest.TestCase):
     def test_text_decoding(self):
 
         payload = dict(
-            people = dict(
+            people=dict(
                 name="Ada",
                 profession=["professor", "mathematician", "programmer"]
             ),
             places=["Budapest", "New Dehli", "Mumbai", None],
-            time = ("h", "m", "s")
+            time=("h", "m", "s")
         )
 
         translated = text.encode(payload)

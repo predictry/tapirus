@@ -8,7 +8,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def create(self, args, data={}):
+    def create(self, args, data):
 
         domain = args["domain"]
 
@@ -88,7 +88,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         return ''.join(query), params
 
-    def update(self, args, data={}):
+    def update(self, args, data):
 
         domain = args["domain"]
 

@@ -1,0 +1,25 @@
+#browsers 1,2,3
+#users 1,2
+#sessions 1,2,3,4
+#items 1,2,3,4,5,6,7,8
+
+CREATE (b1 :verve:browser {id:1}), (b2 :verve:browser {id:2}), (b3 :verve:browser {id:3})
+CREATE (u1 :verve:user {id:1}), (u2 :verve:user {id:2})
+CREATE (s1 :verve:session {id:1}), (s2 :verve:session {id:2}), (s3 :verve:session {id:3}), (s4 :verve:session {id:4})
+CREATE (i1 :verve:item {id:1, brand:"brand A", model: "model"}), (i2 :verve:item {id:2, brand:"brand A", model: "model"})
+CREATE (i3 :verve:item {id:3, brand:"brand B", model: "model"}), (i4 :verve:item {id:4, brand:"brand A", model: "model"})
+CREATE (i5 :verve:item {id:5, brand:"brand B", model: "model"}), (i6 :verve:item {id:6, brand:"brand A", model: "model"})
+CREATE (i7 :verve:item {id:7, brand:"brand B", model: "model"}), (i8 :verve:item {id:8, brand:"brand A", model: "model"})
+CREATE (i9 :verve:item {id:9, brand:"brand B"})
+
+
+CREATE (s1)-[:VIEW]->(i1), (s1)-[:VIEW]->(i2)
+CREATE (s2)-[:VIEW]->(i3), (s2)-[:VIEW]->(i4), (s2)-[:VIEW]->(i5), (s2)-[:VIEW]->(i6)
+CREATE (s3)-[:VIEW]->(i5), (s3)-[:VIEW]->(i6), (s3)-[:VIEW]->(i7)
+CREATE (s4)-[:VIEW]->(i8), (s4)-[:VIEW]->(i9)
+
+CREATE (s1)-[:BY]->(u1), (s2)-[:BY]->(u1)
+CREATE (s3)-[:BY]->(u2), (s4)-[:BY]->(u2)
+
+CREATE (s1)-[:ON]->(b1), (s2)-[:ON]->(b1)
+CREATE (s3)-[:ON]->(b2), (s4)-[:ON]->(b3)

@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 from predictry.api.v1.blueprints.blueprint import BlueprintBase
 from predictry.api.v1.request import validate_request
-from flask_restful import reqparse, request
+from flask_restful import request
 
 
 class TodoAPI(BlueprintBase):

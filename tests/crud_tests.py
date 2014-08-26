@@ -283,7 +283,8 @@ class ActionTestCase(unittest.TestCase):
 
         print "RETRIEVE ACTION"
 
-        url = "/predictry/api/v1/actions/%s/?appid=%s&domain=%s&fields=id,timestamp,guid,ip_address,agent" % (self.action['id'], self.appid, self.domain)
+        url = "/predictry/api/v1/actions/%s/?appid=%s&domain=%s&fields=id,timestamp,guid,ip_address,agent" \
+              % (self.action['id'], self.appid, self.domain)
 
         resp = self.app.get(url)
 

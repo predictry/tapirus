@@ -12,6 +12,6 @@ class BlueprintBase(Resource):
         if request:
             method = str(request.method)
             full_path = str(request.full_path)
-            remote_addr = str(request.remote_addr)
-            Logger.info(method + " [" + full_path + "] from [" + remote_addr + "]")
+            remote_address = str(request.remote_addr)
+            Logger.info(method + " [" + full_path + "] from [" + remote_address + "]")
         super(BlueprintBase, self).__init__()

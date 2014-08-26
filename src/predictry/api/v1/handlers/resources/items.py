@@ -46,7 +46,7 @@ class ItemHandler():
         return payload.minify(response)
 
     @staticmethod
-    def put(args, data={}):
+    def put(args, data):
 
         args = text.encode(args)
         data = text.encode(data)
@@ -89,7 +89,7 @@ class ItemHandler():
         return payload.minify(response)
 
     @staticmethod
-    def post(args, data={}):
+    def post(args, data):
 
         args = text.encode(args)
         data = text.encode(data)

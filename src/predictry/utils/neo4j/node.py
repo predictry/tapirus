@@ -4,8 +4,12 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 
-#TODO: [LATER][R: py2neo] create utility (helper) functions for nodes (exists, get labels, has label, get properties, etc)
-#TODO: [LATER][R: py2neo] look into the viability of using py2neo instead of cypher( e.g. find on takes 1 label and 1 parameter to match)
+#TODO: [LATER][R: py2neo] create utility (helper) functions for nodes
+# (exists, get labels, has label, get properties, etc)
+#TODO: [LATER][R: py2neo] look into the viability of using py2neo instead of cypher
+# ( e.g. find on takes 1 label and 1 parameter to match)
+
+
 def exists(labels, properties):
 
     l = []
@@ -54,7 +58,7 @@ def get_node_properties(ids, properties, label, domain):
     q.append("WHERE x.id IN {ids}\n")
     q.append("RETURN x.id AS id")
 
-    for p in properties:
+    for p in [x for x in properties if x != "id"]:
         q.append(", x.%s AS %s" % (p, p))
 
     query = text.encode(''.join(q))
@@ -69,7 +73,3 @@ def get_node_properties(ids, properties, label, domain):
         return None, err
     else:
         return output, err
-
-
-#print get_node_properties([5550], ["price"], "item", "REDMART")
-

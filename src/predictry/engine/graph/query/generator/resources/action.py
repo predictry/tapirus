@@ -1,7 +1,6 @@
 __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
-from predictry.engine.models.resources.action import ActionSchema
 from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.models.resources.session import SessionSchema
 from predictry.engine.models.resources.browser import BrowserSchema
@@ -13,7 +12,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def create(self, args, data={}):
+    def create(self, args, data):
 
         domain = args["domain"]
 
@@ -180,7 +179,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         return ''.join(query), params
 
-    def update(self, args, data={}):
+    def update(self, args, data):
 
         domain = args["domain"]
 
