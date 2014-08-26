@@ -115,8 +115,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -150,18 +150,14 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         s = lambda: ", " if c > 0 else " "
 
         #RETURN
+        query.append("RETURN r.id AS id")
+
         if "fields" in args:
-
-            query.append("RETURN ")
-            fields = args["fields"].split(',')
+            fields = [x for x in args["fields"].split(',') if x not in ["id", "type"]]
             for field in fields:
-                query.append("%s r.%s AS %s " % (s(), field, field))
-                c += 1
-        else:
-            query.append("RETURN r.id AS id")
-            c += 1
+                query.append(", r.%s AS %s " % (field, field))
 
-        query.append("%s type(r) AS type " % (s()))
+        query.append(", type(r) AS type ")
         query.append("\n")
 
         #LIMIT/OFFSET
@@ -179,8 +175,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -217,8 +213,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -236,7 +232,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query.append("DELETE r\n")
         query.append("RETURN id, type(r) AS type\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params

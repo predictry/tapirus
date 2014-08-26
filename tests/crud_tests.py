@@ -8,8 +8,7 @@ from predictry import server
 now = long(time.time().real)
 
 
-#class ItemTestCase(unittest.TestCase):
-class ItemTestCase():
+class ItemTestCase(unittest.TestCase):
 
     def setUp(self):
         assert type(now) is long
@@ -107,8 +106,7 @@ class ItemTestCase():
             assert content['data']['items'][0][k] == self.item[k]
 
 
-#class UserTestCase(unittest.TestCase):
-class UserTestCase():
+class UserTestCase(unittest.TestCase):
 
     def setUp(self):
         assert type(now) is long

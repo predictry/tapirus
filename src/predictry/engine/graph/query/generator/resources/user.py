@@ -50,8 +50,6 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        s = lambda: ", " if c > 0 else " "
-
         if "id" in args:
             query.append("MATCH (u :%s:%s { id : {id}})\n" %
                          (domain, UserSchema.get_label()))
@@ -62,16 +60,12 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
                          (domain, UserSchema.get_label()))
 
         #RETURN
-        query.append("RETURN ")
+        query.append("RETURN u.id AS id")
 
         if "fields" in args:
-            c = 0
-            fields = args["fields"].split(',')
+            fields = [x for x in args["fields"].split(',') if x != "id"]
             for field in fields:
-                query.append("%s u.%s AS %s " % (s(), field, field))
-                c += 1
-        else:
-            query.append(" u.id AS id ")
+                query.append(", u.%s AS %s " % (field, field))
 
         query.append("\n")
 

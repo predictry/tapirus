@@ -38,8 +38,8 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -49,8 +49,6 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
         query = []
         params = {}
-
-        s = lambda: ", " if c > 0 else " "
 
         if "id" in args:
             query.append("MATCH (i :%s:%s { id : {id}})\n" %
@@ -62,17 +60,13 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                          (domain, ItemSchema.get_label()))
 
         #RETURN
-        query.append("RETURN ")
+        query.append("RETURN i.id AS id")
 
         #RETURN
         if "fields" in args:
-            c = 0
-            fields = args["fields"].split(',')
+            fields = [x for x in args["fields"].split(',') if x != "id"]
             for field in fields:
-                query.append("%s i.%s AS %s " % (s(), field, field))
-                c += 1
-        else:
-            query.append(" i.id AS id ")
+                query.append(", i.%s AS %s " % (field, field))
 
         query.append("\n")
 
@@ -90,8 +84,8 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -127,8 +121,8 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
 
@@ -148,7 +142,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query.append("DELETE r,i\n")
         query.append("RETURN id\n")
 
-        print 'query: ', ''.join(query)
-        print 'params: ', params
+        #print 'query: ', ''.join(query)
+        #print 'params: ', params
 
         return ''.join(query), params
