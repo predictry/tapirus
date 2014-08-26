@@ -7,12 +7,15 @@ import re
 NEO_VAR_REGEX = "^[a-zA-Z]{1,}(_){0,}([a-zA-Z0-9]{0,})?$"
 POSITIVE_INTEGER_REGEX = "^\d+$"
 NUMBER_REGEX = "(?:\d*\.)?\d+"
+EMAIL_REGEX = "^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@" \
+              "((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$"
 
 #validate: fields, limit, offset, domain, appid
 
 re.compile(NEO_VAR_REGEX)
 re.compile(POSITIVE_INTEGER_REGEX)
 re.compile(NUMBER_REGEX)
+re.compile(EMAIL_REGEX)
 
 
 def parse_params(args, data=None):
@@ -94,11 +97,11 @@ def parse_params(args, data=None):
 
             data["offset"] = int(data["offset"])
 
-    #if data:
-    #    for k, v in data.iteritems():
-    #        if type(v) is str:
-    #            if not re.match(string_value_regex, v):
-    #                err = error('InvalidParameter', property=k)
-    #                Logger.info(err)
-    #                return err
+        if "email" in data:
+            if not re.match(EMAIL_REGEX, data["email"]):
+                err = error('InvalidParameter', property="email", message="The value must meet the condition: %s"
+                                                                           % EMAIL_REGEX)
+                Logger.info(err)
+                return err
+
     return None
