@@ -46,14 +46,29 @@ class ItemHandler():
         return payload.minify(response)
 
     @staticmethod
-    def put(args):
+    def put(args, data={}):
 
         args = text.encode(args)
+        data = text.encode(data)
+
+        if "id" not in args:
+            err = error('ResourceIdNotProvided', ItemHandler.resource)
+            Logger.warning(err)
+            return err
 
         qgen = ItemQueryGenerator()
         qexec = QueryExecutor()
 
-        query, params = qgen.update(args)
+        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
+                                  properties={"id": args["id"]})
+        if err:
+            return err
+        if not exists:
+            err = error('ResourceDoesNotExist', ItemHandler.resource)
+            Logger.warning(err)
+            return err
+
+        query, params = qgen.update(args, data)
         commit = True
 
         output, err = qexec.run(query, params, commit=commit)
@@ -74,20 +89,21 @@ class ItemHandler():
         return payload.minify(response)
 
     @staticmethod
-    def post(args):
+    def post(args, data={}):
 
         args = text.encode(args)
+        data = text.encode(data)
 
-        qgen = ItemQueryGenerator()
-        qexec = QueryExecutor()
-
-        if "id" not in args:
+        if "id" not in data:
             err = error('ResourceIdNotProvided', ItemHandler.resource)
             Logger.warning(err)
             return err
 
+        qgen = ItemQueryGenerator()
+        qexec = QueryExecutor()
+
         exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
-                                  properties={"id": args["id"]})
+                                  properties={"id": data["id"]})
         if err:
             return err
         if exists:
@@ -95,7 +111,7 @@ class ItemHandler():
             Logger.warning(err)
             return err
 
-        query, params = qgen.create(args)
+        query, params = qgen.create(args, data)
         commit = True
 
         output, err = qexec.run(query, params, commit=commit)
@@ -119,6 +135,11 @@ class ItemHandler():
     def delete(args):
 
         args = text.encode(args)
+
+        if "id" not in args:
+            err = error('ResourceIdNotProvided', ItemHandler.resource)
+            Logger.warning(err)
+            return err
 
         qgen = ItemQueryGenerator()
         qexec = QueryExecutor()

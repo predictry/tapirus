@@ -15,21 +15,20 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        strlabels = " :%s:%s " % (domain, UserSchema.get_label())
-        strproperties = []
+        str_labels = " :%s:%s " % (domain, UserSchema.get_label())
+        str_properties = []
 
         c = 0
         s = lambda: ", " if c > 0 else " "
 
         for k, v in data.iteritems():
-            strproperties.append("%s %s : {%s} " % (s(), k, k))
+            str_properties.append("%s %s : {%s} " % (s(), k, k))
             if type(data[k]) is str:
                 data[k] = data[k].strip()
             params[k] = data[k]
             c += 1
 
-        query.append("CREATE (u %s { %s })\n" % (strlabels, ''.join(strproperties)))
-
+        query.append("CREATE (u %s { %s })\n" % (str_labels, ''.join(str_properties)))
         query.append("RETURN ")
 
         c = 0
@@ -64,6 +63,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         #RETURN
         query.append("RETURN ")
+
         if "fields" in args:
             c = 0
             fields = args["fields"].split(',')
@@ -119,6 +119,7 @@ class UserQueryGenerator(ResourceQueryGeneratorBase):
 
         c = 0
         s = lambda: ", " if c > 0 else " "
+
         for k, v in data.iteritems():
             query.append("%s u.%s AS %s" % (s(), k, k))
             c += 1

@@ -3,8 +3,8 @@ __author__ = 'guilherme'
 from predictry.api.v1.errors import error
 from predictry.engine.graph.query.generator.resources.action import ActionQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
-from predictry.engine.models.resources.user import UserSchema
 from predictry.engine.models.resources.item import ItemSchema
+from predictry.engine.models.resources.user import UserSchema
 from predictry.utils.neo4j import node
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
@@ -19,10 +19,10 @@ class ActionHandler():
     resource = "action"
 
     type = staticmethod(lambda x: {
-        "VIEWED": "view",
-        "BOUGHT": "buy",
-        "RATED": "rate",
-        "ADDED_TO_CART": "addToCart"
+        "VIEW": "view",
+        "BUY": "buy",
+        "RATE": "rate",
+        "ADD_TO_CART": "add_to_cart"
     }[x])
 
     @staticmethod
@@ -59,19 +59,20 @@ class ActionHandler():
         return payload.minify(response)
 
     @staticmethod
-    def put(args):
+    def put(args, data={}):
 
         args = text.encode(args)
-
-        qgen = ActionQueryGenerator()
-        qexec = QueryExecutor()
+        data = text.encode(data)
 
         if "id" not in args:
             err = error('ResourceIdNotProvided', ActionHandler.resource)
             Logger.warning(err)
             return err
 
-        query, params = qgen.update(args)
+        qgen = ActionQueryGenerator()
+        qexec = QueryExecutor()
+
+        query, params = qgen.update(args, data)
         commit = True
 
         output, err = qexec.run(query, params, commit=commit)
@@ -95,79 +96,17 @@ class ActionHandler():
         return payload.minify(response)
 
     @staticmethod
-    def post(args):
-
-        args = text.encode(args)
-
-        qgen = ActionQueryGenerator()
-        qexec = QueryExecutor()
-
-        if "id" not in args:
-            err = error('ResourceIdNotProvided', ActionHandler.resource)
-            Logger.warning(err)
-            return err
-
-        for p in ["type", "user_id", "item_id"]:
-            if p not in args:
-                err = error('MissingParameter', ActionHandler.resource, p)
-                Logger.warning(err)
-                return err
-
-        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
-                                  properties={"id": args["item_id"]})
-        if err:
-            return err
-        if not exists:
-            err = error('ResourceDoesNotExist', e='item')
-            Logger.warning(err)
-            return err
-
-        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
-                                  properties={"id": args["user_id"]})
-        if err:
-            return err
-        if not exists:
-            err = error('ResourceDoesNotExist', e='user')
-            Logger.warning(err)
-            return err
-
-        query, params = qgen.create(args)
-        commit = True
-
-        output, err = qexec.run(query, params, commit=commit)
-
-        if err:
-            return err
-
-        response = {"data": None, "message": None, "error": None, "status": 200}
-
-        if len(output) == 0:
-            err = error('Unknown')
-            Logger.warning(err)
-            return err
-
-        response["data"] = {}
-
-        for action in output:
-            if "type" in action:
-                action['type'] = ActionHandler.type(action['type'])
-
-        response["data"]["actions"] = output
-
-        return payload.minify(response)
-
-    @staticmethod
     def delete(args):
 
         args = text.encode(args)
 
-        qgen = ActionQueryGenerator()
-        qexec = QueryExecutor()
-
         if "id" not in args:
             err = error('ResourceIdNotProvided', ActionHandler.resource)
             Logger.warning(err)
             return err
+
+        qgen = ActionQueryGenerator()
+        qexec = QueryExecutor()
 
         query, params = qgen.delete(args)
         commit = True
@@ -192,3 +131,70 @@ class ActionHandler():
         response["data"]["actions"] = output
 
         return payload.minify(response)
+
+
+def post(args, data={}):
+
+    args = text.encode(args)
+
+    if "id" not in data:
+        err = error('ResourceIdNotProvided', ActionHandler.resource)
+        Logger.warning(err)
+        return err
+
+    qgen = ActionQueryGenerator()
+    qexec = QueryExecutor()
+
+    for p in ["type", "browser_id", "session_id", "item_id"]:
+        if p not in data:
+            err = error('MissingParameter', ActionHandler.resource, p)
+            Logger.warning(err)
+            return err
+
+    #only the item must exist
+
+    exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
+                              properties={"id": data["item_id"]})
+    if err:
+        return err
+    if not exists:
+        err = error('ResourceDoesNotExist', e='item')
+        Logger.warning(err)
+        return err
+
+    #if user_id is given
+
+    if "user_id" in data:
+        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
+                                  properties={"id": data["user_id"]})
+        if err:
+            return err
+        if not exists:
+            err = error('ResourceDoesNotExist', e='user')
+            Logger.warning(err)
+            return err
+
+    query, params = qgen.create(args, data)
+    commit = True
+
+    output, err = qexec.run(query, params, commit=commit)
+
+    if err:
+        return err
+
+    response = {"data": None, "message": None, "error": None, "status": 200}
+
+    if len(output) == 0:
+        err = error('Unknown')
+        Logger.warning(err)
+        return err
+
+    response["data"] = {}
+
+    for action in output:
+        if "type" in action:
+            action['type'] = ActionHandler.type(action['type'])
+
+    response["data"]["actions"] = output
+
+    return payload.minify(response)

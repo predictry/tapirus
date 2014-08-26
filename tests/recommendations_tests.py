@@ -25,7 +25,7 @@ class RecommendationTestCase(unittest.TestCase):
         data = json.dumps(dict(item_id=9095, type="oiv", appid=self.appid,
                                domain=self.domain, fields="price,description",
                                priceFloor=10), ensure_ascii=False)
-        resp = self.app.post(url, data=data, content_type='application/json')
+        resp = post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 
@@ -52,7 +52,7 @@ class RecommendationTestCase(unittest.TestCase):
         data = json.dumps(dict(item_id=9095, type="oip", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
-        resp = self.app.post(url, data=data, content_type='application/json')
+        resp = post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 
@@ -70,7 +70,7 @@ class RecommendationTestCase(unittest.TestCase):
         data = json.dumps(dict(item_id=9095, type="oivt", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
-        resp = self.app.post(url, data=data, content_type='application/json')
+        resp = post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 
@@ -88,7 +88,7 @@ class RecommendationTestCase(unittest.TestCase):
         data = json.dumps(dict(item_id=9095, type="oipt", appid=self.appid,
                                domain=self.domain, fields="price,description"),
                           ensure_ascii=False)
-        resp = self.app.post(url, data=data, content_type='application/json')
+        resp = post(url, data=data, content_type='application/json')
 
         content = json.loads(resp.data)
 

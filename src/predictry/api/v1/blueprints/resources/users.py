@@ -3,7 +3,7 @@ __author__ = 'guilherme'
 from predictry.api.v1.handlers.resources.users import UserHandler
 from predictry.api.v1.blueprints.blueprint import BlueprintBase
 from predictry.api.v1.request import validate_request
-from flask_restful import reqparse, request
+from flask_restful import request
 
 
 class UserAPI(BlueprintBase):
@@ -38,7 +38,6 @@ class UserAPI(BlueprintBase):
         data = request.json
 
         args["id"] = id
-        #args.update(data)
 
         response = UserHandler.put(args, data)
 
@@ -74,8 +73,6 @@ class UserListAPI(BlueprintBase):
             return err, err['status']
 
         data = request.json
-
-        #args.update(data)
 
         response = UserHandler.post(args, data)
 

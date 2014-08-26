@@ -49,14 +49,15 @@ class UserHandler():
     def put(args, data={}):
 
         args = text.encode(args)
-
-        qgen = UserQueryGenerator()
-        qexec = QueryExecutor()
+        data = text.encode(data)
 
         if "id" not in args:
             err = error('ResourceIdNotProvided', UserHandler.resource)
             Logger.warning(err)
             return err
+
+        qgen = UserQueryGenerator()
+        qexec = QueryExecutor()
 
         exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": args["id"]})
@@ -91,14 +92,15 @@ class UserHandler():
     def post(args, data={}):
 
         args = text.encode(args)
-
-        qgen = UserQueryGenerator()
-        qexec = QueryExecutor()
+        data = text.encode(data)
 
         if "id" not in data:
             err = error('ResourceIdNotProvided', UserHandler.resource)
             Logger.warning(err)
             return err
+
+        qgen = UserQueryGenerator()
+        qexec = QueryExecutor()
 
         exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": data["id"]})
@@ -133,6 +135,11 @@ class UserHandler():
     def delete(args):
 
         args = text.encode(args)
+
+        if "id" not in args:
+            err = error('ResourceIdNotProvided', UserHandler.resource)
+            Logger.warning(err)
+            return err
 
         qgen = UserQueryGenerator()
         qexec = QueryExecutor()

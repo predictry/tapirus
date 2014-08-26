@@ -7,8 +7,8 @@ from predictry import server
 
 now = long(time.time().real)
 
-#class ItemTestCase(unittest.TestCase):
-class ItemTestCase():
+
+class ItemTestCase(unittest.TestCase):
 
     def setUp(self):
         assert type(now) is long
@@ -16,13 +16,12 @@ class ItemTestCase():
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.item = dict(domain=self.domain, id=123456, name="TestItem",
-                         brand="TestBrand", model="TestModel", tags="Test,Item",
+        self.item = dict(id=123456, name="TestItem",
+                         brand="TestBrand", model="TestModel", tags=["Test", "Item"],
                          description="This is a test item", price=1.0, category="TestItem",
                          date_added=now, subcategory="SubCategory", start_date=now, end_date=now+60480000,
                          item_url="http://localhostL7474/", image_url="images.google.com",
-                         locations="Singapore,Indonesia")
-
+                         locations=["Singapore", "Indonesia"])
 
     def tearDown(self):
         pass
@@ -46,11 +45,11 @@ class ItemTestCase():
         item = content['data']['items'][0]
 
         for k in self.item:
-            if type(item[k]) is list:
-                text = ','.join(item[k])
-                assert self.item[k] == text
-            else:
-                assert self.item[k] == item[k]
+            #if type(item[k]) is list:
+            #    text = ','.join(item[k])
+            #    assert self.item[k] == text
+            #else:
+            assert self.item[k] == item[k]
 
     def test_2_get_item(self):
 
@@ -69,12 +68,12 @@ class ItemTestCase():
 
         item = content['data']['items'][0]
 
-        for k in self.item:
-            if type(item[k]) is list:
-                text = ','.join(item[k])
-                assert self.item[k] == text
-            else:
-                assert self.item[k] == item[k]
+        for k in item:
+            #if type(item[k]) is list:
+            #    text = ','.join(item[k])
+            #    assert self.item[k] == text
+            #else:
+            assert self.item[k] == item[k]
 
     def test_3_update_item(self):
 
@@ -82,8 +81,8 @@ class ItemTestCase():
 
         url = "/predictry/api/v1/items/%s/?appid=%s&domain=%s" % (self.item['id'], self.appid, self.domain)
 
-        payload = dict(category="UpdatedTestItem", image_url="images.yahoo.com", tags="Updated,Test,Item",
-                       subcategory="UpdatedSubcategory", end_date=now+60480000*2, locations="Vermont,Singapore")
+        payload = dict(category="UpdatedTestItem", image_url="images.yahoo.com", tags=["Updated", "Test", "Item"],
+                       subcategory="UpdatedSubcategory", end_date=now+60480000*2, locations=["Vermont", "Singapore"])
         data = json.dumps(payload, ensure_ascii=False)
         resp = self.app.put(url, data=data, content_type='application/json')
 
@@ -92,11 +91,11 @@ class ItemTestCase():
 
         print content
         for k in payload:
-            if type(item[k]) is list:
-                text = ','.join(item[k])
-                assert payload[k] == text
-            else:
-                assert payload[k] == item[k]
+            #if type(item[k]) is list:
+            #    text = ','.join(item[k])
+            #    assert payload[k] == text
+            #else:
+            assert payload[k] == item[k]
         assert 'status' in content
         assert content['status'] == resp.status_code
         assert resp.status_code == 200
@@ -127,9 +126,8 @@ class UserTestCase(unittest.TestCase):
         self.app = server.app.test_client()
         self.appid = "pongo"
         self.domain = "verve"
-        self.user = dict(domain=self.domain, id=123456,
+        self.user = dict(id=123456,
                          email="user@mail.domain.com", schools=["School A", "School B"])
-
 
     def tearDown(self):
         pass
@@ -163,7 +161,8 @@ class UserTestCase(unittest.TestCase):
 
         print "RETRIEVE USER"
 
-        url = "/predictry/api/v1/users/%s/?appid=%s&domain=%s&fields=id,domain,email,schools" % (self.user['id'], self.appid, self.domain)
+        url = "/predictry/api/v1/users/%s/?appid=%s&domain=%s&fields=id,domain,email,schools" \
+              % (self.user['id'], self.appid, self.domain)
 
         resp = self.app.get(url)
 
@@ -414,3 +413,32 @@ class ActionTestCase():
 
 if __name__ == '__main__':
     unittest.main()
+
+#from predictry.engine.graph.query.executor.executor import QueryExecutor
+
+#qexec = QueryExecutor()
+
+#qgen = ActionQueryGenerator()
+
+#q, param = qgen.create(args=dict(domain="verve", appid="pongo"),
+#                  data=dict(id=1, item_id=1, session_id=1, browser_id=1,
+#                            type="view", timestamp=123456))
+
+#r, err = qexec.run(q, param, commit=True)
+
+#print r, err
+
+#q, param = qgen.read(args=dict(domain="verve", appid="pongo", id=1))
+
+#r, err = qexec.run(q, param, commit=False)
+#print r, err
+
+#q, param = qgen.update(args=dict(domain="verve", appid="pongo", id=1), data=dict(timestamp=654321, fuzz="buzz"))
+
+#r, err = qexec.run(q, param, commit=True)
+#print r, err
+
+#q, param = qgen.delete(args=dict(domain="verve", appid="pongo", id=1))
+
+#r, err = qexec.run(q, param, commit=True)
+#print r, err

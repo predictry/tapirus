@@ -68,6 +68,7 @@ class QueryExecutor(QueryExecutorBase):
             return records, None
 
         elif batch is not None:
+            #todo: use batch endpoint
 
             for bp in batch:
                 tx.append(bp["query"], bp["params"])

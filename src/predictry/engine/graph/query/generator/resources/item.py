@@ -8,7 +8,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def create(self, args):
+    def create(self, args, data={}):
 
         domain = args["domain"]
 
@@ -20,30 +20,26 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
 
         c = 0
         s = lambda: ", " if c > 0 else " "
-        for p in ItemSchema.get_properties(True):
-            if p in args:
-                str_properties.append("%s %s : {%s} " % (s(), p, p))
-                if type(args[p]) is str:
-                    args[p] = args[p].strip()
 
-                if p in ["tags", "locations"]:
-                    args[p] = args[p].split(',')
-
-                params[p] = args[p]
-                c += 1
+        for k, v in data.iteritems():
+            str_properties.append("%s %s : {%s} " % (s(), k, k))
+            if type(data[k]) is str:
+                data[k] = data[k].strip()
+            params[k] = data[k]
+            c += 1
 
         query.append("CREATE (i %s { %s })\n" % (str_labels, ''.join(str_properties)))
         query.append("RETURN ")
 
         c = 0
-        for p in ItemSchema.get_properties(True):
-            query.append("%s i.%s AS %s" % (s(), p, p))
+        for k, v in data.iteritems():
+            query.append("%s i.%s AS %s" % (s(), k, k))
             c += 1
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
@@ -54,90 +50,29 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
+        s = lambda: ", " if c > 0 else " "
+
         if "id" in args:
             query.append("MATCH (i :%s:%s { id : {id}})\n" %
                          (domain, ItemSchema.get_label()))
             params["id"] = args["id"]
 
         else:
-            #multiple items GET
             query.append("MATCH (i :%s:%s)\n" %
                          (domain, ItemSchema.get_label()))
 
-            c = 0
-            s = lambda: "WHERE" if c == 0 else "AND"
-            #check for any other parameters
-            #q
-            if "q" in args:
-
-                query.append("%s ( " % s())
-
-                cq = 0
-                sq = lambda: "" if cq == 0 else "OR"
-                for keyword in args["q"]:
-                    query.append("%s i.name =~ '(?i).*%s.*' " % (sq(), keyword))
-                    cq += 1
-                    query.append("%s i.description =~ '(?i).*%s.*' " % (sq(), keyword))
-                    cq += 1
-                    query.append("%s i.brand =~ '(?i).*%s.*' " % (sq(), keyword))
-                    cq += 1
-                    query.append("%s i.model =~ '(?i).*%s.*' " % (sq(), keyword))
-                    cq += 1
-
-                c += 1
-                query.append(" ) ")
-
-            #tags
-            if "tags" in args:
-                query.append("%s ANY(tag in i.tags WHERE tag in {tags}) " % s())
-                params["tags"] = args["tags"].split(',')
-                c += 1
-
-            if "locations" in args:
-                query.append("%s ANY(location in i.locations WHERE location in {locations}) " % s())
-                params["locations"] = args["locations"].split(',')
-                c += 1
-
-            if "locations" in args:
-                query.append("%s ANY(location in i.locations WHERE location in {locations}) " % s())
-                params["locations"] = args["locations"].split(',')
-                c += 1
-
-            #price_floor
-            if "price_floor" in args:
-                query.append("%s i.price >= {price_floor} " % s())
-                params["price_floor"] = args["price_floor"]
-                c += 1
-
-                #price_ceiling
-            if "price_ceiling" in args:
-                query.append("%s i.price <= {price_ceiling} " % s())
-                params["price_ceiling"] = args["price_ceiling"]
-                c += 1
-
-            if c > 0:
-                query.append("\n")
+        #RETURN
+        query.append("RETURN ")
 
         #RETURN
         if "fields" in args:
-
-            query.append("RETURN ")
-
             c = 0
             fields = args["fields"].split(',')
-            s = lambda: ", " if c > 0 else " "
             for field in fields:
                 query.append("%s i.%s AS %s " % (s(), field, field))
                 c += 1
         else:
-            query.append("RETURN ")
-
-            c = 0
-            s = lambda: ", " if c > 0 else " "
-
-            for p in ItemSchema.get_properties(True):
-                query.append("%s i.%s AS %s" % (s(), p, p))
-                c += 1
+            query.append(" i.id AS id ")
 
         query.append("\n")
 
@@ -155,12 +90,12 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
-    def update(self, args):
+    def update(self, args, data={}):
 
         domain = args["domain"]
 
@@ -171,26 +106,29 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
                      (domain, ItemSchema.get_label()))
         params["id"] = args["id"]
 
-        for p in ItemSchema.get_properties():
-            if p in args:
-                query.append("SET i.%s = {%s}\n" % (p, p))
-                if p in ["tags", "locations"]:
-                    args[p] = args[p].split(',')
-                params[p] = args[p]
+        c = 0
+        s = lambda: "SET" if c == 0 else ","
+
+        for k, v in data.iteritems():
+            query.append("%s i.%s = {%s} " % (s(), k, k))
+            params[k] = data[k]
+            c += 1
+
+        query.append("\n")
 
         query.append("RETURN ")
 
         c = 0
         s = lambda: ", " if c > 0 else " "
 
-        for p in ItemSchema.get_properties(True):
-            query.append("%s i.%s AS %s" % (s(), p, p))
+        for k, v in data.iteritems():
+            query.append("%s i.%s AS %s" % (s(), k, k))
             c += 1
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
@@ -210,7 +148,7 @@ class ItemQueryGenerator(ResourceQueryGeneratorBase):
         query.append("DELETE r,i\n")
         query.append("RETURN id\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params

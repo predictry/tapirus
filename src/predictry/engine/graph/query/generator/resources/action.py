@@ -2,15 +2,18 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
 from predictry.engine.models.resources.action import ActionSchema
-from predictry.engine.models.resources.user import UserSchema
 from predictry.engine.models.resources.item import ItemSchema
+from predictry.engine.models.resources.session import SessionSchema
+from predictry.engine.models.resources.browser import BrowserSchema
+from predictry.engine.models.resources.user import UserSchema
+from predictry.utils.neo4j import node
 
 
 class ActionQueryGenerator(ResourceQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def create(self, args):
+    def create(self, args, data={}):
 
         domain = args["domain"]
 
@@ -21,46 +24,98 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         s = lambda: ", " if c > 0 else " "
 
-        params["user_id"] = args["user_id"]
-        params["item_id"] = args["item_id"]
+        #params["user_id"] = data["user_id"]
+        params["item_id"] = data["item_id"]
+        params["session_id"] = data["session_id"]
+        params["browser_id"] = data["browser_id"]
 
-        reltype = lambda x: {
-            "view": "VIEWED",
-            "buy": "BOUGHT",
-            "rate": "RATED",
-            "add_to_cart": "ADDED_TO_CART"
+        rel_type = lambda x: {
+            "view": "VIEW",
+            "buy": "BUY",
+            "rate": "RATE",
+            "add_to_cart": "ADD_TO_CART"
         }[x]
 
+        #check session
+
+        create_flags = dict(session=False, browser=False)
+        connect_flags = dict(user=False)
+
+        exists, err = node.exists(labels=[args["domain"], SessionSchema.get_label()],
+                                  properties={"id": data["session_id"]})
+        if not exists:
+            create_flags["session"] = True
+
+        #check browser
+        exists, err = node.exists(labels=[args["domain"], BrowserSchema.get_label()],
+                                  properties={"id": data["browser_id"]})
+        if not exists:
+            create_flags["browser"] = True
+
+        #check if action is attached to a user
+        if "user_id" in data:
+            params["user_id"] = data["user_id"]
+            connect_flags["user"] = True
+
         c = 0
-        for p in ActionSchema.get_properties(True):
-            if p in args:
-                str_properties.append("%s %s : {%s} " % (s(), p, p))
-                if type(args[p]) is str:
-                    args[p] = args[p].strip()
-                params[p] = args[p]
+        for k, v in data.iteritems():
+            if k not in ["item_id", "browser_id", "session_id", "user_id", "type"]:
+                str_properties.append("%s %s : {%s} " % (s(), k, k))
+                if type(data[k]) is str:
+                    data[k] = data[k].strip()
+                params[k] = data[k]
                 c += 1
 
-        query.append("MATCH (u :%s:%s)\n" % (domain, UserSchema.get_label()))
-        query.append("WHERE u.id = {user_id}\n")
-        query.append("WITH u AS u\n")
-        query.append("  MATCH (i:%s:%s)\n" % (domain, ItemSchema.get_label()))
-        query.append("  WHERE i.id = {item_id}\n")
-        query.append("  WITH u AS u, i AS i\n")
-        query.append("      CREATE (u)-[r :%s { %s }]->(i)\n" %
-                     (reltype(args["type"]), ''.join(str_properties)))
+        #item
+        query.append("MATCH (i :%s:%s {id: {item_id}})\n"
+                     % (domain, ItemSchema.get_label()))
+        query.append("WITH i\n")
+        #session
+        if create_flags["session"]:
+            query.append("CREATE (s :%s:%s {id: {session_id}})\n"
+                         % (domain, SessionSchema.get_label()))
+        else:
+            query.append("MATCH (s :%s:%s {id: {session_id}})\n"
+                         % (domain, SessionSchema.get_label()))
+        query.append("WITH i, s\n")
 
-        query.append("      RETURN ")
+        #browser
+        if create_flags["browser"]:
+            query.append("CREATE (b :%s:%s {id: {browser_id}})\n"
+                         % (domain, BrowserSchema.get_label()))
+        else:
+            query.append("MATCH (b :%s:%s {id: {browser_id}})\n"
+                         % (domain, BrowserSchema.get_label()))
+        query.append("WITH i, s, b\n")
 
-        c = 0
-        for p in ActionSchema.get_properties(True):
-            query.append("%s r.%s AS %s" % (s(), p, p))
-            c += 1
-        query.append("%s type(r) AS type " % (s()))
+        if connect_flags["user"]:
+            query.append("MATCH (u :%s:%s {id:{user_id}})")
+            query.append("WITH i, s, b, u\n")
+
+        #connection
+        query.append("CREATE")
+        query.append(" (s)-[r_on :ON]->(b), ")
+        query.append(" (s)-[r_action :%s {%s}]->(i)" %
+                     (rel_type(data["type"]), ''.join(str_properties)))
+        if connect_flags["user"]:
+            query.append(", (s)-[r_by :BY]->(u)")
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        query.append("RETURN ")
+
+        c = 0
+        for k, v in data.iteritems():
+            if k not in ["item_id", "browser_id", "session_id", "user_id", "type"]:
+                query.append("%s r_action.%s AS %s " % (s(), k, k))
+                c += 1
+
+        query.append("%s type(r_action) AS type " % (s()))
+
+        query.append("\n")
+
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
@@ -70,42 +125,29 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query = []
         params = {}
-        label = lambda x: {
-            "view": "VIEWED",
-            "buy": "BOUGHT",
-            "rate": "RATED",
-            "add_to_cart": "ADDED_TO_CART"
+        rel_type = lambda x: {
+            "view": "VIEW",
+            "buy": "BUY",
+            "rate": "RATE",
+            "add_to_cart": "ADD_TO_CART"
         }[x]
 
         if "id" in args:
-            #single item GET
-            query.append("MATCH (u :%s:%s )-[r {id: {id}}]->(i :%s:%s )\n" %
-                         (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
+            query.append("MATCH (s :%s:%s )-[r {id: {id}}]->(i :%s:%s )\n" %
+                         (domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))
             params["id"] = args["id"]
 
         else:
-            #multiple items GET
-            c = 0
-            s = lambda: "WHERE" if c == 0 else "AND"
-
             if "type" in args:
-                query.append("MATCH (u :%s:%s)-[r :%s]->(i :%s:%s)\n" %
-                             (domain, UserSchema.get_label(), label(args["type"]), domain, ItemSchema.get_label()))
+                query.append("MATCH (s :%s:%s)-[r :%s]->(i :%s:%s)\n" %
+                             (domain, SessionSchema.get_label(), rel_type(args["type"]), domain, ItemSchema.get_label()))
             else:
-                query.append("MATCH (u :%s:%s)-[r]->(i :%s:%s)\n" %
-                             (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
-
-            if "occurred_before" in args:
-                query.append("%s r.timestamp < {time_ceiling} " % s())
-                params["time_ceiling"] = args["occurred_before"]
-                c += 1
-            if "occurred_after" in args:
-                query.append("%s r.timestamp > {floor} " % s())
-                params["time_floor"] = args["occurred_after"]
-                c += 1
+                query.append("MATCH (s :%s:%s)-[r]->(i :%s:%s)\n" %
+                             (domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))
 
         c = 0
         s = lambda: ", " if c > 0 else " "
+
         #RETURN
         if "fields" in args:
 
@@ -115,13 +157,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
                 query.append("%s r.%s AS %s " % (s(), field, field))
                 c += 1
         else:
-
-            query.append("RETURN ")
-            c = 0
-            s = lambda: ", " if c > 0 else " "
-            for p in ActionSchema.get_properties(True):
-                query.append("%s r.%s AS %s" % (s(), p, p))
-                c += 1
+            query.append("RETURN r.id AS id")
+            c += 1
 
         query.append("%s type(r) AS type " % (s()))
         query.append("\n")
@@ -141,31 +178,30 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
-    def update(self, args):
+    def update(self, args, data={}):
 
         domain = args["domain"]
 
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
-                     (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
+        query.append("MATCH (s :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
+                     (domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))
         params["id"] = args["id"]
 
-        properties = ActionSchema.get_properties()
+        #properties = ActionSchema.get_properties()
 
         c = 0
         s = lambda: "SET" if c == 0 else ","
-        for p in properties:
-            if p in args:
-                query.append("%s r.%s = {%s} " % (s(), p, p))
-                params[p] = args[p]
-                c += 1
+        for k, v in data.iteritems():
+            query.append("%s r.%s = {%s} " % (s(), k, k))
+            params[k] = data[k]
+            c += 1
 
         query.append("\n")
 
@@ -173,15 +209,15 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query.append("RETURN ")
         c = 0
         s = lambda: ", " if c > 0 else " "
-        for p in ActionSchema.get_properties(True):
-            query.append("%s r.%s AS %s" % (s(), p, p))
+        for k, v in data.iteritems():
+            query.append("%s r.%s AS %s" % (s(), k, k))
             c += 1
         query.append("%s type(r) AS type " % (s()))
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 
@@ -192,14 +228,14 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query = []
         params = {}
 
-        query.append("MATCH (u :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
-                     (domain, UserSchema.get_label(), domain, ItemSchema.get_label()))
+        query.append("MATCH (s :%s:%s)-[r {id: {id}}]->(i :%s:%s)\n" %
+                     (domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))
         params["id"] = args["id"]
         query.append("WITH r, r.id AS id\n")
         query.append("DELETE r\n")
         query.append("RETURN id, type(r) AS type\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
