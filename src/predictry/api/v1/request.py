@@ -4,11 +4,18 @@ from predictry.api.v1.errors import error
 from predictry.utils.log.logger import Logger
 import re
 
-domain_regex = "^[a-zA-Z]{1,}([a-zA-Z0-9]{0,})?$"
-re.compile(domain_regex)
+NEO_VAR_REGEX = "^[a-zA-Z]{1,}([a-zA-Z0-9]{0,})?$"
+POSITIVE_INTEGER_REGEX = "^\d+$"
+NUMBER_REGEX = "(?:\d*\.)?\d+"
+
+#validate: fields, limit, offset, domain, appid
+
+re.compile(NEO_VAR_REGEX)
+re.compile(POSITIVE_INTEGER_REGEX)
+re.compile(NUMBER_REGEX)
 
 
-def validate_request(args):
+def validate_request(args, data=None):
     if 'appid' not in args:
         return error('MissingParameter', property='appid')
     if not args['appid']:
@@ -18,10 +25,64 @@ def validate_request(args):
     if not args['domain']:
         return error('UndefinedParameter', property='domain')
 
-
-    if not re.match(domain_regex, args['domain']):
+    #domain
+    if not re.match(NEO_VAR_REGEX, args['domain']):
         err = error('InvalidParameter', property='domain')
         Logger.info(err)
         return err
 
+    #fields
+    if "fields" in args:
+        fields = args["fields"].split(",")
+
+        for field in fields:
+            if not re.match(NEO_VAR_REGEX, field):
+                err = error('InvalidParameter', property=field)
+                Logger.info(err)
+                return err
+
+    #limit
+    if "limit" in args:
+        if not re.match(POSITIVE_INTEGER_REGEX, args["limit"]):
+            err = error('InvalidParameter', property="limit")
+            Logger.info(err)
+            return err
+
+    #offset
+    if "offset" in args:
+        if not re.match(POSITIVE_INTEGER_REGEX, args["offset"]):
+            err = error('InvalidParameter', property="offset")
+            Logger.info(err)
+            return err
+
+    if data and type(data) is dict:
+        if "fields" in data:
+            fields = data["fields"].split(",")
+
+            for field in fields:
+                if not re.match(NEO_VAR_REGEX, field):
+                    err = error('InvalidParameter', property=field)
+                    Logger.info(err)
+                    return err
+
+        if "limit" in data:
+            if not re.match(POSITIVE_INTEGER_REGEX, data["limit"]):
+                err = error('InvalidParameter', property="limit")
+                Logger.info(err)
+                return err
+
+
+        if "offset" in data:
+            if not re.match(POSITIVE_INTEGER_REGEX, data["offset"]):
+                err = error('InvalidParameter', property="offset")
+                Logger.info(err)
+                return err
+
+    #if data:
+    #    for k, v in data.iteritems():
+    #        if type(v) is str:
+    #            if not re.match(string_value_regex, v):
+    #                err = error('InvalidParameter', property=k)
+    #                Logger.info(err)
+    #                return err
     return None

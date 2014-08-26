@@ -2,6 +2,7 @@ __author__ = 'guilherme'
 
 import time
 
+
 def timefunc(f):
     def f_timer(*args, **kwargs):
         start = time.time()
