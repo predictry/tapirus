@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 
-def error(err, e=None, property=None):
+def error(err, e=None, property=None, message=None):
 
     def append(x):
         if x is None:
@@ -22,7 +22,7 @@ def error(err, e=None, property=None):
         'MissingParameter': dict(error="Missing parameter",
                                        message="The parameter " + append(property) + "is missing from your request.", status=400),
         'InvalidParameter': dict(error="Invalid parameter",
-                                       message="The parameter " + append(property) + "is invalid.", status=400),
+                                       message="The parameter " + append(property) + "is invalid." if not message else message, status=400),
         'Unknown': dict(error="An unknown error has occurred",
                         message="For unknown reasons, the transaction has failed.", status=500)
     }

@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 import chardet
-import re
+
 
 def encode(e, charset='utf-8'):
 
@@ -25,15 +25,4 @@ def encode(e, charset='utf-8'):
             e[k] = encode(e[k])
 
     return e
-
-
-
-#we can only validate what we know
-def is_valid(e, regex):
-
-    if type(e) is str and e:
-        if not re.match(regex, e):
-            return False
-        else:
-            return True
 

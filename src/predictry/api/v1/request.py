@@ -27,7 +27,8 @@ def validate_request(args, data=None):
 
     #domain
     if not re.match(NEO_VAR_REGEX, args['domain']):
-        err = error('InvalidParameter', property='domain')
+        err = error('InvalidParameter', property='domain', message="The value must meet the condition: %s"
+                                                                   % NEO_VAR_REGEX)
         Logger.info(err)
         return err
 
@@ -37,21 +38,24 @@ def validate_request(args, data=None):
 
         for field in fields:
             if not re.match(NEO_VAR_REGEX, field):
-                err = error('InvalidParameter', property=field)
+                err = error('InvalidParameter', property=field, message="The value must meet the condition: %s"
+                                                                        % NEO_VAR_REGEX)
                 Logger.info(err)
                 return err
 
     #limit
     if "limit" in args:
         if not re.match(POSITIVE_INTEGER_REGEX, args["limit"]):
-            err = error('InvalidParameter', property="limit")
+            err = error('InvalidParameter', property="limit", message="The value must meet the condition: %s"
+                                                                      % POSITIVE_INTEGER_REGEX)
             Logger.info(err)
             return err
 
     #offset
     if "offset" in args:
         if not re.match(POSITIVE_INTEGER_REGEX, args["offset"]):
-            err = error('InvalidParameter', property="offset")
+            err = error('InvalidParameter', property="offset", message="The value must meet the condition: %s"
+                                                                       % POSITIVE_INTEGER_REGEX)
             Logger.info(err)
             return err
 
@@ -61,20 +65,23 @@ def validate_request(args, data=None):
 
             for field in fields:
                 if not re.match(NEO_VAR_REGEX, field):
-                    err = error('InvalidParameter', property=field)
+                    err = error('InvalidParameter', property=field, message="The value must meet the condition: %s"
+                                                                            % NEO_VAR_REGEX)
                     Logger.info(err)
                     return err
 
         if "limit" in data:
             if not re.match(POSITIVE_INTEGER_REGEX, data["limit"]):
-                err = error('InvalidParameter', property="limit")
+                err = error('InvalidParameter', property="limit", message="The value must meet the condition: %s"
+                                                                          % POSITIVE_INTEGER_REGEX)
                 Logger.info(err)
                 return err
 
 
         if "offset" in data:
             if not re.match(POSITIVE_INTEGER_REGEX, data["offset"]):
-                err = error('InvalidParameter', property="offset")
+                err = error('InvalidParameter', property="offset", message="The value must meet the condition: %s"
+                                                                           % POSITIVE_INTEGER_REGEX)
                 Logger.info(err)
                 return err
 
