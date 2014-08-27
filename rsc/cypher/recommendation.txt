@@ -39,8 +39,10 @@ RETURN DISTINCT x.id AS id, COUNT(x) AS matches
 ORDER BY matches
 LIMIT 10
 
-MATCH (s :redmar:session)-[r :BUY]->(x :redmart:item)
+MATCH (s :redmart:session)-[r :BUY]->(x :redmart:item)
 WITH s,r,x
 ORDER BY r.timestamp DESC
 LIMIT 1000
-RETURN DISTINCT x.id AS id, COLLECT(x.id) AS matches
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT 10

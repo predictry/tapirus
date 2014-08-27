@@ -26,9 +26,9 @@ class RecommendationHandler:
             Logger.warning(err)
             return err
 
-        if data["type"] not in ["oivt", "oipt", "oiv", "oip"]:
+        if data["type"] not in ["oivt", "oipt", "oiv", "oip", "rts"]:
                 err = error('InvalidParameter', RecommendationHandler.resource, property="type",
-                            message="Options: oiv, oivt, oip, oipt")
+                            message="Options: oiv, oivt, oip, oipt, rts")
                 Logger.warning(err)
                 return err
 

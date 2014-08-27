@@ -95,7 +95,39 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        #print "query:", ''.join(query)
-        #print params
+        elif rtype in ["rts"]:
+
+            #MATCH (s :redmart:session)-[r :BUY]->(x :redmart:item)
+            #WITH s,r,x
+            #ORDER BY r.timestamp DESC
+            #LIMIT 1000
+            #RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+            #ORDER BY matches DESC
+            #LIMIT 10
+
+            query.append("MATCH (s :%s:%s)-[r :BUY]->(x :%s:%s)\n"
+                         "WITH s,r,x\n"
+                         "ORDER BY r.timestamp DESC\n"
+                         "LIMIT 1000\n"
+                         "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
+                         % (domain, SessionSchema.get_label(),
+                            domain, ItemSchema.get_label()))
+
+            if "fields" in data:
+                fields = [x for x in data["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("ORDER BY matches DESC\n"
+                         "LIMIT {limit}")
+
+            if "limit" in data:
+                params["limit"] = data["limit"]
+            else:
+                params["limit"] = 10
+
+        print "query:", ''.join(query)
+        print params
 
         return ''.join(query), params
