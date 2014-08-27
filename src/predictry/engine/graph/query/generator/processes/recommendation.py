@@ -11,14 +11,14 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
     def __init__(self):
         pass
 
-    def generate(self, args, data):
+    def generate(self, args):
 
         domain = args["domain"]
 
         query = []
         params = {}
 
-        rtype = data["type"]
+        rtype = args["type"]
 
         #other items viewed/purchased together
         if rtype in ["oivt", "oipt"]:
@@ -34,13 +34,13 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                           "WITH i,s\n"
                           "MATCH (s)-[r :%s]->(x :%s:%s)\n"
                           "WHERE x <> i\n"
-                          "RETURN DISTINCT x.id AS id, COUNT(x) AS matches"
+                          "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
                          % (domain, ItemSchema.get_label(),
                             domain, SessionSchema.get_label(), action(rtype),
                             action(rtype), domain, ItemSchema.get_label()))
 
-            if "fields" in data:
-                fields = [x for x in data["fields"].split(",") if x not in ["id"]]
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
                 for field in fields:
                     query.append(", x.%s AS %s" % (field, field))
 
@@ -48,10 +48,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             query.append("ORDER BY matches DESC\n"
                          "LIMIT {limit}")
 
-            params["item_id"] = data["item_id"]
+            params["item_id"] = int(args["item_id"])
 
-            if "limit" in data:
-                params["limit"] = data["limit"]
+            if "limit" in args:
+                params["limit"] = args["limit"]
             else:
                 params["limit"] = 10
 
@@ -73,37 +73,29 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                          "WITH i,s,u,s2\n"
                          "MATCH (s2)-[r :%s]->(x :%s:%s)\n"
                          "WHERE x <> i\n"
-                         "RETURN DISTINCT x.id AS id, COUNT(x) AS matches"
+                         "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
                          % (domain, ItemSchema.get_label(),
                             domain, SessionSchema.get_label(), action(rtype),
                             domain, UserSchema.get_label(),
                             domain, SessionSchema.get_label(),
                             action(rtype), domain, ItemSchema.get_label()))
 
-            if "fields" in data:
-                fields = [x for x in data["fields"].split(",") if x not in ["id"]]
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
                 for field in fields:
                     query.append(", x.%s AS %s" % (field, field))
 
             query.append("\n")
             query.append("ORDER BY matches DESC\n"
                          "LIMIT {limit}")
-            params["item_id"] = data["item_id"]
+            params["item_id"] = int(args["item_id"])
 
-            if "limit" in data:
-                params["limit"] = data["limit"]
+            if "limit" in args:
+                params["limit"] = args["limit"]
             else:
                 params["limit"] = 10
 
         elif rtype in ["rts"]:
-
-            #MATCH (s :redmart:session)-[r :BUY]->(x :redmart:item)
-            #WITH s,r,x
-            #ORDER BY r.timestamp DESC
-            #LIMIT 1000
-            #RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
-            #ORDER BY matches DESC
-            #LIMIT 10
 
             query.append("MATCH (s :%s:%s)-[r :BUY]->(x :%s:%s)\n"
                          "WITH s,r,x\n"
@@ -113,8 +105,8 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                          % (domain, SessionSchema.get_label(),
                             domain, ItemSchema.get_label()))
 
-            if "fields" in data:
-                fields = [x for x in data["fields"].split(",") if x not in ["id"]]
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
                 for field in fields:
                     query.append(", x.%s AS %s" % (field, field))
 
@@ -122,12 +114,12 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             query.append("ORDER BY matches DESC\n"
                          "LIMIT {limit}")
 
-            if "limit" in data:
-                params["limit"] = data["limit"]
+            if "limit" in args:
+                params["limit"] = args["limit"]
             else:
                 params["limit"] = 10
 
-        print "query:", ''.join(query)
-        print params
+        #print "query:", ''.join(query)
+        #print params
 
         return ''.join(query), params

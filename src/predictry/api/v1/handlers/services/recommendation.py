@@ -16,24 +16,23 @@ class RecommendationHandler:
     resource = "recommendation"
 
     @staticmethod
-    def post(args, data):
+    def get(args):
 
         args = text.encode(args)
-        data = text.encode(data)
 
-        if "type" not in data:
+        if "type" not in args:
             err = error('MissingParameter', RecommendationHandler.resource, "type")
             Logger.warning(err)
             return err
 
-        if data["type"] not in ["oivt", "oipt", "oiv", "oip", "rts"]:
+        if args["type"] not in ["oivt", "oipt", "oiv", "oip", "rts"]:
                 err = error('InvalidParameter', RecommendationHandler.resource, property="type",
                             message="Options: oiv, oivt, oip, oipt, rts")
                 Logger.warning(err)
                 return err
 
-        if data["type"] in ["oivt", "oipt", "oiv", "oip"]:
-            if "item_id" not in data:
+        if args["type"] in ["oivt", "oipt", "oiv", "oip"]:
+            if "item_id" not in args:
                 err = error('MissingParameter', RecommendationHandler.resource, "item_id")
                 Logger.warning(err)
                 return err
@@ -41,7 +40,7 @@ class RecommendationHandler:
         qgen = RecommendationQueryGenerator()
         qexec = QueryExecutor()
 
-        query, params = qgen.generate(args, data)
+        query, params = qgen.generate(args)
         output, err = qexec.run(query, params)
 
         if err:

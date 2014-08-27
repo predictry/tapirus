@@ -67,33 +67,33 @@ def parse_params(args, data=None):
         args["offset"] = int(args["offset"])
 
     if data and type(data) is dict:
-        if "fields" in data:
-            fields = data["fields"].split(",")
+        #if "fields" in data:
+        #    fields = data["fields"].split(",")
 
-            for field in fields:
-                if not re.match(NEO_VAR_REGEX, field):
-                    err = error('InvalidParameter', property=field, message="The value must meet the condition: %s"
-                                                                            % NEO_VAR_REGEX)
-                    Logger.info(err)
-                    return err
+        #    for field in fields:
+        #        if not re.match(NEO_VAR_REGEX, field):
+        #            err = error('InvalidParameter', property=field, message="The value must meet the condition: %s"
+        #                                                                    % NEO_VAR_REGEX)
+        #            Logger.info(err)
+        #            return err
 
-        if "limit" in data:
-            if not re.match(POSITIVE_INTEGER_REGEX, data["limit"]):
-                err = error('InvalidParameter', property="limit", message="The value must meet the condition: %s"
-                                                                          % POSITIVE_INTEGER_REGEX)
-                Logger.info(err)
-                return err
+        #if "limit" in data:
+        #    if not re.match(POSITIVE_INTEGER_REGEX, data["limit"]):
+        #        err = error('InvalidParameter', property="limit", message="The value must meet the condition: %s"
+        #                                                                  % POSITIVE_INTEGER_REGEX)
+        #        Logger.info(err)
+        #        return err
 
-            data["limit"] = int(data["limit"])
+        #    data["limit"] = int(data["limit"])
 
-        if "offset" in data:
-            if not re.match(POSITIVE_INTEGER_REGEX, data["offset"]):
-                err = error('InvalidParameter', property="offset", message="The value must meet the condition: %s"
-                                                                           % POSITIVE_INTEGER_REGEX)
-                Logger.info(err)
-                return err
+        #if "offset" in data:
+        #    if not re.match(POSITIVE_INTEGER_REGEX, data["offset"]):
+        #        err = error('InvalidParameter', property="offset", message="The value must meet the condition: %s"
+        #                                                                   % POSITIVE_INTEGER_REGEX)
+        #        Logger.info(err)
+        #        return err
 
-            data["offset"] = int(data["offset"])
+        #    data["offset"] = int(data["offset"])
 
         if "email" in data:
             if not re.match(EMAIL_REGEX, data["email"]):

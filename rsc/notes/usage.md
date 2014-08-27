@@ -1,7 +1,7 @@
 #Usage
 
 ##Version
-Beta 0.1.6
+Beta 0.1.7
 
 ##Convention
 
@@ -61,14 +61,14 @@ The recommendation searches above can be limited to transcations that took place
 ###Recommendation
 | Protocol method | REST API URL  | Description  |
 |---|---|---|
-| POST | /v1/recommend/?appid={string}&domain={string} | Use this method to get a recommendation | 
+| GET | /v1/recommend/?appid={string}&domain={string} | Use this method to get a recommendation | 
 
-**Note on protocol:** We use POST to generate recomendations, as opposed to GET. The reasoning is that, despite not pushing any data into the database, the process does create a new resource (i.e. recommendation).
+**Note on protocol:** We use GET to make caching of requests easier.  Relationships between items do not change regularly over time, and thus caching can give high benefits here. The cache can be tweaked to adjust for cases such as "recently top selling" items.
 
 ####Payload
 | Protocol method | REST API URL  | JSON Payload  |
 |---|---|---|
-| POST | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [item_id:{int}], [user_id:{int}], [fields:{string}], [limit:{int}] | 
+| GET | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [item_id:{int}], [user_id:{int}], [fields:{string}], [limit:{int}] | 
 
 ####Recommendation Types
 | Recommendation Type | Code  | Description |
@@ -77,6 +77,7 @@ The recommendation searches above can be limited to transcations that took place
 | Other items viewed together | type=oivt | What other items were most viewed together, by people that viewed x?| 
 | Other items purchased | type=oip | What other items were most purchased by people that purchased x?| 
 | Other items purchased together | type=oipt | What other items were most purchased together, by people that purchased x?| 
+| Recent top sellers | type=rts | What items have been **purchased** the most recent transactions? |
 
 ##Resource Endpoints
 

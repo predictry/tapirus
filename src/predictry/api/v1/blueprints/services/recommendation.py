@@ -11,16 +11,15 @@ class RecommendationAPI(BlueprintBase):
     def __init__(self):
         super(RecommendationAPI, self).__init__()
 
-    def post(self):
+    def get(self):
 
         args = dict(request.values.iteritems())
-        data = request.json
 
-        err = parse_params(args, data)
+        err = parse_params(args)
 
         if err:
             return err, err['status']
 
-        response = RecommendationHandler.post(args, data)
+        response = RecommendationHandler.get(args)
 
         return response, response['status']
