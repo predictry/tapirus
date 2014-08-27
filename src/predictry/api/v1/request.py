@@ -28,8 +28,6 @@ def parse_params(args, data=None):
     if not args['domain']:
         return error('UndefinedParameter', property='domain')
 
-    print args
-
     #domain
     if not re.match(NEO_VAR_REGEX, args['domain']):
         err = error('InvalidParameter', property='domain', message="The value must meet the condition: %s"

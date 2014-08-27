@@ -38,5 +38,4 @@ Logger.setup_logging("../../rsc/conf/logging-config.json")
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
 
-
 #TODO: log performance, and queries (i.e. the requests. the queries can be regenerated from them. The reverse is not as easy)	
