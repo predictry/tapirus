@@ -64,10 +64,10 @@ class RecommendationTestCase(unittest.TestCase):
 
     def test_3_rts(self):
 
-        print "RECOMMENDATION: Recent Top Sellers (rts)"
+        print "RECOMMENDATION: Recent Top Sellers (trp)"
 
         url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&fields=%s" \
-              % (self.appid, self.domain, "rts", "brand,model")
+              % (self.appid, self.domain, "trp", "brand,model")
 
         #data = json.dumps(dict(type="rts", fields="brand,model,size"),
         #                  ensure_ascii=False)

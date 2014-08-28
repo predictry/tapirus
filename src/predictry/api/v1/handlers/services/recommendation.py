@@ -2,6 +2,7 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.processes.recommendation import RecommendationQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
+from predictry.engine.compute import ranking
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
 from predictry.api.v1.errors import error
@@ -25,7 +26,7 @@ class RecommendationHandler:
             Logger.warning(err)
             return err
 
-        if args["type"] not in ["oivt", "oipt", "oiv", "oip", "rts"]:
+        if args["type"] not in ["oivt", "oipt", "oiv", "oip", "trp", "trv", "trac", "fi"]:
                 err = error('InvalidParameter', RecommendationHandler.resource, property="type",
                             message="Options: oiv, oivt, oip, oipt, rts")
                 Logger.warning(err)
@@ -48,6 +49,23 @@ class RecommendationHandler:
             return err
 
         response = {"data": None, "message": None, "error": None, "status": 200}
+
+        if args["type"] in ["oiv", "oip"]:
+
+            collections = []
+            for record in output:
+                collections.append(record)
+
+            limit = args["limit"] if "limit" in args else 10
+            most_popular_items = ranking.rank_most_popular_items(collections, key="id", n=limit)
+
+            for item in most_popular_items:
+                for record in collections:
+                    if record["id"] == item["id"]:
+                        item.update(record)
+                        break
+
+            output = most_popular_items
 
         response["data"] = {}
         response["data"]["items"] = output

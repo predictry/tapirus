@@ -1,7 +1,7 @@
 #Usage
 
 ##Version
-Beta 0.1.7
+Beta 0.1.8
 
 ##Convention
 
@@ -61,23 +61,20 @@ The recommendation searches above can be limited to transcations that took place
 ###Recommendation
 | Protocol method | REST API URL  | Description  |
 |---|---|---|
-| GET | /v1/recommend/?appid={string}&domain={string} | Use this method to get a recommendation | 
+| GET | /v1/recommend/?appid={string}&domain={string} type:{string}, [item_id:{int}], [user_id:{int}], [fields:{string}], [limit:{int}]| Use this method to get a recommendation | 
 
 **Note on protocol:** We use GET to make caching of requests easier.  Relationships between items do not change regularly over time, and thus caching can give high benefits here. The cache can be tweaked to adjust for cases such as "recently top selling" items.
-
-####Payload
-| Protocol method | REST API URL  | JSON Payload  |
-|---|---|---|
-| GET | /v1/recommend/?appid={string}&domain={string} | {type:{string}, [item_id:{int}], [user_id:{int}], [fields:{string}], [limit:{int}] | 
 
 ####Recommendation Types
 | Recommendation Type | Code  | Description |
 |---|---|---|
-| Other items viewed | type=oiv | What other items were most viewed by people that viewed x?| 
-| Other items viewed together | type=oivt | What other items were most viewed together, by people that viewed x?| 
-| Other items purchased | type=oip | What other items were most purchased by people that purchased x?| 
-| Other items purchased together | type=oipt | What other items were most purchased together, by people that purchased x?| 
-| Recent top sellers | type=rts | What items have been **purchased** the most recent transactions? |
+| Other items viewed | type=oiv | What other items were most **viewed** by people that **viewed** x, on another occasion?| 
+| Other items viewed together | type=oivt | What other items were most **viewed** together, by people that **viewed** x?| 
+| Other items purchased | type=oip | What other items were most **purchased** by people that **purchased** x, on another occasion?| 
+| Other items purchased together | type=oipt | What other items were most **purchased** together, by people that **purchased** x?| 
+| Top recent views | type=trv | What items have been **viewed** the most recently? |
+| Top recent purchases | type=trp | What items have been **purchased** the most recently? |
+| Top recent additions to cart | type=trac | What items have been **added to cart** the most recently? |
 
 ##Resource Endpoints
 
@@ -133,4 +130,3 @@ The resource endpoints are used to store, and if necessary, read, update and del
 |---|---|---|
 | POST | /v1/actions/?appid={string}&domain={string} | {id:{int},session_id:{string}, browser_id:{string}, item_id:{int}, type:{string}, [user_id:{int}], [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
 | PUT | /v1/actions/{action_id}/?appid={string}&domain={string} | {[x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
-
