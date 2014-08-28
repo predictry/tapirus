@@ -1,11 +1,27 @@
 #Usage
 
 ##Version
-Beta 0.1.8
+Beta 0.1.9
 
 ##Convention
 
 With the exception of fields that are surrounded by `[]`, all fields specified in either the `URL` or `JSON payload` are required for each request.
+A non-specific variable of any data type is represented with the symbolr `x:`. So `[x:]` means an optional parameter of any data type.
+
+##Data Types
+Currently, we support the following data types:
+```python
+boolean
+byte
+short
+int
+float
+long
+double
+char
+string
+```
+These values can be primitives, or in lists/arrays. You can have a look at the [Neo4j documentation][1] for details
 
 ##A Note on Output
 
@@ -43,6 +59,8 @@ The `data` object has fields that are specific to each request. For example, if 
 
 Since the were no errors in the request, neither the field `error` nor `message` are returned.
 
+##Authentication
+We use Basic HTTP Auth. You should get the username and password for the system administrators.
 
 ----------
 
@@ -94,8 +112,8 @@ The resource endpoints are used to store, and if necessary, read, update and del
 
 | Protocol method | REST API URL  | JSON Payload |
 |---|---|---|
-| POST | /v1/items/?appid={string}&domain={string} | {id:{int}, [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
-| PUT | /v1/items/{item_id}/?appid={string}&domain={string} | [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
+| POST | /v1/items/?appid={string}&domain={string} | {id:{int}, [x:]}|
+| PUT | /v1/items/{item_id}/?appid={string}&domain={string} | {[x:]}|
 
 ###User
 
@@ -111,8 +129,8 @@ The resource endpoints are used to store, and if necessary, read, update and del
 
 | Protocol method | REST API URL  | JSON Payload |
 |---|---|---|
-| POST | /v1/users/?appid={string}&domain={string} | {id:{int}, [email:{string}], [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
-| PUT | /v1/users/{user_id}/?appid={string}&domain={string} | {[email:{string}], [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
+| POST | /v1/users/?appid={string}&domain={string} | {id:{int}, [email:{string}], [x:]}|
+| PUT | /v1/users/{user_id}/?appid={string}&domain={string} | {[email:{string}], [x:]}
         
 ###Action
 
@@ -128,5 +146,8 @@ The resource endpoints are used to store, and if necessary, read, update and del
 
 | Protocol method | REST API URL  | JSON Payload |
 |---|---|---|
-| POST | /v1/actions/?appid={string}&domain={string} | {id:{int},session_id:{string}, browser_id:{string}, item_id:{int}, type:{string}, [user_id:{int}], [x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
-| PUT | /v1/actions/{action_id}/?appid={string}&domain={string} | {[x:{int}], [y:{string}], [z:{float}], [k:{long}], [list: array]}|
+| POST | /v1/actions/?appid={string}&domain={string} | {id:{int}, session_id:{string}, browser_id:{string}, item_id:{int}, type:{string}, [user_id:{int}], [x:]}|
+| PUT | /v1/actions/{action_id}/?appid={string}&domain={string} | {[x:]}|
+
+
+[1]: http://docs.neo4j.org/chunked/stable/graphdb-neo4j-properties.html

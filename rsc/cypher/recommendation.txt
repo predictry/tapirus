@@ -77,6 +77,12 @@ RETURN DISTINCT x.id AS id, COUNT(x) AS matches
 ORDER BY matches DESC
 LIMIT 5
 
+
+MATCH (i:redmart:item{id:5550})<-[r:VIEW]-(s:session:redmart)-[:VIEW]->(x:redmart:item)
+WHERE i <> x
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+
 ####hot items####
 MATCH (s :redmart:session)-[r :BUY]->(x :redmart:item)
 WITH s,r,x

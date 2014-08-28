@@ -13,8 +13,6 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
     def generate(self, args):
 
-        #"oivt", "oipt", "oiv", "oip", "trp", "trv", "trac", "rai"
-
         domain = args["domain"]
 
         query = []
@@ -30,16 +28,26 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oipt": "BUY"
             }[x]
 
-            query.append("MATCH (i :%s:%s {id:{item_id}})\n"
-                          "WITH i\n"
-                          "MATCH (s :%s:%s)-[r :%s]->(i)\n"
-                          "WITH i,s\n"
-                          "MATCH (s)-[r :%s]->(x :%s:%s)\n"
-                          "WHERE x <> i\n"
-                          "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
-                         % (domain, ItemSchema.get_label(),
+            #MATCH (i:redmart:item{id:5124})<-[r:VIEW]-(s:session:redmart)-[:VIEW]->(x:redmart:item)
+            #WHERE i <> x
+            #RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+            #ORDER BY matches DESC
+            #LIMIT 5
+
+            query.append("MATCH (i:%s:%s{id:{item_id}})<-[r:%s]"
+                         "-(s:%s:%s)-[:%s]"
+                         "->(x:%s:%s)\n"
+                         "WHERE i <> x\n"
+                         "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
+            #             "WITH i\n"
+            #             "MATCH (s :%s:%s)-[r :%s]->(i)\n"
+            #             "WITH i,s\n"
+            #             "MATCH (s)-[r :%s]->(x :%s:%s)\n"
+            #             "WHERE x <> i\n"
+            #             "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
+                         % (domain, ItemSchema.get_label(), action(rtype),
                             domain, SessionSchema.get_label(), action(rtype),
-                            action(rtype), domain, ItemSchema.get_label()))
+                            domain, ItemSchema.get_label()))
 
             if "fields" in args:
                 fields = [x for x in args["fields"].split(",") if x not in ["id"]]
