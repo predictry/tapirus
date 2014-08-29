@@ -21,15 +21,15 @@ app.debug = False
 api = Api(app)
 
 #resources
-api.add_resource(ItemAPI, '/predictry/api/v1/items/<int:id>/', endpoint='item')
-api.add_resource(ItemListAPI, '/predictry/api/v1/items/', endpoint='items')
-api.add_resource(UserAPI, '/predictry/api/v1/users/<int:id>/', endpoint='user')
-api.add_resource(UserListAPI, '/predictry/api/v1/users/', endpoint='users')
-api.add_resource(ActionAPI, '/predictry/api/v1/actions/<int:id>/', endpoint='action')
-api.add_resource(ActionListAPI, '/predictry/api/v1/actions/', endpoint='actions')
+api.add_resource(ItemAPI, '/predictry/api/v1/items/<int:id>', endpoint='item')
+api.add_resource(ItemListAPI, '/predictry/api/v1/items', endpoint='items')
+api.add_resource(UserAPI, '/predictry/api/v1/users/<int:id>', endpoint='user')
+api.add_resource(UserListAPI, '/predictry/api/v1/users', endpoint='users')
+api.add_resource(ActionAPI, '/predictry/api/v1/actions/<int:id>', endpoint='action')
+api.add_resource(ActionListAPI, '/predictry/api/v1/actions', endpoint='actions')
 
 #recommendations
-api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend/', endpoint='recommend')
+api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend', endpoint='recommend')
 
 #setup logging
 Logger.setup_logging("../../rsc/conf/logging-config.json")
