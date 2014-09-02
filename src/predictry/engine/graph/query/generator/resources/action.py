@@ -28,12 +28,12 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         params["session_id"] = data["session_id"]
         params["browser_id"] = data["browser_id"]
 
-        rel_type = lambda x: {
-            "view": "VIEW",
-            "buy": "BUY",
-            "rate": "RATE",
-            "add_to_cart": "ADD_TO_CART"
-        }[x]
+        #rel_type = lambda x: {
+        #    "view": "VIEW",
+        #    "buy": "BUY",
+        #    "rate": "RATE",
+        #    "add_to_cart": "ADD_TO_CART"
+        #}[x]
 
         #check session
 
@@ -94,11 +94,11 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         #connection
         query.append("CREATE")
-        query.append(" (s)-[r_on :ON]->(b), ")
+        query.append(" (s)-[r_on :on]->(b), ")
         query.append(" (s)-[r_action :%s {%s}]->(i)" %
-                     (rel_type(data["type"]), ''.join(str_properties)))
+                     (data["type"], ''.join(str_properties)))
         if connect_flags["user"]:
-            query.append(", (s)-[r_by :BY]->(u)")
+            query.append(", (s)-[r_by :by]->(u)")
 
         query.append("\n")
 
@@ -125,12 +125,12 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query = []
         params = {}
-        rel_type = lambda x: {
-            "view": "VIEW",
-            "buy": "BUY",
-            "rate": "RATE",
-            "add_to_cart": "ADD_TO_CART"
-        }[x]
+        #rel_type = lambda x: {
+        #    "view": "VIEW",
+        #    "buy": "BUY",
+        #    "rate": "RATE",
+        #    "add_to_cart": "ADD_TO_CART"
+        #}[x]
 
         if "id" in args:
             query.append("MATCH (s :%s:%s )-[r {id: {id}}]->(i :%s:%s )\n" %
@@ -140,7 +140,7 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         else:
             if "type" in args:
                 query.append("MATCH (s :%s:%s)-[r :%s]->(i :%s:%s)\n" %
-                             (domain, SessionSchema.get_label(), rel_type(args["type"]), domain, ItemSchema.get_label()))
+                             (domain, SessionSchema.get_label(), args["type"], domain, ItemSchema.get_label()))
             else:
                 query.append("MATCH (s :%s:%s)-[r]->(i :%s:%s)\n" %
                              (domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))

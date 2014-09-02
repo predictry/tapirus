@@ -24,8 +24,8 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
         if rtype in ["oivt", "oipt"]:
 
             action = lambda x: {
-                "oivt": "VIEW",
-                "oipt": "BUY"
+                "oivt": "view",
+                "oipt": "buy"
             }[x]
 
             #MATCH (i:redmart:item{id:5124})<-[r:VIEW]-(s:session:redmart)-[:VIEW]->(x:redmart:item)
@@ -34,9 +34,9 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             #ORDER BY matches DESC
             #LIMIT 5
 
-            query.append("MATCH (i:%s:%s{id:{item_id}})<-[r:%s]"
-                         "-(s:%s:%s)-[:%s]"
-                         "->(x:%s:%s)\n"
+            query.append("MATCH (i :%s:%s{id:{item_id}})<-[r :%s]"
+                         "-(s :%s:%s)-[:%s]"
+                         "->(x :%s:%s)\n"
                          "WHERE i <> x\n"
                          "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches"
             #             "WITH i\n"
@@ -71,18 +71,18 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             #a particular item x
 
             action = lambda x: {
-                "oiv": "VIEW",
-                "oip": "BUY"
+                "oiv": "view",
+                "oip": "buy"
             }[x]
 
-            query.append("MATCH (i:%s:%s {id:{item_id}})<-[r1: %s]"
-                         "-(s1:%s:%s)-[:BY]->(u:%s:%s)<-[:BY]"
-                         "-(s2:%s:%s)-[:VIEW]->(x:%s:%s)\n"
+            query.append("MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]"
+                         "-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]"
+                         "-(s2 :%s:%s)-[:%s]->(x :%s:%s)\n"
                          "WHERE i <> x AND s1 <> s2\n"
                          "RETURN x.id AS id"
                          % (domain, ItemSchema.get_label(), action(rtype),
                             domain, SessionSchema.get_label(), domain, UserSchema.get_label(),
-                            domain, SessionSchema.get_label(), domain, ItemSchema.get_label()))
+                            domain, SessionSchema.get_label(), action(rtype), domain, ItemSchema.get_label()))
 
             #query.append("MATCH (i :%s:%s {id:{item_id}})\n"
             #             "WITH i\n"
@@ -119,9 +119,9 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
         elif rtype in ["trv", "trp", "trac"]:
 
             action = lambda x: {
-                "trv": "VIEW",
-                "trp": "BUY",
-                "trac": "ADD_TO_CART"
+                "trv": "view",
+                "trp": "buy",
+                "trac": "add_to_cart"
             }[x]
 
             query.append("MATCH (s :%s:%s)-[r :%s]->(x :%s:%s)\n"
@@ -146,7 +146,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        #print "query:", ''.join(query)
-        #print params
+        print "query:", ''.join(query)
+        print params
 
         return ''.join(query), params

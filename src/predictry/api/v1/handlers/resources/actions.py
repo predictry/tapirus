@@ -18,12 +18,12 @@ class ActionHandler():
 
     resource = "action"
 
-    type = staticmethod(lambda x: {
-        "VIEW": "view",
-        "BUY": "buy",
-        "RATE": "rate",
-        "ADD_TO_CART": "add_to_cart"
-    }[x])
+    #type = staticmethod(lambda x: {
+    #    "VIEW": "view",
+    #    "BUY": "buy",
+    #    "RATE": "rate",
+    #    "ADD_TO_CART": "add_to_cart"
+    #}[x])
 
     @staticmethod
     def get(args):
@@ -50,9 +50,9 @@ class ActionHandler():
         else:
             response["data"] = {}
 
-            for action in output:
-                if "type" in action:
-                    action['type'] = ActionHandler.type(action['type'])
+            #for action in output:
+            #    if "type" in action:
+            #        action['type'] = ActionHandler.type(action['type'])
 
             response["data"]["actions"] = output
 
@@ -88,9 +88,9 @@ class ActionHandler():
         else:
             response["data"] = {}
 
-            for action in output:
-                if "type" in action:
-                    action['type'] = ActionHandler.type(action['type'])
+            #for action in output:
+            #    if "type" in action:
+            #        action['type'] = ActionHandler.type(action['type'])
             response["data"]["actions"] = output
 
         return payload.minify(response)
@@ -125,9 +125,9 @@ class ActionHandler():
 
         response["data"] = {}
 
-        for action in output:
-            if "type" in action:
-                action['type'] = ActionHandler.type(action['type'])
+        #for action in output:
+        #    if "type" in action:
+        #        action['type'] = ActionHandler.type(action['type'])
         response["data"]["actions"] = output
 
         return payload.minify(response)
@@ -191,9 +191,9 @@ class ActionHandler():
 
         response["data"] = {}
 
-        for action in output:
-            if "type" in action:
-                action['type'] = ActionHandler.type(action['type'])
+        #for action in output:
+        #    if "type" in action:
+        #        action['type'] = ActionHandler.type(action['type'])
 
         response["data"]["actions"] = output
 
