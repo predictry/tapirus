@@ -146,7 +146,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 10
 
-        print "query:", ''.join(query)
-        print params
+        #print "query:", ''.join(query)
+        #print params
 
         return ''.join(query), params

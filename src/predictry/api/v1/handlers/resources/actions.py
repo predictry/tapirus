@@ -18,13 +18,6 @@ class ActionHandler():
 
     resource = "action"
 
-    #type = staticmethod(lambda x: {
-    #    "VIEW": "view",
-    #    "BUY": "buy",
-    #    "RATE": "rate",
-    #    "ADD_TO_CART": "add_to_cart"
-    #}[x])
-
     @staticmethod
     def get(args):
 
@@ -49,10 +42,6 @@ class ActionHandler():
             return err
         else:
             response["data"] = {}
-
-            #for action in output:
-            #    if "type" in action:
-            #        action['type'] = ActionHandler.type(action['type'])
 
             response["data"]["actions"] = output
 
@@ -88,9 +77,6 @@ class ActionHandler():
         else:
             response["data"] = {}
 
-            #for action in output:
-            #    if "type" in action:
-            #        action['type'] = ActionHandler.type(action['type'])
             response["data"]["actions"] = output
 
         return payload.minify(response)
@@ -125,9 +111,6 @@ class ActionHandler():
 
         response["data"] = {}
 
-        #for action in output:
-        #    if "type" in action:
-        #        action['type'] = ActionHandler.type(action['type'])
         response["data"]["actions"] = output
 
         return payload.minify(response)
@@ -190,10 +173,6 @@ class ActionHandler():
             return err
 
         response["data"] = {}
-
-        #for action in output:
-        #    if "type" in action:
-        #        action['type'] = ActionHandler.type(action['type'])
 
         response["data"]["actions"] = output
 

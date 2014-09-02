@@ -28,13 +28,6 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         params["session_id"] = data["session_id"]
         params["browser_id"] = data["browser_id"]
 
-        #rel_type = lambda x: {
-        #    "view": "VIEW",
-        #    "buy": "BUY",
-        #    "rate": "RATE",
-        #    "add_to_cart": "ADD_TO_CART"
-        #}[x]
-
         #check session
 
         create_flags = dict(session=False, browser=False)
@@ -125,12 +118,6 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query = []
         params = {}
-        #rel_type = lambda x: {
-        #    "view": "VIEW",
-        #    "buy": "BUY",
-        #    "rate": "RATE",
-        #    "add_to_cart": "ADD_TO_CART"
-        #}[x]
 
         if "id" in args:
             query.append("MATCH (s :%s:%s )-[r {id: {id}}]->(i :%s:%s )\n" %
