@@ -14,7 +14,16 @@ $PYTHONENV/activate
 
 export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
-mkdir pid
+PIDDIR=pid
+LOGDIR=log
+
+if [ ! -d "$PIDDIR" ]; then
+  mkdir $PIDDIR
+fi
+
+if [ ! -d "$LOGDIR" ]; then
+  mkdir $LOGDIR
+fi
 
 n=$(echo `nproc`)
 
@@ -30,7 +39,7 @@ done
 
 echo "Starting background workers..."
 
-$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
+#$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
 
 #chcek if program is still running
 #PID=$(cat program.pid)

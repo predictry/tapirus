@@ -8,12 +8,26 @@ Flask-RESTful extension."""
 
 from flask import Flask
 from flask_restful import Api
+#from werkzeug.contrib.fixers import ProxyFix
 
 from predictry.api.v1.blueprints.resources.items import ItemAPI, ItemListAPI
 from predictry.api.v1.blueprints.resources.users import UserAPI, UserListAPI
 from predictry.api.v1.blueprints.resources.actions import ActionAPI, ActionListAPI
 from predictry.api.v1.blueprints.services.recommendation import RecommendationAPI
 from predictry.utils.log.logger import Logger
+
+
+#class ServerApp(Flask):
+#    def __init__(self, *args, **rest):
+#        # insert startup code here
+#        Logger.setup_logging("../../rsc/conf/logging-config.json")
+#        super(ServerApp, self).__init__(__package__, *args, **rest)
+#    def initialize(self):
+#        print "Checking thrusters..."
+#
+
+#todo:do system checks
+#todo: load app config from a file (e.g. location of log file config)
 
 
 app = Flask(__name__)
@@ -32,7 +46,6 @@ api.add_resource(ActionListAPI, '/predictry/api/v1/actions', '/predictry/api/v1/
 #recommendations
 api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend', '/predictry/api/v1/recommend/', endpoint='recommend')
 
-#setup logging
 Logger.setup_logging("../../rsc/conf/logging-config.json")
 
 #run application
