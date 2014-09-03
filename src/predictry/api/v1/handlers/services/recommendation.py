@@ -71,27 +71,28 @@ class RecommendationHandler:
 
         elif args["type"] in ["trp", "trv", "trac"]:
 
-            if "limit" in args:
-                n = args["limit"]
-            else:
-                n = len(output[0]["items"])
+            if output:
+                if "limit" in args:
+                    n = args["limit"]
+                else:
+                    n = len(output[0]["items"])
 
-            ids = []
-            for i in range(0, n):
-                ids.append(output[0]["items"][i])
+                ids = []
+                for i in range(0, n):
+                    ids.append(output[0]["items"][i])
 
-            if "fields" in args:
-                properties = args["fields"].split(",")
-            else:
-                properties = ["id"]
+                if "fields" in args:
+                    properties = args["fields"].split(",")
+                else:
+                    properties = ["id"]
 
-            items, err = node.get_node_properties(ids, properties,
-                                                 domain=args["domain"], label=ItemSchema.get_label())
+                items, err = node.get_node_properties(ids, properties,
+                                                     domain=args["domain"], label=ItemSchema.get_label())
 
-            if err:
-                return err
+                if err:
+                    return err
 
-            output = items
+                output = items
 
         response["data"] = {}
         response["data"]["items"] = output
