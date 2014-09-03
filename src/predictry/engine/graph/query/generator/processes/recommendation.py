@@ -277,36 +277,11 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "trac": "add_to_cart"
             }[x]
 
-            query.append("MATCH (s :%s:%s)-[r :%s]->(x :%s:%s)\n"
-                         % (domain, SessionSchema.get_label(), action(rtype),
-                            domain, ItemSchema.get_label()))
+            query.append("MATCH (n :%s:%s {rtype: {rtype}})\n"
+                         % (domain, "trend"))
+            query.append("RETURN n.items AS items, n.matches AS matches")
 
-            if filters:
-                query.append("WHERE")
-                q, params = translate_filters(filters, ref="x", concatenate=False)
-                query.append(q)
-                params.update(params)
-            #filter on retrieval
-
-            query.append("\n")
-            query.append("WITH s,r,x\n"
-                         "ORDER BY r.timestamp DESC\n"
-                         "LIMIT 500\n"
-                         "RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
-
-            if "fields" in args:
-                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
-                for field in fields:
-                    query.append(", x.%s AS %s" % (field, field))
-
-            query.append("\n")
-            query.append("ORDER BY matches DESC\n"
-                         "LIMIT {limit}")
-
-            if "limit" in args:
-                params["limit"] = args["limit"]
-            else:
-                params["limit"] = 10
+            params["rtype"] = rtype
 
         #print "query:", ''.join(query)
         #print params

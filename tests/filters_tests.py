@@ -73,10 +73,5 @@ class FilterTestCase(unittest.TestCase):
         print rec.translate_filters(filters, ref)
 
 
-
-
-
-
-
 if __name__ == '__main__':
     unittest.main()

@@ -2,9 +2,11 @@ __author__ = 'guilherme'
 
 from predictry.engine.graph.query.generator.processes.recommendation import RecommendationQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
+from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.compute import ranking
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
+from predictry.utils.neo4j import node
 from predictry.api.v1.errors import error
 from predictry.utils.log.logger import Logger
 
@@ -66,6 +68,30 @@ class RecommendationHandler:
                         break
 
             output = most_popular_items
+
+        elif args["type"] in ["trp", "trv", "trac"]:
+
+            if "limit" in args:
+                n = args["limit"]
+            else:
+                n = len(output[0]["items"])
+
+            ids = []
+            for i in range(0, n):
+                ids.append(output[0]["items"][i])
+
+            if "fields" in args:
+                properties = args["fields"].split(",")
+            else:
+                properties = ["id"]
+
+            items, err = node.get_node_properties(ids, properties,
+                                                 domain=args["domain"], label=ItemSchema.get_label())
+
+            if err:
+                return err
+
+            output = items
 
         response["data"] = {}
         response["data"]["items"] = output
