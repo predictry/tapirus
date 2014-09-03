@@ -21,7 +21,7 @@
             "interval": 1,
             "level": "INFO",
             "formatter": "simple",
-            "filename": "/tmp/info.log",
+            "filename": "/tmp/predictry-info.log",
             "backupCount": 20,
             "encoding": "utf8"
         },
@@ -32,7 +32,7 @@
             "interval": 1,
             "level": "ERROR",
             "formatter": "simple",
-            "filename": "/tmp/errors.log",
+            "filename": "/tmp/predictry-errors.log",
             "backupCount": 20,
             "encoding": "utf8"
         }
