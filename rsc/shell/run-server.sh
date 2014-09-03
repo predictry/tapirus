@@ -39,7 +39,7 @@ done
 
 echo "Starting background workers..."
 
-#$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
+$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
 
 #chcek if program is still running
 #PID=$(cat program.pid)
