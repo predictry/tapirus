@@ -1,0 +1,4 @@
+Index EVERYTHING: Queries can become by a factor of 3x
+
+Don't chase after ghosts: searching for data that's not there is a big waste of time. The system has to run
+wide search, which takes long, and returns nothing

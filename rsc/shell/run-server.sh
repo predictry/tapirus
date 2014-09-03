@@ -14,8 +14,28 @@ $PYTHONENV/activate
 
 export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
-$PYTHONENV/gunicorn -b unix:/tmp/unix_predictry_socket_1.sock --workers=4 --log-level=CRITICAL --name $APPNAME predictry.server:app &
-$PYTHONENV/gunicorn -b unix:/tmp/unix_predictry_socket_2.sock --workers=4 --log-level=CRITICAL --name $APPNAME predictry.server:app &
-$PYTHONENV/gunicorn -b unix:/tmp/unix_predictry_socket_3.sock --workers=4 --log-level=CRITICAL --name $APPNAME predictry.server:app &
-$PYTHONENV/gunicorn -b unix:/tmp/unix_predictry_socket_4.sock --workers=4 --log-level=CRITICAL --name $APPNAME predictry.server:app &
-#$PYTHONENV/gunicorn -b 0.0.0.0:8080 --worker-class gevent --debug --log-file error_logs.log --access-logfile acclogs.log --log-level debug --workers=5 --name $APPNAME predictry.server:app
+mkdir pid
+
+n=$(echo `nproc`)
+
+echo "Starting $n services..."
+
+for (( i=1; i<=$n; i++ ))
+do
+    socket="/tmp/unix_predictry_socket_${i}.sock"
+    pid="pid/server-${i}.pid"
+
+    `$PYTHONENV/gunicorn -b unix:${socket} --workers=$n --log-level=CRITICAL --name $APPNAME predictry.server:app` & echo $! > ${pid}
+done
+
+echo "Starting background workers..."
+
+$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
+
+#chcek if program is still running
+#PID=$(cat program.pid)
+#if [ -e /proc/${PID} -a /proc/${PID}/exe -ef /usr/bin/program ]; then
+#echo "Still running"
+#fi
+
+echo "Done."

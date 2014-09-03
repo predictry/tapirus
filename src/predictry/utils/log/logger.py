@@ -8,7 +8,7 @@ import logging.config
 class Logger:
 
     @classmethod
-    def setup_logging(cls, default_path, default_level=logging.CRITICAL, env_key='LOG_CFG'):
+    def setup_logging(cls, default_path, default_level=logging.INFO, env_key='LOG_CFG'):
         """Setup logging configuration
 
         """
@@ -22,8 +22,6 @@ class Logger:
             logging.config.dictConfig(config)
         else:
             logging.basicConfig(level=default_level)
-
-        predictry = logging.getLogger(__name__)
 
     @classmethod
     def info(cls, msg, *args, **kwargs):

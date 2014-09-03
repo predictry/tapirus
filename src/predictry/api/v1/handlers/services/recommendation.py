@@ -86,8 +86,8 @@ class RecommendationHandler:
                 else:
                     properties = ["id"]
 
-                items, err = node.get_node_properties(ids, properties,
-                                                     domain=args["domain"], label=ItemSchema.get_label())
+                items, err = node.get_node_properties(ids,
+                                                      properties, domain=args["domain"], label=ItemSchema.get_label())
 
                 if err:
                     return err

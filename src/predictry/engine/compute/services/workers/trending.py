@@ -4,7 +4,6 @@ from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.models.resources.session import SessionSchema
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.utils.log.logger import Logger
-from predictry.utils.threading import mp
 
 
 def get_domains():
@@ -14,11 +13,19 @@ def get_domains():
     qexec = QueryExecutor()
     output, err = qexec.run(q)
 
+    print "LABELS: ", output
+
     if err:
         Logger.error(err)
         return None, err
 
-    domains = [x for x in output[0]["labels"] if x not in ["item"]]
+    domains = []
+
+    for r in output:
+        v = [x for x in r["labels"] if x not in ["item"]]
+        domains.extend(v)
+
+    Logger.debug("Domains: [%s]", domains)
 
     return domains
 
@@ -36,7 +43,6 @@ def store_results(domain, rtype, data):
     params = dict(rtype=rtype)
 
     output, err = execute_query(q, params, commit=True)
-    #print q, output
 
     if err:
         return False
@@ -47,7 +53,6 @@ def store_results(domain, rtype, data):
     params = dict(rtype=rtype, items=items, matches=matches)
 
     output, err = execute_query(q, params, commit=True)
-    #print q, output
 
     if err:
         return False
@@ -97,6 +102,7 @@ def execute_query(q, params, commit=False):
 
 
 def run():
+
     domains = get_domains()
 
     for domain in domains:

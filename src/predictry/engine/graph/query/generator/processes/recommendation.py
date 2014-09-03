@@ -271,12 +271,6 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
         elif rtype in ["trv", "trp", "trac"]:
 
-            action = lambda x: {
-                "trv": "view",
-                "trp": "buy",
-                "trac": "add_to_cart"
-            }[x]
-
             query.append("MATCH (n :%s:%s {rtype: {rtype}})\n"
                          % (domain, "trend"))
             query.append("RETURN n.items AS items, n.matches AS matches")

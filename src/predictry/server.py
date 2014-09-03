@@ -14,8 +14,7 @@ from predictry.api.v1.blueprints.resources.users import UserAPI, UserListAPI
 from predictry.api.v1.blueprints.resources.actions import ActionAPI, ActionListAPI
 from predictry.api.v1.blueprints.services.recommendation import RecommendationAPI
 from predictry.utils.log.logger import Logger
-from predictry.utils.threading import mp
-from predictry.engine.compute.services.workers import trending
+
 
 app = Flask(__name__)
 app.debug = False
@@ -38,8 +37,7 @@ Logger.setup_logging("../../rsc/conf/logging-config.json")
 
 #run application
 if __name__ == '__main__':
-    #Initiated background workers
-    mp.run_in_background(processes=1, worker_function=mp.repeat, args=[600, trending.run])
+    #start listening for connection
     app.run(port=5000, debug=True)
 
 #TODO: log performance, and queries (i.e. the requests. the queries can be regenerated from them. The reverse is not as easy)	
