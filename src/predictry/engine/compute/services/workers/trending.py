@@ -13,8 +13,6 @@ def get_domains():
     qexec = QueryExecutor()
     output, err = qexec.run(q)
 
-    print "LABELS: ", output
-
     if err:
         Logger.error(err)
         return None, err
