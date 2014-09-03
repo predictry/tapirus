@@ -6,6 +6,7 @@ import chardet
 def encode(e, charset='utf-8'):
 
     if type(e) is str and e:
+        e = e.strip()
         encoding = chardet.detect(e)["encoding"]
         if encoding == charset:
             pass

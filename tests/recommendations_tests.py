@@ -20,11 +20,8 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: Other items viewed (oiv)"
 
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&item_id=%s&fields=%s" \
-              % (self.appid, self.domain, "oiv", str(5124), "brand,model")
-
-        #data = json.dumps(dict(item_id=6, type="oiv", fields="brand,model"),
-        #                  ensure_ascii=False)
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&item_id=%s&fields=%s&q=%s" \
+              % (self.appid, self.domain, "oiv", str(5124), "price", "price$gt$10$num")
 
         resp = self.app.get(url)
 
@@ -43,11 +40,8 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: Other items viewed together (oivt)"
 
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&item_id=%s&fields=%s" \
-              % (self.appid, self.domain, "oivt", str(5124), "brand,model")
-
-        #data = json.dumps(dict(item_id=6, type="oivt", fields="brand,model,size"),
-        #                  ensure_ascii=False)
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&item_id=%s&fields=%s&q=%s" \
+              % (self.appid, self.domain, "oivt", str(5124), "price", "price$lt$10$num")
 
         resp = self.app.get(url)
 
@@ -66,11 +60,8 @@ class RecommendationTestCase(unittest.TestCase):
 
         print "RECOMMENDATION: Recent Top Sellers (trp)"
 
-        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&fields=%s" \
-              % (self.appid, self.domain, "trp", "brand,model")
-
-        #data = json.dumps(dict(type="rts", fields="brand,model,size"),
-        #                  ensure_ascii=False)
+        url = "/predictry/api/v1/recommend/?appid=%s&domain=%s&type=%s&fields=%s&q=%s" \
+              % (self.appid, self.domain, "trp", "price", "price$lt$10$num")
 
         resp = self.app.get(url)
 
