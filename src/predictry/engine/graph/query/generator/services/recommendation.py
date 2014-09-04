@@ -1,6 +1,6 @@
 __author__ = 'guilherme'
 
-from predictry.engine.graph.query.generator.processes.base import ProcessQueryGeneratorBase
+from predictry.engine.graph.query.generator.services.base import ProcessQueryGeneratorBase
 from predictry.engine.models.resources.user import UserSchema
 from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.models.resources.session import SessionSchema
@@ -276,6 +276,49 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             query.append("RETURN n.items AS items, n.matches AS matches")
 
             params["rtype"] = rtype
+
+
+        if rtype in ["utrp", "utrv", "utrac"]:
+
+            action = lambda x: {
+                "utrv": "view",
+                "utrp": "buy",
+                "utrac": "add_to_cart"
+            }[x]
+
+            #MATCH (n:user:redmart {id:54762})-[]-()-[r]-(x:redmart:item)
+            #WITH n,r,x
+            #ORDER BY r.timestamp DESC
+            #LIMIT 100
+            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+            #ORDER BY matches DESC
+            #LIMIT 5
+
+            query.append("MATCH (u:%s:%s {id:{user_id}})-[]-()-[r :%s]-(x:%s:%s)\n"
+                         "WITH u,r,x\n"
+                         "ORDER BY r.timestamp DESC\n"
+                         "LIMIT {ntx}\n"
+                         % (domain, UserSchema.get_label(), action(rtype),
+                            domain, ItemSchema.get_label()))
+
+            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
+
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("ORDER BY matches DESC\n"
+                         "LIMIT {limit}")
+
+            params["user_id"] = int(args["user_id"])
+            params["ntx"] = 100
+
+            if "limit" in args:
+                params["limit"] = args["limit"]
+            else:
+                params["limit"] = 10
 
         #print "query:", ''.join(query)
         #print params

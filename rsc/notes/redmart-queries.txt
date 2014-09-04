@@ -180,3 +180,16 @@ WITH i, i.id AS itemId
 OPTIONAL MATCH (i)-[r]-()
 DELETE r, n
 RETURN itemId
+
+
+#user activity
+#MATCH (n:user:redmart {id:37103})-[]-()-[r]-(x:redmart:item) RETURN n,x,r
+
+#user: most recently purchase
+MATCH (n:user:redmart {id:54762})-[]-()-[r]-(x:redmart:item)
+WITH n,r,x
+ORDER BY r.timestamp DESC
+LIMIT 100
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5

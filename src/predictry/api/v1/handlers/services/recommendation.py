@@ -1,6 +1,6 @@
 __author__ = 'guilherme'
 
-from predictry.engine.graph.query.generator.processes.recommendation import RecommendationQueryGenerator
+from predictry.engine.graph.query.generator.services.recommendation import RecommendationQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.compute import ranking
@@ -18,6 +18,8 @@ class RecommendationHandler:
 
     resource = "recommendation"
 
+    rtype = ["oivt", "oipt", "oiv", "oip", "trp", "trv", "trac", "utrp", "utrv", "utrac"]
+
     @staticmethod
     def get(args):
 
@@ -28,15 +30,21 @@ class RecommendationHandler:
             Logger.warning(err)
             return err
 
-        if args["type"] not in ["oivt", "oipt", "oiv", "oip", "trp", "trv", "trac"]:
+        if args["type"] not in RecommendationHandler.rtype:
                 err = error('InvalidParameter', RecommendationHandler.resource, property="type",
-                            message="Options: oiv, oivt, oip, oipt, trp, trv, trac")
+                            message="Options: %s" % ','.join(RecommendationHandler.rtype))
                 Logger.warning(err)
                 return err
 
         if args["type"] in ["oivt", "oipt", "oiv", "oip"]:
             if "item_id" not in args:
                 err = error('MissingParameter', RecommendationHandler.resource, "item_id")
+                Logger.warning(err)
+                return err
+
+        if args["type"] in ["utrp", "utrv", "utrac"]:
+            if "user_id" not in args:
+                err = error('MissingParameter', RecommendationHandler.resource, "user_id")
                 Logger.warning(err)
                 return err
 

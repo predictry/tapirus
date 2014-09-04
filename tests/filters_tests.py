@@ -3,7 +3,7 @@ __author__ = 'guilherme'
 import json
 import time
 import unittest
-from predictry.engine.graph.query.generator.processes import recommendation as rec
+from predictry.engine.graph.query.generator.services import recommendation as rec
 
 now = long(time.time().real)
 
