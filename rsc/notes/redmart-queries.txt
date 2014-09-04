@@ -182,14 +182,54 @@ DELETE r, n
 RETURN itemId
 
 
-#user activity
+###user activity
 #MATCH (n:user:redmart {id:37103})-[]-()-[r]-(x:redmart:item) RETURN n,x,r
 
-#user: most recently purchase
-MATCH (n:user:redmart {id:54762})-[]-()-[r]-(x:redmart:item)
-WITH n,r,x
+#busiest users: [33439,35625, 51512, 33370, 28278, 48870, 32766, 4833, 42803, 33426]
+MATCH (u :redmart:user)<-[:by]-(s :redmart:session)-[vr :view|:buy]->(x :redmart:item)
+WITH DISTINCT u, x, vr
+RETURN u.id AS user, COUNT(x) AS total
+ORDER BY total DESC
+LIMIT 10
+
+#user: most recently purchase/viewed/bought (for users with many transactions, this takes time)
+MATCH (u:user:redmart {id:54762})<-[:by]-(:redmart:session)-[r :buy]->(x:redmart:item)
+WITH DISTINCT r,x
 ORDER BY r.timestamp DESC
-LIMIT 100
+LIMIT 50
 RETURN DISTINCT x.id AS id, COUNT(x) AS matches
 ORDER BY matches DESC
+LIMIT 5
+
+
+#Out of the last 50 viewed items, which ones have never been purchased?
+MATCH (u :redmart:user {id:33439})<-[:by]-(:redmart:session)-[vr :view]->(x :redmart:item)
+WITH DISTINCT vr, x, u
+ORDER BY vr.timestamp DESC
+LIMIT 50
+OPTIONAL MATCH (u)<-[:by]-(:redmart:session)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+#Out of the last 50 items added to the cart, which ones didn't make it to checkout
+MATCH (u:redmart:user {id:33370})<-[:by]-(s:redmart:session)-[vr :add_to_cart]->(x:redmart:item)
+WITH DISTINCT s, vr, x
+ORDER BY vr.timestamp DESC
+LIMIT 50
+OPTIONAL MATCH (u)<-[:by]-(s)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+#users with most items that didnt' make it to checkout: [16, 32766, 33268, 4833, 14356]
+
+MATCH (u:redmart:user)<-[:by]-(s:redmart:session)-[vr :add_to_cart]->(x:redmart:item)
+WITH DISTINCT s, vr, x, u
+OPTIONAL MATCH (u)<-[:by]-(s)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT u.id AS user, COLLECT(DISTINCT x.id) AS items, COUNT(DISTINCT x.id) AS total
+ORDER BY total DESC
 LIMIT 5

@@ -240,7 +240,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             if "limit" in args:
                 params["limit"] = args["limit"]
             else:
-                params["limit"] = 10
+                params["limit"] = 5
 
         #other items viewed/purchased
         elif rtype in ["oiv", "oip"]:
@@ -297,7 +297,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "utrac": "add_to_cart"
             }[x]
 
-            #MATCH (n:user:redmart {id:54762})-[]-()-[r]-(x:redmart:item)
+            #MATCH (u :store:user {id:{user_id}})-[:by]-(:store:session)-[r :view]-(x:store:item)
             #WITH DISTINCT r, x
             #ORDER BY r.timestamp DESC
             #LIMIT 100
@@ -305,11 +305,12 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             #ORDER BY matches DESC
             #LIMIT 5
 
-            query.append("MATCH (u:%s:%s {id:{user_id}})-[]-()-[r :%s]-(x:%s:%s)\n"
+            query.append("MATCH (u:%s:%s {id:{user_id}})<-[:by]-(:%s:%s)-[r :%s]->(x:%s:%s)\n"
                          "WITH DISTINCT r, x\n"
                          "ORDER BY r.timestamp DESC\n"
                          "LIMIT {ntx}\n"
-                         % (domain, UserSchema.get_label(), action(rtype),
+                         % (domain, UserSchema.get_label(),
+                            domain, SessionSchema.get_label(), action(rtype),
                             domain, ItemSchema.get_label()))
 
             query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
@@ -324,14 +325,59 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                          "LIMIT {limit}")
 
             params["user_id"] = int(args["user_id"])
-            params["ntx"] = 100
+            params["ntx"] = 50
 
             if "limit" in args:
                 params["limit"] = args["limit"]
             else:
-                params["limit"] = 10
+                params["limit"] = 5
 
-        #print "query:", ''.join(query)
-        #print params
+        if rtype in ["uvnp"]:
+
+            action = lambda x: ["view", "buy"][x]
+
+            #MATCH (u :redmart:user {id:33439})<-[:by]-(:redmart:session)-[vr :view]->(x :redmart:item)
+            #WITH DISTINCT vr, x, u
+            #ORDER BY vr.timestamp DESC
+            #LIMIT 50
+            #OPTIONAL MATCH (u)<-[:by]-(:redmart:session)-[br :buy]->(x)
+            #WHERE br is NULL
+            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+            #ORDER BY matches DESC
+            #LIMIT 5
+
+            query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(:%s:%s)-[vr :%s]->(x :%s:%s)\n"
+                         "WITH DISTINCT vr, x, u\n"
+                         "ORDER BY vr.timestamp DESC\n"
+                         "LIMIT {ntx}\n"
+                         "OPTIONAL MATCH (u)<-[:by]-(:%s:%s)-[br :%s]->(x)\n"
+                         "WHERE br is NULL\n"
+                         % (domain, UserSchema.get_label(),
+                            domain, SessionSchema.get_label(), action(0),
+                            domain, ItemSchema.get_label(),
+                            domain, SessionSchema.get_label(), action(1)))
+
+            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
+
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("ORDER BY matches DESC\n"
+                         "LIMIT {limit}")
+
+            params["user_id"] = int(args["user_id"])
+            params["ntx"] = 50
+
+            if "limit" in args:
+                params["limit"] = args["limit"]
+            else:
+                params["limit"] = 5
+
+
+        print "query:", ''.join(query)
+        print params
 
         return ''.join(query), params

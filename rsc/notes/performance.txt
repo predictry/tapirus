@@ -1,4 +1,9 @@
-Index EVERYTHING: Queries can become by a factor of 3x
+Index EVERYTHING: Queries can become faster by a factor of 3x
 
 Don't chase after ghosts: searching for data that's not there is a big waste of time. The system has to run
 wide search, which takes long, and returns nothing
+
+In any query, specify all known lables, relationsip types. Query speeds have been observed to improve 2x
+
+Any cypher query's speed depends on the number of nodes we visit. The more nodes we need to count, the longer it
+will take. If we're just passing by (path finding), the number of nodes is much less of an issue.

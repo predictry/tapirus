@@ -11,18 +11,19 @@ class Logger:
         """Setup logging configuration
 
         """
-        path = default_path
-        value = os.getenv(env_key, None)
-        if value:
-            path = value
-        if os.path.exists(path):
-            with open(path, 'rt') as f:
-                config = json.load(f)
-            logging.config.dictConfig(config)
-        else:
-            logging.basicConfig(level=default_level)
+        if os.path.exists(default_path):
+            path = default_path
+            value = os.getenv(env_key, None)
+            if value:
+                path = value
+            if os.path.exists(path):
+                with open(path, 'rt') as f:
+                    config = json.load(f)
+                logging.config.dictConfig(config)
+            else:
+                logging.basicConfig(level=default_level)
 
-        predictry = logging.getLogger(__name__)
+            predictry = logging.getLogger(__name__)
 
     @classmethod
     def info(cls, msg, *args, **kwargs):
