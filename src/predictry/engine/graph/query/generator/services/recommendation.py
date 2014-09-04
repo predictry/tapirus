@@ -376,8 +376,51 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 5
 
+        if rtype in ["uacnp"]:
 
-        print "query:", ''.join(query)
-        print params
+            action = lambda x: ["add_to_cart", "buy"][x]
+
+            #MATCH (u:redmart:user {id:33370})<-[:by]-(s:redmart:session)-[vr :add_to_cart]->(x:redmart:item)
+            #WITH DISTINCT s, vr, x
+            #ORDER BY vr.timestamp DESC
+            #LIMIT 50
+            #OPTIONAL MATCH (u)<-[:by]-(s)-[br :buy]->(x)
+            #WHERE br is NULL
+            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+            #ORDER BY matches DESC
+            #LIMIT 5
+
+            query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(s:%s:%s)-[vr :%s]->(x :%s:%s)\n"
+                         "WITH DISTINCT s, vr, x\n"
+                         "ORDER BY vr.timestamp DESC\n"
+                         "LIMIT {ntx}\n"
+                         "OPTIONAL MATCH (u)<-[:by]-(s)-[br :%s]->(x)\n"
+                         "WHERE br is NULL\n"
+                         % (domain, UserSchema.get_label(),
+                            domain, SessionSchema.get_label(), action(0),
+                            domain, ItemSchema.get_label(),
+                            action(1)))
+
+            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
+
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("ORDER BY matches DESC\n"
+                         "LIMIT {limit}")
+
+            params["user_id"] = int(args["user_id"])
+            params["ntx"] = 50
+
+            if "limit" in args:
+                params["limit"] = args["limit"]
+            else:
+                params["limit"] = 5
+
+        #print "query:", ''.join(query)
+        #print params
 
         return ''.join(query), params

@@ -18,7 +18,9 @@ class RecommendationHandler:
 
     resource = "recommendation"
 
-    rtype = ["oivt", "oipt", "oiv", "oip", "trp", "trv", "trac", "utrp", "utrv", "utrac", "uvnp"]
+    rtype = ["oivt", "oipt", "oiv", "oip",
+             "trp", "trv", "trac",
+             "utrp", "utrv", "utrac", "uvnp", "uacnp"]
 
     @staticmethod
     def get(args):
@@ -42,7 +44,7 @@ class RecommendationHandler:
                 Logger.warning(err)
                 return err
 
-        if args["type"] in ["utrp", "utrv", "utrac", "uvnp"]:
+        if args["type"] in ["utrp", "utrv", "utrac", "uvnp", "uacnp"]:
             if "user_id" not in args:
                 err = error('MissingParameter', RecommendationHandler.resource, "user_id")
                 Logger.warning(err)
