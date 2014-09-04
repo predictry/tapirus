@@ -64,8 +64,13 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         query.append("WITH i\n")
         #session
         if create_flags["session"]:
-            query.append("CREATE (s :%s:%s {id: {session_id}})\n"
-                         % (domain, SessionSchema.get_label()))
+
+            if "timestamp" in data:
+                query.append("CREATE (s :%s:%s {id: {session_id}, timestamp: {timestamp}})\n"
+                             % (domain, SessionSchema.get_label()))
+            else:
+                query.append("CREATE (s :%s:%s {id: {session_id}, timestamp: timestamp() })\n"
+                             % (domain, SessionSchema.get_label()))
         else:
             query.append("MATCH (s :%s:%s {id: {session_id}})\n"
                          % (domain, SessionSchema.get_label()))
