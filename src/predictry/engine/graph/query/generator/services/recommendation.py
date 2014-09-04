@@ -172,6 +172,17 @@ class Filter:
         self.value = value
         self.data_type = data_type
 
+'''
+MATCH (u:user:redmart {id:54762})-[]-()-[vr :view]-(x:redmart:item)
+OPTIONAL MATCH (u)-[]-()-[br :buy]-(x:redmart:item)
+WHERE vr.timestamp < br.timestamp AND br is NULL
+WITH u,vr,x
+ORDER BY vr.timestamp DESC
+LIMIT 100
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+'''
 
 class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
@@ -287,7 +298,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             }[x]
 
             #MATCH (n:user:redmart {id:54762})-[]-()-[r]-(x:redmart:item)
-            #WITH n,r,x
+            #WITH DISTINCT r, x
             #ORDER BY r.timestamp DESC
             #LIMIT 100
             #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
@@ -295,7 +306,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             #LIMIT 5
 
             query.append("MATCH (u:%s:%s {id:{user_id}})-[]-()-[r :%s]-(x:%s:%s)\n"
-                         "WITH u,r,x\n"
+                         "WITH DISTINCT r, x\n"
                          "ORDER BY r.timestamp DESC\n"
                          "LIMIT {ntx}\n"
                          % (domain, UserSchema.get_label(), action(rtype),
