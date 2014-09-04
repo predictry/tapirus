@@ -18,33 +18,44 @@ PIDDIR=pid
 LOGDIR=log
 
 if [ ! -d "$PIDDIR" ]; then
-  mkdir $PIDDIR
+    mkdir $PIDDIR
 fi
 
 if [ ! -d "$LOGDIR" ]; then
-  mkdir $LOGDIR
+    mkdir $LOGDIR
 fi
 
-n=$(echo `nproc`)
+if [ -d "$PIDDIR" ]; then
 
-echo "Starting $n services..."
+    if [ "$(ls -A $PIDDIR)" ]; then
 
-for (( i=1; i<=$n; i++ ))
-do
-    socket="/tmp/unix_predictry_socket_${i}.sock"
-    pid="pid/server-${i}.pid"
+        echo "It seems that the server is already running."
+        echo "Stop any running instances before running this command"
 
-    `$PYTHONENV/gunicorn -b unix:${socket} --workers=$n --log-level=CRITICAL --name $APPNAME predictry.server:app` & echo $! > ${pid}
-done
+    else
 
-echo "Starting background workers..."
+        n=$(echo `nproc`)
 
-$PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
+        echo "Starting $n instances..."
+
+        for (( i=1; i<=$n; i++ ))
+        do
+            socket="/tmp/unix_predictry_socket_${i}.sock"
+            pid="pid/server-${i}.pid"
+
+            `$PYTHONENV/gunicorn -b unix:${socket} --workers=$n --log-level=CRITICAL --name $APPNAME predictry.server:app` & echo $! > ${pid}
+        done
+
+        echo "Starting background workers..."
+
+        $PYTHONENV/python -m predictry.workers & echo $! > "pid/workers.pid"
+
+        echo "Done."
+    fi
+fi
 
 #chcek if program is still running
 #PID=$(cat program.pid)
 #if [ -e /proc/${PID} -a /proc/${PID}/exe -ef /usr/bin/program ]; then
 #echo "Still running"
 #fi
-
-echo "Done."
