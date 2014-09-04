@@ -4,11 +4,10 @@ import os
 import json
 import logging.config
 
-
 class Logger:
 
     @classmethod
-    def setup_logging(cls, default_path, default_level=logging.ERROR, env_key='LOG_CFG'):
+    def setup_logging(cls, default_path, default_level=logging.INFO, env_key='LOG_CFG'):
         """Setup logging configuration
 
         """

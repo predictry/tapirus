@@ -46,8 +46,6 @@ api.add_resource(ActionListAPI, '/predictry/api/v1/actions', '/predictry/api/v1/
 #recommendations
 api.add_resource(RecommendationAPI, '/predictry/api/v1/recommend', '/predictry/api/v1/recommend/', endpoint='recommend')
 
-Logger.setup_logging("../../rsc/conf/logging-config.json")
-
 #run application
 if __name__ == '__main__':
     #start listening for connection

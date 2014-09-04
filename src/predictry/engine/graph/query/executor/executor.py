@@ -5,9 +5,12 @@ from py2neo.packages.httpstream.http import SocketError
 from predictry.engine.graph.query.executor.base import QueryExecutorBase
 from predictry.utils.helpers import text
 from predictry.utils.log.logger import Logger
+from predictry.utils.config import config
 
-
-url = 'http://localhost:7474/db/data/'
+if config:
+    url = config["neo4j"]["endpoints"]["data"]
+else:
+    url = 'http://localhost:7474/db/data/'
 
 
 class QueryExecutor(QueryExecutorBase):
