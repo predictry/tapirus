@@ -1,9 +1,11 @@
 #!/bin/bash
 
+sudo apt-get update
+
 echo "Installing prerequisites..."
 sudo apt-get install python-dev python-pip python-virtualenv -y --force-yes
 sudo apt-get install gunicorn libevent-dev -y --force-yes
-sudo aptitude install nginx -y --force-yes
+sudo aptitude install nginx -y
 
 echo "Starting nginx.."
 sudo service nginx start
