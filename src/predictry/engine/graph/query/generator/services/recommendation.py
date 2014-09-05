@@ -342,54 +342,43 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 5
 
-        elif rtype in ["uvnp"]: #todo: merge with uacnp, and replace query
+        elif rtype in ["uvnp", "uacnp"]: #todo: merge with uacnp, and replace query
 
-            action = lambda x: ["view", "buy"][x]
+            action = lambda x: {
+                "uvnp": "view",
+                "uacnp": "add_to_cart"
+            }[x]
 
-            query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(:%s:%s)-[vr :%s]->(x :%s:%s)\n"
-                         "WITH DISTINCT vr, x, u\n"
-                         "ORDER BY vr.timestamp DESC\n"
+            '''
+            MATCH (u :redmart:user {id:33439})
+            WITH u
+            MATCH (u)<-[:by]-(s :redmart:session)
+            WITH DISTINCT s
+            MATCH (s)-[vr :view]->(x :redmart:item)
+            WITH vr, x, s
+            ORDER BY vr.timestamp DESC
+            LIMIT 50
+            OPTIONAL MATCH (s)-[br :buy]->(x)
+            WHERE br is NULL
+            RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+            ORDER BY matches DESC
+            LIMIT 5
+            '''
+
+            query.append("MATCH (u :%s:%s {id:{user_id}})\n"
+                         "WITH u\n"
+                         "MATCH (u)<-[:by]-(s :%s:%s)\n"
+                         "WITH DISTINCT s\n"
+                         "MATCH (s)-[r :%s]->(x :%s:%s)\n"
+                         "WITH r, x, s\n"
+                         "ORDER BY r.timestamp DESC\n"
                          "LIMIT {ntx}\n"
-                         "OPTIONAL MATCH (u)<-[:by]-(:%s:%s)-[br :%s]->(x)\n"
+                         "OPTIONAL MATCH (s)-[br :%s]->(x)\n"
                          "WHERE br is NULL\n"
                          % (domain, UserSchema.get_label(),
-                            domain, SessionSchema.get_label(), action(0),
+                            domain, SessionSchema.get_label(), action(rtype),
                             domain, ItemSchema.get_label(),
-                            domain, SessionSchema.get_label(), action(1)))
-
-            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
-
-            if "fields" in args:
-                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
-                for field in fields:
-                    query.append(", x.%s AS %s" % (field, field))
-
-            query.append("\n")
-            query.append("ORDER BY matches DESC\n"
-                         "LIMIT {limit}")
-
-            params["user_id"] = int(args["user_id"])
-            params["ntx"] = 50
-
-            if "limit" in args:
-                params["limit"] = int(args["limit"])
-            else:
-                params["limit"] = 5
-
-        elif rtype in ["uacnp"]:
-
-            action = lambda x: ["add_to_cart", "buy"][x]
-
-            query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(s:%s:%s)-[vr :%s]->(x :%s:%s)\n"
-                         "WITH DISTINCT s, vr, x\n"
-                         "ORDER BY vr.timestamp DESC\n"
-                         "LIMIT {ntx}\n"
-                         "OPTIONAL MATCH (u)<-[:by]-(s)-[br :%s]->(x)\n"
-                         "WHERE br is NULL\n"
-                         % (domain, UserSchema.get_label(),
-                            domain, SessionSchema.get_label(), action(0),
-                            domain, ItemSchema.get_label(),
-                            action(1)))
+                            "buy"))
 
             query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
 
