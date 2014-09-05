@@ -205,34 +205,18 @@ ORDER BY matches DESC
 LIMIT 5
 
 ###other items viewed/purchased
-MATCH (i :redmart:item {id:12572})<-[r :buy]-(s :redmart:session)-[:buy]->(x :redmart:item)
-WHERE i <> x
-RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
-ORDER BY matches DESC
-LIMIT 5
 
-PENDING REVIEW
-MATCH (i :redmart:item {id:5132})<-[r1 :buy]-(s1 :redmart:session)
-WITH DISTINCT s1, i
-MATCH (s1)-[:by]->(u :redmart:user)
-WITH DISTINCT u, s1, i
-MATCH (u)<-[:by]-(s2 :redmart:session)
-WITH DISTINCT s2, s1, u, i
-MATCH (s2)-[r2 :buy]->(x :redmart:item)
-WHERE x <> i AND s2 <> s1
+'''
+MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
+WHERE i <> x AND s1 <> s2
+RETURN x.id AS id
+LIMIT {limit}
+'''
+
+MATCH (i :redmart:item {id:5132})<-[r1 :buy]-(s1 :redmart:session)-[:by]->(u :redmart:user)<-[:by]-(s2 :redmart:session)-[:buy]->(x :redmart:user)
+WHERE i <> x AND s1 <> s2
 RETURN x.id AS id
 LIMIT 300
-
-*******
-MATCH (i :redmart:item {id:5131})
-WITH i
-MATCH (i)<-[br1 :buy]-(s :redmart:session)
-WITH DISTINCT s, i, br1
-MATCH (s)-[br2 :buy]->(x :redmart:item)
-WHERE br1 <> br2
-RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
-ORDER BY matches DESC
-LIMIT 5
 
 
 ###user: most recently purchase/viewed/bought (for users with many transactions, this takes time)
@@ -248,6 +232,20 @@ LIMIT 5
 
 REPLACED BY:
 
+'''
+MATCH (u:%s:%s {id:{item_id}})
+WITH u
+MATCH (u)<-[:by]-(s:%s:%s)
+WITH DISTINCT s
+MATCH (s)-[r :%s]->(x:%s:%s)
+WITH r, x
+ORDER BY r.timestamp DESC
+LIMIT {ntx}
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT {limit}
+'''
+
 MATCH (u:user:redmart {id:33439})
 WITH u
 MATCH (u)<-[:by]-(s:redmart:session)
@@ -261,7 +259,7 @@ ORDER BY matches DESC
 LIMIT 5
 
 
-###Out of the last 50 viewed items, which ones have never been purchased by the user?
+###Out of the last 50 viewed/added to cart items, which ones have never been purchased by the user?
 MATCH (u :redmart:user {id:33439})
 WITH u
 MATCH (u)<-[:by]-(s :redmart:session)
@@ -276,21 +274,21 @@ RETURN DISTINCT x.id AS id, COUNT(x) AS matches
 ORDER BY matches DESC
 LIMIT 5
 
-
-###Out of the last 50 items added to the cart, which ones didn't make it to checkout
+'''
 MATCH (u :redmart:user {id:33439})
 WITH u
-MATCH (u)<-[:by]-(s:redmart:session)
+MATCH (u)<-[:by]-(s :redmart:session)
 WITH DISTINCT s
-MATCH (s)-[ar :add_to_cart]->(x :redmart:item)
-WITH ar, x, s
-ORDER BY ar.timestamp DESC
+MATCH (s)-[vr :view]->(x :redmart:item)
+WITH vr, x, s
+ORDER BY vr.timestamp DESC
 LIMIT 50
 OPTIONAL MATCH (s)-[br :buy]->(x)
 WHERE br is NULL
-RETURN DISTINCT x.id  AS id, COUNT(x.id) AS matches
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
 ORDER BY matches DESC
 LIMIT 5
+'''
 
 
 #Query data

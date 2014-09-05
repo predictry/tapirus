@@ -210,6 +210,14 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oipt": "buy"
             }[x]
 
+            '''
+            MATCH (i :%s:%s{id:{item_id}})<-[r :%s]-(s :%s:%s)-[:%s]->(x :%s:%s)
+            WHERE i <> x
+            RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+            ORDER BY matches DESC
+            LIMIT {limit}
+            '''
+
             query.append("MATCH (i :%s:%s{id:{item_id}})<-[r :%s]"
                          "-(s :%s:%s)-[:%s]"
                          "->(x :%s:%s)\n"
@@ -253,6 +261,13 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "oip": "buy"
             }[x]
 
+            '''
+            MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
+            WHERE i <> x AND s1 <> s2
+            RETURN x.id AS id
+            LIMIT {limit}
+            '''
+
             query.append("MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]"
                          "-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]"
                          "-(s2 :%s:%s)-[:%s]->(x :%s:%s)\n"
@@ -282,6 +297,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
         elif rtype in ["trv", "trp", "trac"]:
 
+            """
+            MATCH (n :%s:%s {rtype: {rtype}})
+            RETURN n.items AS items, n.matches AS matches
+            """
             query.append("MATCH (n :%s:%s {rtype: {rtype}})\n"
                          % (domain, "trend"))
             query.append("RETURN n.items AS items, n.matches AS matches")
@@ -342,7 +361,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 5
 
-        elif rtype in ["uvnp", "uacnp"]: #todo: merge with uacnp, and replace query
+        elif rtype in ["uvnp", "uacnp"]:
 
             action = lambda x: {
                 "uvnp": "view",
