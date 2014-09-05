@@ -7,3 +7,13 @@ In any query, specify all known lables, relationsip types. Query speeds have bee
 
 Any cypher query's speed depends on the number of nodes we visit. The more nodes we need to count, the longer it
 will take. If we're just passing by (path finding), the number of nodes is much less of an issue.
+
+The db needs to be warmed up on startup up.
+Send it a couple of requests to cache execution engines for all types of queries that will run
+
+Unless you're looking for paths, always break queries into blocks, e.g.
+find user x
+find unique sessions by user x
+find items purchased in those sessions
+count items
+

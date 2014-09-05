@@ -238,13 +238,13 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["item_id"] = int(args["item_id"])
 
             if "limit" in args:
-                params["limit"] = args["limit"]
+                params["limit"] = int(args["limit"])
             else:
                 params["limit"] = 5
 
         #other items viewed/purchased
         elif rtype in ["oiv", "oip"]:
-            #todo: this query looks for items purchased/viewed by
+            #this query looks for items purchased/viewed by
             #this same user when he/she did not purchase/or view
             #a particular item x
 
@@ -289,7 +289,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["rtype"] = rtype
 
 
-        if rtype in ["utrp", "utrv", "utrac"]:
+        elif rtype in ["utrp", "utrv", "utrac"]:
 
             action = lambda x: {
                 "utrv": "view",
@@ -297,16 +297,26 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                 "utrac": "add_to_cart"
             }[x]
 
-            #MATCH (u :store:user {id:{user_id}})-[:by]-(:store:session)-[r :view]-(x:store:item)
-            #WITH DISTINCT r, x
-            #ORDER BY r.timestamp DESC
-            #LIMIT 100
-            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
-            #ORDER BY matches DESC
-            #LIMIT 5
+            '''
+            MATCH (u:%s:%s {id:{item_id}})
+            WITH u
+            MATCH (u)<-[:by]-(s:%s:%s)
+            WITH DISTINCT s
+            MATCH (s)-[r :%s]->(x:%s:%s)
+            WITH r, x
+            ORDER BY r.timestamp DESC
+            LIMIT {ntx}
+            RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+            ORDER BY matches DESC
+            LIMIT {limit}
+            '''
 
-            query.append("MATCH (u:%s:%s {id:{user_id}})<-[:by]-(:%s:%s)-[r :%s]->(x:%s:%s)\n"
-                         "WITH DISTINCT r, x\n"
+            query.append("MATCH (u:%s:%s {id:{user_id}})\n"
+                         "WITH u\n"
+                         "MATCH (u)<-[:by]-(s :%s:%s)\n"
+                         "WITH DISTINCT s\n"
+                         "MATCH (s)-[r :%s]->(x :%s:%s)\n"
+                         "WITH r, x\n"
                          "ORDER BY r.timestamp DESC\n"
                          "LIMIT {ntx}\n"
                          % (domain, UserSchema.get_label(),
@@ -328,23 +338,13 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["ntx"] = 50
 
             if "limit" in args:
-                params["limit"] = args["limit"]
+                params["limit"] = int(args["limit"])
             else:
                 params["limit"] = 5
 
-        if rtype in ["uvnp"]:
+        elif rtype in ["uvnp"]: #todo: merge with uacnp, and replace query
 
             action = lambda x: ["view", "buy"][x]
-
-            #MATCH (u :redmart:user {id:33439})<-[:by]-(:redmart:session)-[vr :view]->(x :redmart:item)
-            #WITH DISTINCT vr, x, u
-            #ORDER BY vr.timestamp DESC
-            #LIMIT 50
-            #OPTIONAL MATCH (u)<-[:by]-(:redmart:session)-[br :buy]->(x)
-            #WHERE br is NULL
-            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
-            #ORDER BY matches DESC
-            #LIMIT 5
 
             query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(:%s:%s)-[vr :%s]->(x :%s:%s)\n"
                          "WITH DISTINCT vr, x, u\n"
@@ -372,23 +372,13 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["ntx"] = 50
 
             if "limit" in args:
-                params["limit"] = args["limit"]
+                params["limit"] = int(args["limit"])
             else:
                 params["limit"] = 5
 
-        if rtype in ["uacnp"]:
+        elif rtype in ["uacnp"]:
 
             action = lambda x: ["add_to_cart", "buy"][x]
-
-            #MATCH (u:redmart:user {id:33370})<-[:by]-(s:redmart:session)-[vr :add_to_cart]->(x:redmart:item)
-            #WITH DISTINCT s, vr, x
-            #ORDER BY vr.timestamp DESC
-            #LIMIT 50
-            #OPTIONAL MATCH (u)<-[:by]-(s)-[br :buy]->(x)
-            #WHERE br is NULL
-            #RETURN DISTINCT x.id AS id, COUNT(x) AS matches
-            #ORDER BY matches DESC
-            #LIMIT 5
 
             query.append("MATCH (u :%s:%s {id:{user_id}})<-[:by]-(s:%s:%s)-[vr :%s]->(x :%s:%s)\n"
                          "WITH DISTINCT s, vr, x\n"
@@ -416,7 +406,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             params["ntx"] = 50
 
             if "limit" in args:
-                params["limit"] = args["limit"]
+                params["limit"] = int(args["limit"])
             else:
                 params["limit"] = 5
 
