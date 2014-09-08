@@ -86,6 +86,9 @@ def translate_filters(filters, ref, concatenate=False):
         "lte": "<=",
     }[op]
 
+    identifier = lambda c: ''.join(["_", str(c)])
+    variables = []
+
     if type(filters) is list:
 
         c = 0
@@ -96,6 +99,10 @@ def translate_filters(filters, ref, concatenate=False):
 
             cypher = []
             if isinstance(flt, Filter):
+
+                variables.append(flt.variable)
+                param_name = ''.join([flt.variable, identifier(variables.count(flt.variable))])
+
                 if flt.op in FILTER_ATOMIC_OPS:
                     if flt.data_type in FILTER_DATA_TYPES:
 
@@ -108,9 +115,9 @@ def translate_filters(filters, ref, concatenate=False):
                         if set_value:
                             cypher.append(ref + "." + flt.variable)
                             cypher.append(op(flt.op))
-                            cypher.append("{" + flt.variable + "}")
+                            cypher.append("{" + param_name + "}")
 
-                            params[flt.variable] = flt.value
+                            params[param_name] = flt.value
 
                 #assumes target property is a list
                 elif flt.op in FILTER_LIST_OPS:
@@ -129,7 +136,7 @@ def translate_filters(filters, ref, concatenate=False):
                                 cypher.append("NONE(")
 
                             cypher.append("x IN")
-                            cypher.append("{" + flt.variable + "}")
+                            cypher.append("{" + param_name + "}")
                             cypher.append("WHERE")
                             cypher.append("x IN")
                             cypher.append(ref + "." + flt.variable)
@@ -141,11 +148,11 @@ def translate_filters(filters, ref, concatenate=False):
                             cypher.append("HAS")
                             cypher.append("(" + ref + "." + flt.variable + ")")
                             cypher.append("AND")
-                            cypher.append("{" + flt.variable + "}")
+                            cypher.append("{" + param_name + "}")
                             cypher.append("IN")
                             cypher.append(ref + "." + flt.variable)
 
-                        params[flt.variable] = flt.value
+                        params[param_name] = flt.value
                         set_value = True
 
             if concatenate and set_value:
@@ -418,7 +425,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             else:
                 params["limit"] = 5
 
-        #print "query:", ''.join(query)
-        #print params
+        print "query:", ''.join(query)
+        print params
 
         return ''.join(query), params
