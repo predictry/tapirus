@@ -15,6 +15,6 @@ APP=/apps/tapirus/app/rsc/shell/
 DEAMON=run-server.sh
 
 cd $APP
-bash DEAMON
+bash $DEAMON
 
 exit 0

@@ -20,6 +20,7 @@ sudo cp  ../conf/.htpasswd /etc/nginx/
 
 echo "Setting up to run on startup..."
 sudo cp  ../conf/rc.local /etc/
+sudo chmod 755 /etc/rc.local
 
 echo "Starting nginx..."
 sudo service nginx start
