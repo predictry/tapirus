@@ -16,6 +16,7 @@ sudo service nginx stop
 echo "Configuring nginx..."
 sudo cp  /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkp
 sudo cp  ../conf/nginx-conf.conf /etc/nginx/nginx.conf
+sudo cp  ../conf/nginx.default /etc/nginx/sites-available/default
 sudo cp  ../conf/.htpasswd /etc/nginx/
 
 echo "Setting up to run on startup..."
