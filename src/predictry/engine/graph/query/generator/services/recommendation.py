@@ -58,7 +58,7 @@ def parse_data_type(s, data_type, is_list=False):
             elif data_type == "date":
                 values.append(long(token))
             elif data_type == "bool":
-                return bool(token)
+                values.append(bool(token))
             else:
                 values.append(token.strip())
         return values
