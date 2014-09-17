@@ -1,8 +1,11 @@
 #!/bin/bash
 
 echo "Installing Oracle Java 8..."
-sudo add-apt-repository ppa:webupd8team/java -y --force-yes
+sudo apt-get install software-properties-common -y --force-yes
+sudo add-apt-repository ppa:webupd8team/java -y
 sudo apt-get update
+sudo echo debconf shared/accepted-oracle-license-v1-1 select true |   sudo debconf-set-selections
+sudo echo debconf shared/accepted-oracle-license-v1-1 seen true |   sudo debconf-set-selections
 sudo apt-get install oracle-java8-installer -y --force-yes
 
 echo "Installing Neo4j..."
