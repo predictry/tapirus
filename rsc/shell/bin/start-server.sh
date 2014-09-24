@@ -1,6 +1,14 @@
 #!/bin/bash
 
-cd ../../../
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+cd ${DIR}/../../../../
 PROJECTNAME=$(basename `pwd`)
 ENV=$PROJECTNAME-env
 
@@ -16,7 +24,6 @@ export PYTHONPATH=$PYTHONPATH:$SRCROOT
 
 PIDDIR=pid
 LOGDIR=log
-
 
 function start(){
 
@@ -65,9 +72,3 @@ if [ -d "$PIDDIR" ]; then
         start
     fi
 fi
-
-#chcek if program is still running
-#PID=$(cat program.pid)
-#if [ -e /proc/${PID} -a /proc/${PID}/exe -ef /usr/bin/program ]; then
-#echo "Still running"
-#fi

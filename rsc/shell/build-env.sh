@@ -1,21 +1,33 @@
 #!/bin/bash
 
-cd ../../../
-PROJECTNAME=$(basename `pwd`)
-ENV=$PROJECTNAME-env
-REQUIREMENTS=./app/rsc/requirements.txt
+function buildEnvironment(){
 
-virtualenv $ENV
+    SOURCE="${BASH_SOURCE[0]}"
 
-PYTHONENV=./$ENV/bin
-SRCROOT=./app/src
+    while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+      DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+      SOURCE="$(readlink "$SOURCE")"
+      [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    done
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-#activate env and add project src to PYTHONPATH
-chmod +x $PYTHONENV/activate
-$PYTHONENV/activate
+    cd ${DIR}/../../../
+    PROJECTNAME=$(basename `pwd`)
+    ENV=$PROJECTNAME-env
+    REQUIREMENTS=./app/rsc/requirements.txt
 
-export PYTHONPATH=$PYTHONPATH:$SRCROOT
+    virtualenv $ENV
 
-$PYTHONENV/pip install -r $REQUIREMENTS
+    PYTHONENV=./${ENV}/bin
+    SRCROOT=./app/src
 
+    #activate env and add project src to PYTHONPATH
+    chmod +x $PYTHONENV/activate
+    $PYTHONENV/activate
 
+    export PYTHONPATH=$PYTHONPATH:$SRCROOT
+
+    $PYTHONENV/pip install -r $REQUIREMENTS
+}
+
+buildEnvironment

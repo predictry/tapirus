@@ -1,9 +1,0 @@
-python dependencies:
-python 2.7 virtualenv
-py2neo, Flask, Flask-RESTful, gunicorn
-
-system dependencies:
-gunicorn (apt-get install gunicorn 17.5)
-nginx (apt-get install nginx 1.4.6)
-
-TODO: compare gunicorn worker types: sync, eventlet, gevent, tornado

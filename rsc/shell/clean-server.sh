@@ -1,5 +1,31 @@
 #!/bin/bash
 
+function resetConfig(){
+
+if [ -f "/etc/rc.local" ]; then
+
+rm /etc/rc.local
+
+echo "
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+exit 0" >> /etc/rc.local
+
+fi
+
+}
+
 echo "REMOVING TAPIRUS/NEO4j SETUP"
 
 echo "Stopping Nginx..."
@@ -30,5 +56,10 @@ sudo rm -rf /etc/init.d/neo4j-service /etc/init.d/neo4j-service.bkp
 
 echo "Deleting /var/lib/neo4j"
 sudo rm -rf /var/lib/neo4j*
+
+echo "Reseting /etc/rc.local"
+sudo rm -rf /var/lib/neo4j*
+
+resetConfig
 
 echo "Done"

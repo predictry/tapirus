@@ -55,7 +55,7 @@ SCRIPTNAME=/etc/init.d/$NAME-service
 do_start()
 {
     #important for performance
-	ulimit -n 100000
+	ulimit -n 400000
 	# Return
 	#   0 if daemon has been started
 	#   1 if daemon was already running
