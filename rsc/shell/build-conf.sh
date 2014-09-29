@@ -111,10 +111,10 @@ function buildConf(){
 
         #security
         # limit the number of connections per single IP
-        #limit_conn_zone $binary_remote_addr zone=conn_limit_per_ip:10m;
+        #limit_conn_zone \$binary_remote_addr zone=conn_limit_per_ip:10m;
 
         # limit the number of requests for a given session
-        #limit_req_zone $binary_remote_addr zone=req_limit_per_ip:10m rate=5r/s;
+        #limit_req_zone \$binary_remote_addr zone=req_limit_per_ip:10m rate=5r/s;
 
         # Configuration for Nginx
         server {
@@ -152,10 +152,10 @@ function buildConf(){
 
                 proxy_pass         http://app_servers;
                 proxy_redirect     off;
-                proxy_set_header   Host $host;
-                proxy_set_header   X-Real-IP $remote_addr;
-                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header   X-Forwarded-Host $server_name;
+                proxy_set_header   Host \$host;
+                proxy_set_header   X-Real-IP \$remote_addr;
+                proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header   X-Forwarded-Host \$server_name;
 
             }
         }
@@ -181,34 +181,9 @@ function buildConf(){
         index index.html index.htm;
 
         location / {
-            try_files $uri $uri/ =404;
+            try_files \$uri \$uri/ =404;
         }
     }
-
-
-    # HTTPS server
-    #
-    #server {
-    #	listen 443;
-    #	server_name localhost;
-    #
-    #	root html;
-    #	index index.html index.htm;
-    #
-    #	ssl on;
-    #	ssl_certificate cert.pem;
-    #	ssl_certificate_key cert.key;
-    #
-    #	ssl_session_timeout 5m;
-    #
-    #	ssl_protocols SSLv3 TLSv1 TLSv1.1 TLSv1.2;
-    #	ssl_ciphers \"HIGH:!aNULL:!MD5 or HIGH:!aNULL:!MD5:!3DES\";
-    #	ssl_prefer_server_ciphers on;
-    #
-    #	location / {
-    #		try_files $uri $uri/ =404;
-    #	}
-    #}
     " >> $NGINX_DEFAULT_CONFIG
 
     echo "
@@ -228,8 +203,8 @@ function buildConf(){
     APP=/apps/tapirus/app/rsc/shell/bin
     DEAMON=start-server.sh
 
-    cd $APP
-    bash $DEAMON
+    cd \$APP
+    bash \$DEAMON
 
     exit 0" >> $RC_LOCAL
 
