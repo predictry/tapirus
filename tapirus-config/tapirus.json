@@ -51,7 +51,7 @@
                 "ImageId": {
                     "Ref": "Instanceid"
                 },
-                "InstanceType": "t2.micro",
+                "InstanceType": "m3.medium",
                 "KeyName": "predictry-engine-key",
                 "InstanceMonitoring": "true",
                 "SecurityGroups": [
