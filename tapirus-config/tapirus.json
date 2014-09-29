@@ -1,0 +1,223 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "Instanceid": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "TapirusUpdate": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": [
+                    "ap-southeast-1a"
+                ],
+                "Cooldown": "60",
+                "DesiredCapacity": "1",
+                "MaxSize": "10",
+                "MinSize": "1",
+                "HealthCheckGracePeriod": "300",
+                "HealthCheckType": "EC2",
+                "LaunchConfigurationName": {
+                    "Ref": "TapirusLaunchConfiguration"
+                },
+                "LoadBalancerNames": [
+                    "tapirus-lb-sg"
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "tapirus-autoscaling-g0",
+                        "PropagateAtLaunch": true
+                    },
+                    {
+                        "Key": "Purpose",
+                        "Value": "Autoscaling",
+                        "PropagateAtLaunch": true
+                    }
+                ]
+            },
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MaxBatchSize": "2",
+                    "MinInstancesInService": "2",
+                    "PauseTime": "PT0S"
+                }
+            }
+        },
+        "TapirusLaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": {
+                    "Ref": "Instanceid"
+                },
+                "InstanceType": "t2.micro",
+                "KeyName": "predictry-engine-key",
+                "InstanceMonitoring": "true",
+                "SecurityGroups": [
+                    "sg-93758ff6",
+                    {
+                        "Ref": "SgPredictryWebServicePrivateSecurityGroup"
+                    },
+                    "sg-b96892dc",
+                    {
+                        "Ref": "SgPredictryHealtCheckPublicsecGroup"
+                    }
+                ],
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": 8
+                        }
+                    }
+                ]
+            }
+        },
+        "SgPredictryHealtCheckPublicsecGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Health check ports open",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8000",
+                        "ToPort": "8000",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "SgPredictryNeo4jPublicSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Neo4j access ports",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "7473",
+                        "ToPort": "7473",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "7474",
+                        "ToPort": "7474",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "SgPredictryWebServicePrivateSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Web services ports open with VPC",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "172.31.0.0/16"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "172.31.0.0/16"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "scalingDecreaseGroupSize": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "ScalingAdjustment": "-1",
+                "AutoScalingGroupName": {
+                    "Ref": "TapirusUpdate"
+                }
+            }
+        },
+        "scalingIncreaseGroupSize": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "ScalingAdjustment": "1",
+                "AutoScalingGroupName": {
+                    "Ref": "TapirusUpdate"
+                }
+            }
+        },
+        "alarmawsec2tapirusautoscalingg1v2HighCPUUtilization": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "ActionsEnabled": "true",
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "EvaluationPeriods": "1",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Period": "300",
+                "Statistic": "Average",
+                "Threshold": "50.0",
+                "AlarmActions": [
+                    {
+                        "Ref": "scalingIncreaseGroupSize"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": "tapirus-autoscaling-g1-v2"
+                    }
+                ]
+            }
+        },
+        "alarmawsec2tapirusautoscalingg1v2LowCPUUtilization": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "ActionsEnabled": "true",
+                "ComparisonOperator": "LessThanThreshold",
+                "EvaluationPeriods": "3",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Period": "300",
+                "Statistic": "Average",
+                "Threshold": "20.0",
+                "AlarmActions": [
+                    {
+                        "Ref": "scalingDecreaseGroupSize"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": "tapirus-autoscaling-g1-v2"
+                    }
+                ]
+            }
+        }
+    },
+    "Description": "Tapirus"
+}
+
