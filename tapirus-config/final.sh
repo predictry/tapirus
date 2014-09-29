@@ -3,14 +3,14 @@
 
 packer build  -var $aws_access_key -var $aws_secret_key EC2_MAIN_SERVER.json  >image_id.txt
 ami=$(tail -n 1 image_id.txt | grep -E -o 'ami-.{8}')
-rm $WORKSPACE/pongo-config/image_id.txt
+rm $WORKSPACE/tapirus-config/image_id.txt
 
 
 if [ ! -z "$ami" ]; then
 
 
 	#updating the template
-	if aws cloudformation update-stack --stack-name update-pongo --template-body file://cloud.json --parameters  ParameterKey=Instanceid,ParameterValue=$ami;then
+	if aws cloudformation update-stack --stack-name update-tapirus --template-body file://tapirus.json --parameters  ParameterKey=Instanceid,ParameterValue=$ami;then
 			
 		echo "The process finished successfully"
 	else
