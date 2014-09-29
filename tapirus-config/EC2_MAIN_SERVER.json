@@ -30,8 +30,7 @@
         },
         {
             "type": "shell",
-	    "remote_path":"/apps/tapirus/app",
-            "script": "run.sh"
+	   "inline": ["bash /apps/tapirus/app/rsc/shell/build-app.sh"] 
         }
     ]
 }
