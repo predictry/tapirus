@@ -14,7 +14,6 @@ from predictry.api.v1.blueprints.resources.items import ItemAPI, ItemListAPI
 from predictry.api.v1.blueprints.resources.users import UserAPI, UserListAPI
 from predictry.api.v1.blueprints.resources.actions import ActionAPI, ActionListAPI
 from predictry.api.v1.blueprints.services.recommendation import RecommendationAPI
-from predictry.utils.log.logger import Logger
 
 
 #class ServerApp(Flask):

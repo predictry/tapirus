@@ -34,13 +34,13 @@ function buildConf(){
     user www-data;
     pid /run/nginx.pid;
     worker_processes auto;
-    worker_rlimit_nofile 100000;
+    worker_rlimit_nofile 400000;
 
     events {
 
         #worker_connections 1024;
         #worker_connections 8192;
-        worker_connections 4000;
+        worker_connections 40000;
         use epoll;
         multi_accept on;
 
