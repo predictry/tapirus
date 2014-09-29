@@ -46,6 +46,10 @@ function buildApp(){
     echo "Starting nginx..."
     sudo service nginx start
 
+    sudo rm ${DIR}/../conf/nginx-conf.conf
+    sudo rm ${DIR}/../conf/nginx.default
+    sudo rm ${DIR}/../conf/rc.local
+
     sudo bash ${DIR}/build-env.sh
 
     echo "Done."

@@ -23,7 +23,7 @@ function buildConf(){
     fi
 
     if [ -f "$RC_LOCAL" ]; then
-        rm RC_LOCAL
+        rm $RC_LOCAL
     fi
 
     n=$(echo `nproc`)
@@ -49,8 +49,8 @@ function buildConf(){
     http {
 
         #logs
-        error_log /var/log/nginx/error.log crit;
-        access_log off;
+        error_log /var/log/nginx/error.log;
+        access_log /var/log/nginx/access.log;
 
         client_body_buffer_size 10K;
         client_header_buffer_size 1k;
