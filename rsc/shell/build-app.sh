@@ -37,6 +37,8 @@ function buildApp(){
 
     sudo cp  ${DIR}/../conf/nginx-conf.conf /etc/nginx/nginx.conf
     sudo cp  ${DIR}/../conf/nginx.default /etc/nginx/sites-available/default
+    sudo rm  /etc/nginx/sites-enabled/*
+    sudo ln  -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
     sudo cp  ${DIR}/../conf/.htpasswd /etc/nginx/
 
     echo "Setting up to run on startup..."
