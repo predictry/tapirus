@@ -55,13 +55,22 @@
                 "KeyName": "predictry-engine-key",
                 "InstanceMonitoring": "true",
                 "SecurityGroups": [
-                    "sg-93758ff6",
-                    {
-                        "Ref": "SgPredictryWebServicePrivateSecurityGroup"
-                    },
                     "sg-b96892dc",
                     {
-                        "Ref": "SgPredictryHealtCheckPublicsecGroup"
+                        "Ref": "PredictrySshPublicSecgroup"
+                    },
+                    "sg-bf758fda",
+                    {
+                        "Ref": "PredictryHealtcheckPublicSecgroup"
+                    },
+                    "sg-9a758fff",
+                    {
+                      "Ref": "PredictryWebservicePrivateSecgroup"  
+                    },
+                    "sg-93758ff6",
+                    {
+                        "Ref": "PredictryNeo4jPrivateSecgroup" 
+                        
                     }
                 ],
                 "BlockDeviceMappings": [
@@ -74,81 +83,102 @@
                 ]
             }
         },
-        "SgPredictryHealtCheckPublicsecGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Health check ports open",
-                "VpcId": "vpc-e616fb83",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "8000",
-                        "ToPort": "8000",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "-1",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ]
-            }
-        },
-        "SgPredictryNeo4jPublicSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Neo4j access ports",
-                "VpcId": "vpc-e616fb83",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "7473",
-                        "ToPort": "7473",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "7474",
-                        "ToPort": "7474",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "-1",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ]
-            }
-        },
-        "SgPredictryWebServicePrivateSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Web services ports open with VPC",
-                "VpcId": "vpc-e616fb83",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": "172.31.0.0/16"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": "172.31.0.0/16"
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "-1",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ]
-            }
-        },
+    "PredictrySshPublicSecgroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SSH ports open",
+        "VpcId": "vpc-e616fb83",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "PredictryHealtcheckPublicSecgroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Health check ports open",
+        "VpcId": "vpc-e616fb83",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8000",
+            "ToPort": "8000",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "PredictryWebservicePrivateSecgroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Web services ports open with VPC",
+        "VpcId": "vpc-e616fb83",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "172.31.0.0/16"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "172.31.0.0/16"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "PredictryNeo4jPrivateSecgroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Neo4j access ports within VPC",
+        "VpcId": "vpc-e616fb83",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "7473",
+            "ToPort": "7473",
+            "CidrIp": "172.31.0.0/16"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "7474",
+            "ToPort": "7474",
+            "CidrIp": "172.31.0.0/16"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
         "scalingDecreaseGroupSize": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
@@ -220,4 +250,3 @@
     },
     "Description": "Tapirus"
 }
-
