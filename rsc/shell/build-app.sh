@@ -18,6 +18,7 @@ function buildApp(){
     sudo apt-get install python-dev python-pip python-virtualenv -y --force-yes
     sudo apt-get install gunicorn libevent-dev -y --force-yes
     sudo aptitude install nginx -y
+    sudo apt-get install bash -y
 
     echo "Starting nginx.."
     sudo service nginx start
@@ -36,6 +37,8 @@ function buildApp(){
 
     sudo cp  ${DIR}/../conf/nginx-conf.conf /etc/nginx/nginx.conf
     sudo cp  ${DIR}/../conf/nginx.default /etc/nginx/sites-available/default
+    sudo rm  /etc/nginx/sites-enabled/*
+    sudo ln  -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
     sudo cp  ${DIR}/../conf/.htpasswd /etc/nginx/
 
     echo "Setting up to run on startup..."
@@ -44,6 +47,10 @@ function buildApp(){
 
     echo "Starting nginx..."
     sudo service nginx start
+
+    sudo rm ${DIR}/../conf/nginx-conf.conf
+    sudo rm ${DIR}/../conf/nginx.default
+    sudo rm ${DIR}/../conf/rc.local
 
     sudo bash ${DIR}/build-env.sh
 

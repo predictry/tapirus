@@ -23,7 +23,7 @@ function buildConf(){
     fi
 
     if [ -f "$RC_LOCAL" ]; then
-        rm RC_LOCAL
+        rm $RC_LOCAL
     fi
 
     n=$(echo `nproc`)
@@ -31,207 +31,182 @@ function buildConf(){
     #NGINX NGINX CONFIG
 
     echo "
-    user www-data;
-    pid /run/nginx.pid;
-    worker_processes auto;
-    worker_rlimit_nofile 100000;
+user www-data;
+pid /run/nginx.pid;
+worker_processes auto;
+worker_rlimit_nofile 400000;
 
-    events {
+events {
 
-        #worker_connections 1024;
-        #worker_connections 8192;
-        worker_connections 4000;
-        use epoll;
-        multi_accept on;
+    #worker_connections 1024;
+    #worker_connections 8192;
+    worker_connections 40000;
+    use epoll;
+    multi_accept on;
 
-    }
+}
 
-    http {
+http {
 
-        #logs
-        error_log /var/log/nginx/error.log crit;
-        access_log off;
+    #logs
+    error_log /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
 
-        client_body_buffer_size 10K;
-        client_header_buffer_size 1k;
-        client_max_body_size 8m;
-        large_client_header_buffers 2 1k;
+    client_body_buffer_size 10K;
+    client_header_buffer_size 1k;
+    client_max_body_size 8m;
+    large_client_header_buffers 2 1k;
 
-        client_body_timeout 12;
-        client_header_timeout 12;
-        keepalive_timeout 30;
-        send_timeout 10;
+    client_body_timeout 12;
+    client_header_timeout 12;
+    keepalive_timeout 30;
+    send_timeout 10;
 
-        # copies data between one FD and other from within the kernel
-        # faster then read() + write()
-        sendfile on;
+    # copies data between one FD and other from within the kernel
+    # faster then read() + write()
+    sendfile on;
 
-        # send headers in one peace, its better then sending them one by one
-        tcp_nopush on;
+    # send headers in one peace, its better then sending them one by one
+    tcp_nopush on;
 
-        # don't buffer data sent, good for small data bursts in real time
-        tcp_nodelay on;
+    # don't buffer data sent, good for small data bursts in real time
+    tcp_nodelay on;
 
-        # allow the server to close connection on non responding client, this will free up memory
-        reset_timedout_connection on;
+    # allow the server to close connection on non responding client, this will free up memory
+    reset_timedout_connection on;
 
-        #for security
-        server_tokens off;
+    #for security
+    server_tokens off;
 
-        #gzip             on;
-        #gzip_comp_level  2;
-        #gzip_min_length  1000;
-        #gzip_proxied     expired no-cache no-store private auth;
-        #gzip_types       text/plain application/x-javascript text/xml text/css application/xml;
+    #gzip             on;
+    #gzip_comp_level  2;
+    #gzip_min_length  1000;
+    #gzip_proxied     expired no-cache no-store private auth;
+    #gzip_types       text/plain application/x-javascript text/xml text/css application/xml;
 
-        #default
-        gzip              on;
-        gzip_http_version 1.0;
-        gzip_proxied      any;
-        gzip_min_length   500;
-        gzip_disable      \"MSIE [1-6]\.\";
-        gzip_types        text/plain text/xml text/css
-                          text/comma-separated-values
-                          text/javascript
-                          application/x-javascript
-                          application/atom+xml;
+    #default
+    gzip              on;
+    gzip_http_version 1.0;
+    gzip_proxied      any;
+    gzip_min_length   500;
+    gzip_disable      \"MSIE [1-6]\.\";
+    gzip_types        text/plain text/xml text/css
+                      text/comma-separated-values
+                      text/javascript
+                      application/x-javascript
+                      application/atom+xml;
 
-        upstream app_servers {
+    upstream app_servers {
 
         " >> $NGINX_NGINX_CONFIG
 
 
-    for (( i=1; i<=$n; i++ ))
-    do
-        echo "      server unix:/tmp/unix_predictry_socket_${i}.sock fail_timeout=0;" >> $NGINX_NGINX_CONFIG
-    done
+for (( i=1; i<=$n; i++ ))
+do
+    echo "      server unix:/tmp/unix_predictry_socket_${i}.sock fail_timeout=0;" >> $NGINX_NGINX_CONFIG
+done
 
-    echo "
-        }
-
-        #security
-        # limit the number of connections per single IP
-        #limit_conn_zone $binary_remote_addr zone=conn_limit_per_ip:10m;
-
-        # limit the number of requests for a given session
-        #limit_req_zone $binary_remote_addr zone=req_limit_per_ip:10m rate=5r/s;
-
-        # Configuration for Nginx
-        server {
-
-            #http auth
-            auth_basic \"Restricted\";
-            auth_basic_user_file /etc/nginx/.htpasswd;
-
-            #security
-            #limit_conn conn_limit_per_ip 10;
-            #limit_req zone=req_limit_per_ip burst=10 nodelay;
-
-            # Running port
-            listen 80;
-
-            # Settings to serve static files
-            location ^~ /static/  {
-
-                # Example:
-                # root /full/path/to/application/static/file/dir;
-                # root /app/static/;
-
-            }
-
-            # Serve a static file (ex. favico)
-            # outside /static directory
-            location = /favico.ico  {
-                #root /app/favico.ico;
-
-            }
-
-            # Proxy connections to the application servers
-            # app_servers
-            location / {
-
-                proxy_pass         http://app_servers;
-                proxy_redirect     off;
-                proxy_set_header   Host $host;
-                proxy_set_header   X-Real-IP $remote_addr;
-                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header   X-Forwarded-Host $server_name;
-
-            }
-        }
-
-        #virtual hosts
-
-        #include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/sites-enabled/default;
+echo "
     }
+
+    # security
+    # limit the number of connections per single IP
+    #limit_conn_zone \$binary_remote_addr zone=conn_limit_per_ip:10m;
+
+    # limit the number of requests for a given session
+    #limit_req_zone \$binary_remote_addr zone=req_limit_per_ip:10m rate=5r/s;
+
+    # Configuration for Nginx
+    server {
+
+        #http auth
+        auth_basic \"Restricted\";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+
+        # security
+        #limit_conn conn_limit_per_ip 10;
+        #limit_req zone=req_limit_per_ip burst=10 nodelay;
+
+        # Running port
+        listen [::]:80;
+
+        # Settings to serve static files
+        location ^~ /static/  {
+
+            # Example:
+            # root /full/path/to/application/static/file/dir;
+            # root /app/static/;
+
+        }
+
+        # Serve a static file (ex. favico)
+        # outside /static directory
+        location = /favico.ico  {
+            #root /app/favico.ico;
+
+        }
+
+        # Proxy connections to the application servers
+        # app_servers
+        location / {
+
+            proxy_pass         http://app_servers;
+            proxy_redirect     off;
+            proxy_set_header   Host \$host;
+            proxy_set_header   X-Real-IP \$remote_addr;
+            proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Host \$server_name;
+
+        }
+    }
+
+    #virtual hosts
+
+    #include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
     " >> $NGINX_NGINX_CONFIG
 
 
     #NGINX DEFAULT CONFIG
 
-    echo "
-    # another virtual host using mix of IP-, name-, and port-based configuration
+echo "
+# another virtual host using mix of IP-, name-, and port-based configuration
 
-    server {
-        listen 8000;
-        #listen healthcheck:8000;
-        server_name healthcheck;
-        root /usr/share/nginx/html;
-        index index.html index.htm;
+server {
+    listen [::]:8000;
+    server_name healthcheck;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
 
-        location / {
-            try_files $uri $uri/ =404;
-        }
+    location / {
+        try_files \$uri \$uri/ =404;
     }
-
-
-    # HTTPS server
-    #
-    #server {
-    #	listen 443;
-    #	server_name localhost;
-    #
-    #	root html;
-    #	index index.html index.htm;
-    #
-    #	ssl on;
-    #	ssl_certificate cert.pem;
-    #	ssl_certificate_key cert.key;
-    #
-    #	ssl_session_timeout 5m;
-    #
-    #	ssl_protocols SSLv3 TLSv1 TLSv1.1 TLSv1.2;
-    #	ssl_ciphers \"HIGH:!aNULL:!MD5 or HIGH:!aNULL:!MD5:!3DES\";
-    #	ssl_prefer_server_ciphers on;
-    #
-    #	location / {
-    #		try_files $uri $uri/ =404;
-    #	}
-    #}
+}
     " >> $NGINX_DEFAULT_CONFIG
 
-    echo "
-    #!/bin/sh -e
-    #
-    # rc.local
-    #
-    # This script is executed at the end of each multiuser runlevel.
-    # Make sure that the script will "exit 0" on success or any other
-    # value on error.
-    #
-    # In order to enable or disable this script just change the execution
-    # bits.
-    #
-    # By default this script does nothing.
+echo "
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
 
-    APP=/apps/tapirus/app/rsc/shell/bin
-    DEAMON=start-server.sh
+APP=/apps/tapirus/app/rsc/shell/bin
+DEAMON=start-server.sh
 
-    cd $APP
-    bash $DEAMON
+cd \$APP
+bash \$DEAMON
 
-    exit 0" >> $RC_LOCAL
+exit 0
+    " >> $RC_LOCAL
 
 }
 

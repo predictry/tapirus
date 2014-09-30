@@ -97,7 +97,7 @@ The recommendation searches above can be limited to transcations that took place
 | User's top recent views | type=utrv | What items have been **viewed** the most by a particular user recently? | user_id
 | User's top recent purchases | type=utrp | What items have been **purchased** the most by a particular user recently? | user_id
 | User's top recent additions to cart | type=utrac | What items have been **added to cart** the most by a particular user recently? | user_id
-| User's unacquired interests | type=uacnp | What items have been **viewed** but not purchased by a particular user recently? | user_id
+| User's unacquired interests | type=uvnp | What items have been **viewed** but not purchased by a particular user recently? | user_id
 | User's recent abandoned items | type=uacnp | What items have been **added to cart** but not purchased by a particular user recently? | user_id
 
 ####Filtering
