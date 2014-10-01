@@ -128,7 +128,7 @@ echo "
         #limit_req zone=req_limit_per_ip burst=10 nodelay;
 
         # Running port
-        listen [::]:80;
+        listen 80;
 
         # Settings to serve static files
         location ^~ /static/  {
@@ -174,7 +174,7 @@ echo "
 # another virtual host using mix of IP-, name-, and port-based configuration
 
 server {
-    listen [::]:8000;
+    listen 8000;
     server_name healthcheck;
     root /usr/share/nginx/html;
     index index.html index.htm;
