@@ -12,12 +12,18 @@ function buildApp(){
 
     sudo bash ${DIR}/build-conf.sh
 
+    #add PPAs
+    sudo apt-get install software-properties-common -y --force-yes
+    sudo add-apt-repository ppa:nginx/stable -y
+
     sudo apt-get update
 
     echo "Installing prerequisites..."
     sudo apt-get install python-dev python-pip python-virtualenv -y --force-yes
     sudo apt-get install gunicorn libevent-dev -y --force-yes
-    sudo aptitude install nginx -y
+    sudo apt-get install nginx -y
+
+    #shellshock bug update
     sudo apt-get install bash -y
 
     echo "Starting nginx.."
@@ -42,6 +48,7 @@ function buildApp(){
     sudo cp  ${DIR}/../conf/.htpasswd /etc/nginx/
 
     echo "Setting up to run on startup..."
+    sudo cp  /etc/rc.local   /etc/rc.local.bkp
     sudo cp  ${DIR}/../conf/rc.local /etc/
     sudo chmod 755 /etc/rc.local
 
