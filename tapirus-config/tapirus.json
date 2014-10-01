@@ -55,19 +55,19 @@
                 "KeyName": "predictry-engine-key",
                 "InstanceMonitoring": "true",
                 "SecurityGroups": [
-                    "sg-b96892dc",
+                  
                     {
                         "Ref": "PredictrySshPublicSecgroup"
                     },
-                    "sg-bf758fda",
+                 
                     {
                         "Ref": "PredictryHealtcheckPublicSecgroup"
                     },
-                    "sg-9a758fff",
+                   
                     {
                       "Ref": "PredictryWebservicePrivateSecgroup"  
                     },
-                    "sg-93758ff6",
+                  
                     {
                         "Ref": "PredictryNeo4jPrivateSecgroup" 
                         
