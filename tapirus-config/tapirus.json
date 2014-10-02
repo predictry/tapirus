@@ -57,20 +57,13 @@
                 "SecurityGroups": [
                   
                     {
-                        "Ref": "PredictrySshPublicSecgroup"
-                    },
-                 
-                    {
                         "Ref": "PredictryHealtcheckPublicSecgroup"
                     },
-                   
                     {
-                      "Ref": "PredictryWebservicePrivateSecgroup"  
+                        "Ref": "PredictryWebservicePrivateSecgroup"
                     },
-                  
                     {
-                        "Ref": "PredictryNeo4jPrivateSecgroup" 
-                        
+                        "Ref": "PredictryNeo4jPrivateSecgroup"
                     }
                 ],
                 "BlockDeviceMappings": [
@@ -83,102 +76,82 @@
                 ]
             }
         },
-    "PredictrySshPublicSecgroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "SSH ports open",
-        "VpcId": "vpc-e616fb83",
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "SecurityGroupEgress": [
-          {
-            "IpProtocol": "-1",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ]
-      }
-    },
-    "PredictryHealtcheckPublicSecgroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Health check ports open",
-        "VpcId": "vpc-e616fb83",
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8000",
-            "ToPort": "8000",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "SecurityGroupEgress": [
-          {
-            "IpProtocol": "-1",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ]
-      }
-    },
-    "PredictryWebservicePrivateSecgroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Web services ports open with VPC",
-        "VpcId": "vpc-e616fb83",
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": "172.31.0.0/16"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "443",
-            "ToPort": "443",
-            "CidrIp": "172.31.0.0/16"
-          }
-        ],
-        "SecurityGroupEgress": [
-          {
-            "IpProtocol": "-1",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ]
-      }
-    },
-    "PredictryNeo4jPrivateSecgroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Neo4j access ports within VPC",
-        "VpcId": "vpc-e616fb83",
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "7473",
-            "ToPort": "7473",
-            "CidrIp": "172.31.0.0/16"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "7474",
-            "ToPort": "7474",
-            "CidrIp": "172.31.0.0/16"
-          }
-        ],
-        "SecurityGroupEgress": [
-          {
-            "IpProtocol": "-1",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ]
-      }
-    },
+        
+        "PredictryHealtcheckPublicSecgroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Health check ports open",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8000",
+                        "ToPort": "8000",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "PredictryWebservicePrivateSecgroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Web services ports open with VPC",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "172.31.0.0/16"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "172.31.0.0/16"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "PredictryNeo4jPrivateSecgroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Neo4j access ports within VPC",
+                "VpcId": "vpc-e616fb83",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "7473",
+                        "ToPort": "7473",
+                        "CidrIp": "172.31.0.0/16"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "7474",
+                        "ToPort": "7474",
+                        "CidrIp": "172.31.0.0/16"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
         "scalingDecreaseGroupSize": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
