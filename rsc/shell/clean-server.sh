@@ -45,7 +45,7 @@ sudo rm -rf /etc/apt/sources.list.d/webupd8team-java*
 echo "Removing nginx..."
 sudo apt-get remove python-dev python-pip python-virtualenv -y
 sudo apt-get remove gunicorn -y
-sudo aptitude remove nginx -y
+sudo apt-get remove nginx nginx-* -y
 
 echo "Removing custom nginx configuration..."
 sudo rm -rf /etc/nginx/nginx.conf
