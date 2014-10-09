@@ -9,6 +9,10 @@ rm $WORKSPACE/tapirus-config/image_id.txt
 if [ ! -z "$ami" ]; then
 
 current_launch_configuration=$(aws cloudformation describe-stack-resources --stack-name "update-tapirus" | grep -E -o 'update-tapirus-TapirusLaunchConfiguration-.+"' | grep -E -o '.+[^\"]')
+
+#The below command will return the id of the most resent pongo-image
+old_ami_id=$(aws autoscaling describe-launch-configurations --launch-configuration-names $current_launch_configuration | grep -E -o 'ami-.+[^\"]' | grep -E -o '.+[^\, | ^\"]')
+
 	#updating the template
 	aws cloudformation update-stack --stack-name update-tapirus --template-body file://tapirus.json --parameters  ParameterKey=Instanceid,ParameterValue=$ami
 
