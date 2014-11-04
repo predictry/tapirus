@@ -4,6 +4,7 @@ from predictry.engine.graph.query.generator.services.base import ProcessQueryGen
 from predictry.engine.models.resources.user import UserSchema
 from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.models.resources.session import SessionSchema
+from predictry.engine.models.resources.browser import BrowserSchema
 
 FILTER_TOKEN_SEPARATOR = "$"
 FILTER_SEPARATOR = "|"
@@ -249,9 +250,56 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             if "limit" in args:
                 params["limit"] = int(args["limit"])
             else:
-                params["limit"] = 5
+                params["limit"] = 10
 
-        #other items viewed/purchased
+        elif rtype in ["ct-oivt", "ct-oipt"]:
+
+            action = lambda x: {
+                "ct-oivt": "view",
+                "ct-oipt": "buy"
+            }[x]
+
+            '''
+            MATCH (i :%s:%s{id:{item_id}})<-[r :%s]-(s :%s:%s)-[:%s]->(x :%s:%s)
+            WHERE i <> x AND i.category = x.category
+            RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+            ORDER BY matches DESC
+            LIMIT {limit}
+            '''
+
+            query.append("MATCH (i :%s:%s{id:{item_id}})<-[r :%s]"
+                         "-(s :%s:%s)-[:%s]"
+                         "->(x :%s:%s)\n"
+                         "WHERE i <> x AND i.category = x.category"
+                         % (domain, ItemSchema.get_label(), action(rtype),
+                            domain, SessionSchema.get_label(), action(rtype),
+                            domain, ItemSchema.get_label()))
+
+            if filters:
+                q, params = translate_filters(filters, ref="x", concatenate=True)
+                query.append(q)
+                params.update(params)
+
+            query.append("\n")
+            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
+
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("ORDER BY matches DESC\n"
+                         "LIMIT {limit}")
+
+            params["item_id"] = int(args["item_id"])
+
+            if "limit" in args:
+                params["limit"] = int(args["limit"])
+            else:
+                params["limit"] = 10
+
+        #other items viewed/purchased on a separate occasion
         elif rtype in ["oiv", "oip"]:
             #this query looks for items purchased/viewed by people that purchased/viewed this item
 
@@ -262,7 +310,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
             '''
             MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
-            WHERE s1 <> s2
+            WHERE s1 <> s2 AND i <> x
             RETURN x.id AS id
             LIMIT {limit}
             '''
@@ -273,6 +321,49 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
                          "WHERE s1 <> s2"
                          % (domain, ItemSchema.get_label(), action(rtype),
                             domain, SessionSchema.get_label(), domain, UserSchema.get_label(),
+                            domain, SessionSchema.get_label(), action(rtype), domain, ItemSchema.get_label()))
+
+            if filters:
+                q, params = translate_filters(filters, ref="x", concatenate=True)
+                query.append(q)
+                params.update(params)
+
+            query.append("\n")
+            query.append("RETURN x.id AS id")
+
+            if "fields" in args:
+                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
+                for field in fields:
+                    query.append(", x.%s AS %s" % (field, field))
+
+            query.append("\n")
+            query.append("LIMIT {limit}")
+            params["item_id"] = int(args["item_id"])
+
+            params["limit"] = 300
+
+        #other items viewed/purchased on a separate occasion
+        elif rtype in ["anon-oiv", "anon-oip"]:
+            #this query looks for items purchased/viewed by people that purchased/viewed this item
+
+            action = lambda x: {
+                "anon-oiv": "view",
+                "anon-oip": "buy"
+            }[x]
+
+            '''
+            MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:on]->(b :%s:%s)<-[:on]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
+            WHERE s1 <> s2 AND i <> x
+            RETURN x.id AS id
+            LIMIT {limit}
+            '''
+
+            query.append("MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]"
+                         "-(s1 :%s:%s)-[:on]->(b :%s:%s)<-[:on]"
+                         "-(s2 :%s:%s)-[:%s]->(x :%s:%s)\n"
+                         "WHERE s1 <> s2 AND i <> x"
+                         % (domain, ItemSchema.get_label(), action(rtype),
+                            domain, SessionSchema.get_label(), domain, BrowserSchema.get_label(),
                             domain, SessionSchema.get_label(), action(rtype), domain, ItemSchema.get_label()))
 
             if filters:
@@ -357,7 +448,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             if "limit" in args:
                 params["limit"] = int(args["limit"])
             else:
-                params["limit"] = 5
+                params["limit"] = 10
 
         elif rtype in ["uvnp", "uacnp"]:
 
@@ -414,10 +505,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             if "limit" in args:
                 params["limit"] = int(args["limit"])
             else:
-                params["limit"] = 5
+                params["limit"] = 10
 
-        print "query:", ''.join(query)
-        print params
+        #print "query:", ''.join(query)
+        #print params
 
         return ''.join(query), params
 

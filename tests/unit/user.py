@@ -1,8 +1,9 @@
 __author__ = 'guilherme'
 
-import unittest
 import json
 import time
+import unittest
+from predictry import server
 
 now = long(time.time().real)
 
