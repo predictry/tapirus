@@ -20,7 +20,9 @@ class RecommendationHandler:
 
     rtype = ["oivt", "oipt", "oiv", "oip",
              "trp", "trv", "trac",
-             "utrp", "utrv", "utrac", "uvnp", "uacnp"]
+             "utrp", "utrv", "utrac", "uvnp", "uacnp",
+             "cb-item-cf-oiv", "cb-item-cf-oip",
+             "cb-item-cf-oivt", "cb-item-cf-oipt"]
 
     @staticmethod
     def get(args):
@@ -38,7 +40,7 @@ class RecommendationHandler:
                 Logger.warning(err)
                 return err
 
-        if args["type"] in ["oivt", "oipt", "oiv", "oip"]:
+        if args["type"] in ["oivt", "oipt", "oiv", "oip", "cb-item-cf-oiv", "cb-item-cf-oip", "cb-item-cf-oivt", "cb-item-cf-oipt"]:
             if "item_id" not in args:
                 err = error('MissingParameter', RecommendationHandler.resource, "item_id")
                 Logger.warning(err)

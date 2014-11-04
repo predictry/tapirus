@@ -262,7 +262,7 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
 
             '''
             MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
-            WHERE i <> x AND s1 <> s2
+            WHERE s1 <> s2
             RETURN x.id AS id
             LIMIT {limit}
             '''
@@ -270,103 +270,10 @@ class RecommendationQueryGenerator(ProcessQueryGeneratorBase):
             query.append("MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]"
                          "-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]"
                          "-(s2 :%s:%s)-[:%s]->(x :%s:%s)\n"
-                         "WHERE i <> x AND s1 <> s2"
+                         "WHERE s1 <> s2"
                          % (domain, ItemSchema.get_label(), action(rtype),
                             domain, SessionSchema.get_label(), domain, UserSchema.get_label(),
                             domain, SessionSchema.get_label(), action(rtype), domain, ItemSchema.get_label()))
-
-            if filters:
-                q, params = translate_filters(filters, ref="x", concatenate=True)
-                query.append(q)
-                params.update(params)
-
-            query.append("\n")
-            query.append("RETURN x.id AS id")
-
-            if "fields" in args:
-                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
-                for field in fields:
-                    query.append(", x.%s AS %s" % (field, field))
-
-            query.append("\n")
-            query.append("LIMIT {limit}")
-            params["item_id"] = int(args["item_id"])
-
-            params["limit"] = 300
-
-        #other items viewed/purchased together
-        if rtype in ["cb-item-cf-oivt", "cb-item-cf-oipt"]:
-
-            action = lambda x: {
-                "oivt": "view",
-                "oipt": "buy"
-            }[x]
-
-            '''
-            MATCH (i :%s:%s{id:{item_id}})<-[r :%s]-(s :%s:%s)-[:%s]->(x :%s:%s)
-            WHERE i <> x AND i.category = x.category
-            RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
-            ORDER BY matches DESC
-            LIMIT {limit}
-            '''
-
-            query.append("MATCH (i :%s:%s{id:{item_id}})<-[r :%s]"
-                         "-(s :%s:%s)-[:%s]"
-                         "->(x :%s:%s)\n"
-                         "WHERE i <> x AND i.%s = x.%s"
-                         % (domain, ItemSchema.get_label(), action(rtype),
-                            domain, SessionSchema.get_label(), action(rtype),
-                            domain, ItemSchema.get_label(),
-                            "category", "category"))
-
-            if filters:
-                q, params = translate_filters(filters, ref="x", concatenate=True)
-                query.append(q)
-                params.update(params)
-
-            query.append("\n")
-            query.append("RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches")
-
-            if "fields" in args:
-                fields = [x for x in args["fields"].split(",") if x not in ["id"]]
-                for field in fields:
-                    query.append(", x.%s AS %s" % (field, field))
-
-            query.append("\n")
-            query.append("ORDER BY matches DESC\n"
-                         "LIMIT {limit}")
-
-            params["item_id"] = int(args["item_id"])
-
-            if "limit" in args:
-                params["limit"] = int(args["limit"])
-            else:
-                params["limit"] = 5
-
-        #other items viewed/purchased
-        elif rtype in ["cb-item-cf-oiv", "cb-item-cf-oip"]:
-            #this query looks for items purchased/viewed by people that purchased/viewed this item
-
-            action = lambda x: {
-                "oiv": "view",
-                "oip": "buy"
-            }[x]
-
-            '''
-            MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
-            WHERE i <> x AND s1 <> s2 AND i.category = x.category
-            RETURN x.id AS id
-            LIMIT {limit}
-            '''
-
-            query.append("MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]"
-                         "-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]"
-                         "-(s2 :%s:%s)-[:%s]->(x :%s:%s)\n"
-                         "WHERE i <> x AND s1 <> s2 AND i.%s = x.%s"
-                         % (domain, ItemSchema.get_label(), action(rtype),
-                            domain, SessionSchema.get_label(), domain, UserSchema.get_label(),
-                            domain, SessionSchema.get_label(), action(rtype), domain, ItemSchema.get_label(),
-                            "category", "category"))
 
             if filters:
                 q, params = translate_filters(filters, ref="x", concatenate=True)
