@@ -23,7 +23,6 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         s = lambda: ", " if c > 0 else " "
 
-        #params["user_id"] = data["user_id"]
         params["item_id"] = data["item_id"]
         params["session_id"] = data["session_id"]
         params["browser_id"] = data["browser_id"]
@@ -80,6 +79,9 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
         if create_flags["browser"]:
             query.append("CREATE (b :%s:%s {id: {browser_id}})\n"
                          % (domain, BrowserSchema.get_label()))
+            query.append("WITH i, s, b\n")
+            query.append("CREATE (s)-[r_on :on]->(b)\n")
+
         else:
             query.append("MATCH (b :%s:%s {id: {browser_id}})\n"
                          % (domain, BrowserSchema.get_label()))
@@ -91,9 +93,9 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
             query.append("WITH i, s, b, u\n")
 
         #connection
-        query.append("CREATE")
-        query.append(" (s)-[r_on :on]->(b), ")
-        query.append(" (s)-[r_action :%s {%s}]->(i)" %
+        #query.append("CREATE")
+        #query.append(" (s)-[r_on :on]->(b), ")
+        query.append("CREATE (s)-[r_action :%s {%s}]->(i)" %
                      (data["type"], ''.join(str_properties)))
         if connect_flags["user"]:
             query.append(", (s)-[r_by :by]->(u)")
@@ -112,8 +114,8 @@ class ActionQueryGenerator(ResourceQueryGeneratorBase):
 
         query.append("\n")
 
-        #print 'query: ', ''.join(query)
-        #print 'params: ', params
+        print 'query: ', ''.join(query)
+        print 'params: ', params
 
         return ''.join(query), params
 

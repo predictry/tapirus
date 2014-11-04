@@ -1,7 +1,6 @@
-from predictry.utils.helpers import text
-
 __author__ = 'guilherme'
 
+from predictry.utils.helpers import text
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 
 #TODO: [LATER][R: py2neo] create utility (helper) functions for nodes
