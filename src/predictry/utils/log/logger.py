@@ -4,22 +4,31 @@ import os
 import json
 import logging.config
 
+
 class Logger:
 
     @classmethod
-    def setup_logging(cls, default_path, default_level=logging.ERROR, env_key='LOG_CFG'):
+    def setup_logging(cls, default_path, default_level=logging.DEBUG, env_key='LOG_CFG'):
         """Setup logging configuration
 
         """
-        if os.path.exists(default_path):
+        if os.path.isfile(default_path):
             path = default_path
             value = os.getenv(env_key, None)
             if value:
                 path = value
-            if os.path.exists(path):
-                with open(path, 'rt') as f:
-                    config = json.load(f)
-                logging.config.dictConfig(config)
+            if os.path.isfile(path):
+
+                try:
+                    with open(path, 'rt') as f:
+                        config = json.load(f)
+                    logging.config.dictConfig(config)
+                except ValueError, e:
+                    print "Unable to configure logging:", e
+                    print "Loading basic configuration"
+                    logging.basicConfig(level=default_level)
+                else:
+                    pass
             else:
                 logging.basicConfig(level=default_level)
 
