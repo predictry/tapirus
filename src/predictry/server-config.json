@@ -1,8 +1,0 @@
-{
-    "log_config_file_name": "logging-config.json",
-    "neo4j":{
-        "endpoints": {
-            "data": "http://localhost:7474/db/data/"
-        }
-    }
-}
