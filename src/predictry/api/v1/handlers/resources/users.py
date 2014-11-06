@@ -4,7 +4,7 @@ from predictry.api.v1.errors import error
 from predictry.engine.graph.query.generator.resources.user import UserQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.engine.models.resources.user import UserSchema
-from predictry.utils.neo4j import node
+from predictry.utils.neo4j import cypher
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
 from predictry.utils.log.logger import Logger
@@ -59,7 +59,7 @@ class UserHandler():
         qgen = UserQueryGenerator()
         qexec = QueryExecutor()
 
-        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
+        exists, err = cypher.node_exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err
@@ -102,7 +102,7 @@ class UserHandler():
         qgen = UserQueryGenerator()
         qexec = QueryExecutor()
 
-        exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
+        exists, err = cypher.node_exists(labels=[args["domain"], UserSchema.get_label()],
                                   properties={"id": data["id"]})
         if err:
             return err

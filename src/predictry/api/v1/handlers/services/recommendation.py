@@ -6,7 +6,7 @@ from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.compute import ranking
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
-from predictry.utils.neo4j import node
+from predictry.utils.neo4j import cypher
 from predictry.api.v1.errors import error
 from predictry.utils.log.logger import Logger
 
@@ -98,7 +98,7 @@ class RecommendationHandler:
                 else:
                     properties = ["id"]
 
-                items, err = node.get_node_properties(ids,
+                items, err = cypher.get_node_properties(ids,
                                                       properties, domain=args["domain"], label=ItemSchema.get_label())
 
                 if err:
