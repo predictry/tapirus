@@ -3,13 +3,20 @@ __author__ = 'guilherme'
 from predictry.utils.helpers import text
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 
-#TODO: [LATER][R: py2neo] create utility (helper) functions for nodes
-# (exists, get labels, has label, get properties, etc)
-#TODO: [LATER][R: py2neo] look into the viability of using py2neo instead of cypher
-# ( e.g. find on takes 1 label and 1 parameter to match)
+
+#create connection (s)-[r]-(u) once
+#create connection (s)-[r]-(b) once
 
 
-def exists(labels, properties):
+class Node:
+
+    def __init__(self, labels, properties):
+
+        self.labels = labels
+        self.properties = properties
+
+
+def node_exists(labels, properties):
 
     l = []
     p = []

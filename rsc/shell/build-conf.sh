@@ -13,6 +13,8 @@ function buildConf(){
     NGINX_NGINX_CONFIG=${DIR}/../conf/nginx-conf.conf
     NGINX_DEFAULT_CONFIG=${DIR}/../conf/nginx.default
     RC_LOCAL=${DIR}/../conf/rc.local
+    LOGGING_CONFIG=${DIR}/../../src/predictry/logging-config.json
+    SERVER_CONFIG=${DIR}/../../src/predictry/server-config.json
 
     if [ -f "$NGINX_NGINX_CONFIG" ]; then
         rm $NGINX_NGINX_CONFIG
@@ -24,6 +26,14 @@ function buildConf(){
 
     if [ -f "$RC_LOCAL" ]; then
         rm $RC_LOCAL
+    fi
+
+    if [ -f "$LOGGING_CONFIG" ]; then
+        rm $LOGGING_CONFIG
+    fi
+
+    if [ -f "$SERVER_CONFIG" ]; then
+        rm $SERVER_CONFIG
     fi
 
     n=$(echo `nproc`)
@@ -207,6 +217,77 @@ bash \$DEAMON
 
 exit 0
     " >> $RC_LOCAL
+
+
+echo "
+
+{
+    \"version\": 1,
+    \"disable_existing_loggers\": false,
+    \"formatters\": {
+        \"simple\": {
+            \"format\": \"%(asctime)s - %(name)s - %(levelname)s - %(message)s\"
+        }
+    },
+
+    \"handlers\": {
+        \"console\": {
+            \"class\": \"logging.StreamHandler\",
+            \"level\": \"WARNING\",
+            \"formatter\": \"simple\",
+            \"stream\": \"ext://sys.stdout\"
+        },
+
+        \"info_file_handler\": {
+            \"class\": \"logging.handlers.TimedRotatingFileHandler\",
+            \"when\": \"midnight\",
+            \"interval\": 1,
+            \"level\": \"INFO\",
+            \"formatter\": \"simple\",
+            \"filename\": \"log/info.log\",
+            \"backupCount\": 20,
+            \"encoding\": \"utf8\"
+        },
+
+        \"error_file_handler\": {
+            \"class\": \"logging.handlers.TimedRotatingFileHandler\",
+            \"when\": \"midnight\",
+            \"interval\": 1,
+            \"level\": \"ERROR\",
+            \"formatter\": \"simple\",
+            \"filename\": \"log/error.log\",
+            \"backupCount\": 20,
+            \"encoding\": \"utf8\"
+        }
+    },
+
+    \"loggers\": {
+        \"my_module\": {
+            \"level\": \"ERROR\",
+            \"handlers\": [\"console\"],
+            \"propagate\": \"no\"
+        }
+    },
+
+    \"root\": {
+        \"level\": \"INFO\",
+        \"handlers\": [\"console\", \"info_file_handler\", \"error_file_handler\"]
+    }
+}
+" >> $SERVER_CONFIG
+
+echo "
+
+{
+    \"log_config_file_name\": \"logging-config.json\",
+    \"neo4j\":{
+        \"endpoints\": {
+            \"data\": \"http://ec2-54-169-72-124.ap-southeast-1.compute.amazonaws.com:7474/db/data/\"
+        }
+    }
+}
+
+" >> $SERVER_CONFIG
 
 }
 

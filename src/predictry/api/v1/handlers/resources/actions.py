@@ -5,7 +5,7 @@ from predictry.engine.graph.query.generator.resources.action import ActionQueryG
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.engine.models.resources.item import ItemSchema
 from predictry.engine.models.resources.user import UserSchema
-from predictry.utils.neo4j import node
+from predictry.utils.neo4j import cypher
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
 from predictry.utils.log.logger import Logger
@@ -135,9 +135,10 @@ class ActionHandler():
                 return err
 
         #only the item must exist
+        #todo: don't check for either user or item
 
-        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
-                                  properties={"id": data["item_id"]})
+        exists, err = cypher.node_exists(labels=[args["domain"], ItemSchema.get_label()],
+                                         properties={"id": data["item_id"]})
         if err:
             return err
         if not exists:
@@ -148,8 +149,8 @@ class ActionHandler():
         #if user_id is given
 
         if "user_id" in data:
-            exists, err = node.exists(labels=[args["domain"], UserSchema.get_label()],
-                                      properties={"id": data["user_id"]})
+            exists, err = cypher.node_exists(labels=[args["domain"], UserSchema.get_label()],
+                                             properties={"id": data["user_id"]})
             if err:
                 return err
             if not exists:

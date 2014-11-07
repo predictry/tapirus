@@ -1,8 +1,0 @@
-{
-    "log_config_file_name": "logging-config.json",
-    "neo4j":{
-        "endpoints": {
-            "data": "http://ec2-54-169-72-124.ap-southeast-1.compute.amazonaws.com:7474/db/data/"
-        }
-    }
-}

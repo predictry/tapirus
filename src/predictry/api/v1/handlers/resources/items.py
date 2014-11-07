@@ -4,7 +4,7 @@ from predictry.api.v1.errors import error
 from predictry.engine.graph.query.generator.resources.item import ItemQueryGenerator
 from predictry.engine.graph.query.executor.executor import QueryExecutor
 from predictry.engine.models.resources.item import ItemSchema
-from predictry.utils.neo4j import node
+from predictry.utils.neo4j import cypher
 from predictry.utils.helpers import text
 from predictry.utils.helpers import payload
 from predictry.utils.log.logger import Logger
@@ -59,7 +59,7 @@ class ItemHandler():
         qgen = ItemQueryGenerator()
         qexec = QueryExecutor()
 
-        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
+        exists, err = cypher.node_exists(labels=[args["domain"], ItemSchema.get_label()],
                                   properties={"id": args["id"]})
         if err:
             return err
@@ -102,7 +102,7 @@ class ItemHandler():
         qgen = ItemQueryGenerator()
         qexec = QueryExecutor()
 
-        exists, err = node.exists(labels=[args["domain"], ItemSchema.get_label()],
+        exists, err = cypher.node_exists(labels=[args["domain"], ItemSchema.get_label()],
                                   properties={"id": data["id"]})
         if err:
             return err
