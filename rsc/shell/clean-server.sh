@@ -4,7 +4,7 @@ function resetConfig(){
 
 if [ -f "/etc/rc.local" ]; then
 
-rm /etc/rc.local
+sudo rm -rf /etc/rc.local
 
 echo "
 #!/bin/sh -e

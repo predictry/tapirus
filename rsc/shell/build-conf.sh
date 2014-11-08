@@ -17,23 +17,23 @@ function buildConf(){
     SERVER_CONFIG=${DIR}/../../src/predictry/server-config.json
 
     if [ -f "$NGINX_NGINX_CONFIG" ]; then
-        rm $NGINX_NGINX_CONFIG
+        rm -rf $NGINX_NGINX_CONFIG
     fi
 
     if [ -f "$NGINX_DEFAULT_CONFIG" ]; then
-        rm $NGINX_DEFAULT_CONFIG
+        rm -rf $NGINX_DEFAULT_CONFIG
     fi
 
     if [ -f "$RC_LOCAL" ]; then
-        rm $RC_LOCAL
+        rm -rf $RC_LOCAL
     fi
 
     if [ -f "$LOGGING_CONFIG" ]; then
-        rm $LOGGING_CONFIG
+        rm -rf $LOGGING_CONFIG
     fi
 
     if [ -f "$SERVER_CONFIG" ]; then
-        rm $SERVER_CONFIG
+        rm -rf $SERVER_CONFIG
     fi
 
     n=$(echo `nproc`)
@@ -274,7 +274,7 @@ echo "
         \"handlers\": [\"console\", \"info_file_handler\", \"error_file_handler\"]
     }
 }
-" >> $SERVER_CONFIG
+" >> $LOGGING_CONFIG
 
 echo "
 
