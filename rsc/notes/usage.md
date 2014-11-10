@@ -1,13 +1,13 @@
 #Usage
 
 ##Version
-Beta 0.1.13
+Beta 0.1.15
 
 ##Convention
 
 With the exception of fields that are surrounded by `[]`, all fields specified in either the `URL` or `JSON payload` are required for each request.
 A non-specific variable of any data type is represented with the symbolr `x:`. So `[x:]` means an optional parameter of any data type.
-
+ 
 ##Data Types
 Currently, we support the following data types:
 ```python
@@ -88,9 +88,13 @@ The recommendation searches above can be limited to transcations that took place
 | Recommendation Type | Code  | Description | Required Parameters
 |---|---|---|---|
 | Other items viewed | type=oiv | What other items were most **viewed** by people that **viewed** x, on another occasion?| itemd_id
+| Other items viewed, anonymously| type=anon-oiv | What other items were most **viewed** by people that **viewed** x anonymously, on another occasion? Based on browser Id| itemd_id
 | Other items viewed together | type=oivt | What other items were most **viewed** together, by people that **viewed** x?| item_id
+| Other items viewed together, within the same category | type=ct-oivt | What other items of the same category were most **viewed** together, by people that **viewed** x?| item_id
 | Other items purchased | type=oip | What other items were most **purchased** by people that **purchased** x, on another occasion?| item_id
+| Other items purchased, anonymously| type=anon-oip | What other items were most **purchased** by people that **purchased** x anonymously, on another occasion? Based on browser Id| itemd_id
 | Other items purchased together | type=oipt | What other items were most **purchased** together, by people that **purchased** x?| item_id
+| Other items purchased together, within the same category | type=ct-oipt | What other items of the same category were most **purchased** together, by people that **purchased** x?| item_id
 | Top recent views | type=trv | What items have been **viewed** the most recently? | none
 | Top recent purchases | type=trp | What items have been **purchased** the most recently? | none
 | Top recent additions to cart | type=trac | What items have been **added to cart** the most recently? | none
@@ -188,5 +192,5 @@ The resource endpoints are used to store, and if necessary, read, update and del
 
 [1]: http://docs.neo4j.org/chunked/stable/graphdb-neo4j-properties.html
 
-Updated: 8 Sep, 2014 @ 11.04AM
+Updated: 10 Nov, 2014 @ 16.31PM
 Author: guilherme@predicrty.com
