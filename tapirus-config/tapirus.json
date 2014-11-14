@@ -191,7 +191,7 @@
                 "Dimensions": [
                     {
                         "Name": "AutoScalingGroupName",
-                        "Value": "tapirus-autoscaling-g1-v2"
+                        "Value": {"Ref":"TapirusUpdate"}
                     }
                 ]
             }
@@ -215,7 +215,7 @@
                 "Dimensions": [
                     {
                         "Name": "AutoScalingGroupName",
-                        "Value": "tapirus-autoscaling-g1-v2"
+			"Value": "tapirus-autoscaling-g1-v2"
                     }
                 ]
             }
