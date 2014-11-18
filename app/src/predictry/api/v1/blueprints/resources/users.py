@@ -1,0 +1,90 @@
+__author__ = 'guilherme'
+
+from predictry.api.v1.handlers.resources.users import UserHandler
+from predictry.api.v1.blueprints.blueprint import BlueprintBase
+from predictry.api.v1.request import parse_params
+from flask_restful import request
+
+
+class UserAPI(BlueprintBase):
+
+    def __init__(self):
+        super(UserAPI, self).__init__()
+
+    def get(self, id):
+
+        args = dict(request.values.iteritems())
+
+        err = parse_params(args)
+
+        if err:
+            return err, err['status']
+
+        args["id"] = id
+
+        response = UserHandler.get(args)
+
+        return response, response['status']
+
+    def put(self, id):
+
+        args = dict(request.values.iteritems())
+        data = request.json
+
+        err = parse_params(args, data)
+
+        if err:
+            return err, err['status']
+
+        args["id"] = id
+
+        response = UserHandler.put(args, data)
+
+        return response, response['status']
+
+    def delete(self, id):
+
+        args = dict(request.values.iteritems())
+
+        err = parse_params(args)
+
+        if err:
+            return err, err['status']
+
+        args["id"] = id
+
+        response = UserHandler.delete(args)
+
+        return response, response['status']
+
+
+class UserListAPI(BlueprintBase):
+    def __init__(self):
+        super(UserListAPI, self).__init__()
+
+    def post(self):
+
+        args = dict(request.values.iteritems())
+        data = request.json
+
+        err = parse_params(args, data)
+
+        if err:
+            return err, err['status']
+
+        response = UserHandler.post(args, data)
+
+        return response, response['status']
+
+    def get(self):
+
+        args = dict(request.values.iteritems())
+
+        err = parse_params(args)
+
+        if err:
+            return err, err['status']
+
+        response = UserHandler.get(args)
+
+        return response, response['status']

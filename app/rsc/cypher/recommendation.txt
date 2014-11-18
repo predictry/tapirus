@@ -1,0 +1,104 @@
+#params are based on example data at ../data/sample.txt
+
+####other items viewed#####
+
+MATCH (i:verve:item {id:5})
+WITH i
+MATCH (s:verve:session)-[r :VIEW]->(i)
+WITH i,s
+MATCH (s)-[r :BY]->(u:verve:user)
+WITH i,s,u
+LIMIT 500
+MATCH (s2 :verve:session)-[r :BY]->(u)
+WITH i,s,u,s2
+MATCH (s2)-[r :VIEW]->(x :verve:item)
+WHERE x <> i
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+MATCH (i:redmart:item {id:5124})<-[:BUY]-(:redmart:session)-[:BY]->(u:redmart:user)
+MATCH (u)<-[:BY]-(:sessoin:redmart)-[:BUY]->(x:redmart:item)
+WHERE i <> x
+RETURN u.id AS userId, COLLECT(DISTINCT x.id)
+LIMIT 5
+
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+RETURN u.id AS userId, COLLECT(DISTINCT x.id)
+LIMIT {limit}
+
+MATCH (i:redmart:item {id:5124})
+WITH i
+MATCH (u:redmart:user)<-[: BY]-(s:redmart:session)-[:BUY]->(i)
+WITH u,i,s
+MATCH (s2 :redmart:session)-[:BY]->(u)
+WITH i,s,u,s2
+MATCH (s2)-[:BUY]->(x :redmart:item)
+WHERE s <> s2
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+MATCH (i:redmart:item {id:5124})<-[:BUY]-(s:redmart:session)-[:BY]->(u:redmart:user)<-[:BY]-(s2:sessoin:redmart)-[:BUY]->(x:redmart:item)
+WHERE i <> x
+WITH x
+LIMIT 100
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+MATCH (u:redmart:user)<-[: BY]-(s:redmart:session)-[:BUY]->(i)
+WITH u,i,s
+MATCH (s2 :redmart:session)-[:BY]->(u)
+WITH i,s,u,s2
+MATCH (s2)-[:BUY]->(x :redmart:item)
+WHERE s <> s2
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+MATCH (i:redmart:item{id:5550})<-[r1:VIEW]-(s1:session:redmart)-[:BY]->(u:redmart:user)<-[:BY]-(s2:session:redmart)-[:VIEW]->(x:redmart:item)
+WHERE i <> x AND s1 <> s2
+RETURN x.id AS id
+LIMIT 100
+
+###other items viewed together####
+MATCH (i:verve:item {id:5})
+WITH i
+MATCH (s:verve:session)-[r :VIEW]->(i)
+WITH i,s
+MATCH (s)-[r :VIEW]->(x:verve:item)
+WHERE x <> i
+
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+
+MATCH (i:redmart:item{id:5550})<-[r:VIEW]-(s:session:redmart)-[:VIEW]->(x:redmart:item)
+WHERE i <> x
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+
+####hot items####
+MATCH (s :redmart:session)-[r :BUY]->(x :redmart:item)
+WITH s,r,x
+ORDER BY r.timestamp DESC
+LIMIT 1000
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT 10
+
+
+#In the checkout line
+MATCH (s :redmart:session)-[r :ADD_TO_CART]->(x :redmart:item)
+WITH s,r,x
+ORDER BY r.timestamp DESC
+LIMIT 1000
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT 10
+

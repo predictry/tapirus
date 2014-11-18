@@ -1,0 +1,313 @@
+product: 4198
+description: Clear Ice Cool Menthol Anti-Dandruff Shampoo
+
+
+MATCH (i:ITEM) RETURN i LIMIT 5
+
+Who bought this shampoo
+#MATCH (i:ITEM) WHERE i.id = 4198
+MATCH (i:ITEM)<-[r :BOUGHT]-(u:USER)
+WHERE i.id = 4198
+RETURN u,r,i
+
+What other shampoos did these users buy?
+#Note: the word shampoo here is a given. In a real scenario, it would either have to be a tag, or we'd have to extract
+#all words from the first item's description, and find items with a similar description based on some text similarity
+#scoring algorithm (this would have to be done outside Neo4j, and would be highly expensive) -- Batch process overnight?
+
+MATCH (i:ITEM)<-[r1 :BOUGHT]-(u:USER)
+MATCH (alt:ITEM)<-[r2 :BOUGHT]-(u)
+WHERE i.id = 4198 AND alt.description=~ "(?i).*shampoo.*" AND NOT ((i)<-[r2]-(u))
+RETURN alt,r2,u
+
+####get every item purchased by a specific user
+MATCH (i:ITEM)<-[r1 :BOUGHT]-(u:USER)
+WHERE u.id = 2359
+RETURN i.id AS Id,i.description AS Description
+
+####sample products
+6028	Magiclean Lemon Scent Bathroom Cleaner Refill Pack
+5728	Mama Lemon Natural Lemon Fragrance Dishwashing Liquid Refill Pack
+
+    #find people that bought 2 products in conjunction
+    MATCH (:ITEM {id:6028})<-[r1 :BOUGHT]-(u:USER),(:ITEM {id:5728})<-[r2 :BOUGHT]-(u)
+    RETURN u,r1,r2
+
+    #find (distinct) purchases from people that bought 2 products in conjunction
+    MATCH (:ITEM {id:6028})<-[r1 :BOUGHT]-(u:USER),(:ITEM {id:5728})<-[r2 :BOUGHT]-(u)
+    MATCH (i:ITEM)<-[r3 :BOUGHT]-(u)
+    WHERE NOT(i.id IN [6028, 5728])
+    RETURN u.id AS UserId, COLLECT(DISTINCT i.id) AS ItemsPurchased
+    ORDER BY UserId
+    LIMIT 100
+
+
+    #find top purchases from people that bought 2 products in conjunction
+
+    Count the frequency of each item for the users combined (once per user)
+    Return the list with the list count
+    All done on outside neo4j
+
+
+####find similar items based on item description
+    #get items' descriptions
+    MATCH (i:ITEM) WHERE i.id IN [6028, 5728]
+    RETURN i.id AS ItemId, i.description AS ItemDescription
+
+    #extract words from description (include non-purchased items?)
+
+    MATCH (i:ITEM)
+    WHERE i.description =~ "(?i).*bathroom.*"
+    OR i.description =~ "(?i).*cleaner.*"
+    AND NOT(i.id IN [6028, 5728])
+	RETURN i.id AS ItemId, i.description AS ItemDescription
+	LIMIT 200
+
+    #find similar items based on match of description words
+    done in core engine
+    this seems to work best when executed for single items at a time
+    (if we received a list of items, we should process each independantly)
+
+
+####get all checkouts (and items) for a particular product
+Look up viewed items
+group them by their session id
+I only want the checkouts (sessions) with of the product x, along with other products (basketSize)
+give me 100 of these checkouts (sessions) only
+
+MATCH (i:ITEM)<-[r :VIEWED]-(u)
+WITH r.sessionid AS sessionId, COLLECT(i.id) AS items, COUNT(i.id) AS basketSize
+WHERE ANY(item in items WHERE item IN [11270]) AND basketSize > 1
+RETURN sessionId, items
+LIMIT 100
+
+10499: Aquila Natural Mineral Water - Case
+7404: Glad Storage Zipper Bags
+
+
+####find your recently viewed items
+
+MATCH (u:USER)-[r :VIEWED]->(i:ITEM)
+            WHERE u.id = {id}
+            RETURN i.id AS id, i.description AS description, r.dt_added AS timestamp
+            ORDER BY COALESCE (r.dt_added, -5000) DESC
+            LIMIT {limit}
+
+####Items bought after viewing item
+
+    MATCH (u:USER)-[view_rel :VIEWED]->(i :ITEM)
+    WHERE u.id = 53001
+    WITH u,view_rel,i
+    MATCH (u)-[buy_rel :BOUGHT]->(i2 :ITEM)
+    WHERE view_rel.sessionid = buy_rel.sessionid AND view_rel.dt_added < buy_rel.dt_added
+    RETURN DISTINCT buy_rel.sessionid AS sessionid, COLLECT(i.id) AS viewedItem, COLLECT(i2.id) AS boughtItems
+
+    #final query (finds most recent view-then-bought relationships, and cap the number of results)
+    MATCH (u:USER)-[view_rel :VIEWED]->(i :ITEM)
+    WHERE i.id = 7638
+    WITH u,view_rel,i
+    MATCH (u)-[buy_rel :BOUGHT]->(i2 :ITEM)
+    WHERE view_rel.sessionid = buy_rel.sessionid AND view_rel.dt_added < buy_rel.dt_added AND i <> i2
+    RETURN DISTINCT buy_rel.sessionid AS sessionId, buy_rel.dt_added AS timestamp, i.id AS viewedItem, COLLECT(i2.id) AS boughtItems
+    ORDER BY COALESCE(timestamp, -5000) DESC
+    LIMIT 100
+
+####find hot items
+    MATCH (u:USER)-[view_rel :VIEWED]->(i :ITEM)
+    WITH u,view_rel,i
+    RETURN i.id AS id, i.description AS description, view_rel.dt_added AS timestamp
+    ORDER BY COALESCE(timestamp, -5000) DESC
+    LIMIT 800
+
+ORDER BY property
+
+let the client log recommendation's success
+
+OTHERS ITEMS VIEWED
+
+MATCH (i :ITEM {id : {itemId}})<-[ :VIEWED]-(u :USER)
+MATCH (x :ITEM)<-[r :VIEWED]-(u)
+WHERE i <> x
+RETURN u.id AS userId, COLLECT(DISTINCT x.id)
+LIMIT {limit}
+
+
+original: oipt
+MATCH (i:ITEM :%s)<-[r :BOUGHT]-(u :USER)
+WITH r.sessionid AS sessionId, COLLECT(i.id) AS items, COUNT(i.id) AS basketSize
+WHERE ANY(item in items WHERE item IN {ids}) AND basketSize > 1
+RETURN sessionId, items, basketSize
+LIMIT {limit}
+
+
+optimized oipt:
+MATCH (i :ITEM :REDMART {id : {itemId}})<-[r1 :BOUGHT]-(u :USER)
+MATCH (x :ITEM :REDMART)<-[r2 :BOUGHT]-(u)
+WHERE r1.sessionid = r2.sessionid AND x <> i
+RETURN r1.sessionid AS sessionId, COLLECT(x.id), COUNT(x.id) AS basketSize
+
+with sessions grouped for each user
+MATCH (i :ITEM :REDMART {id : 5550})<-[r1 :BOUGHT]-(u :USER)
+MATCH (x :ITEM :REDMART)<-[r2 :BOUGHT]-(u)
+WHERE r1.sessionid = r2.sessionid AND x <> i
+RETURN u.id AS userId, COLLECT(DISTINCT r1.sessionid) AS sessions, COLLECT(DISTINCT x.id) AS items, COUNT(x.id) AS basketSize
+LIMIT 100
+
+
+#action1 followed by action2 on the same session
+            '''
+            MATCH (u:USER :REDMART)-[first_rel :BOUGHT]->(i :ITEM :REDMART {id:12651})
+            WITH u,first_rel,i
+            MATCH (u)-[sec_rel :VIEWED]->(i2 :ITEM :REDMART)
+            WHERE first_rel.sessionid = sec_rel.sessionid AND first_rel.dt_added < sec_rel.dt_added AND i <> i2
+            RETURN i.id AS collectionId, COLLECT(DISTINCT sec_rel.sessionid) AS collections, COLLECT(i2.id) AS items
+            ORDER BY COALESCE(collectionId, -5000) DESC
+            '''
+
+#viewed if purchased
+MATCH (u:USER :REDMART)-[first_rel :VIEWED]->(i :ITEM :REDMART {id:{itemId}})
+WITH u,first_rel,i
+MATCH (u)-[sec_rel :BOUGHT]->(i2 :ITEM :REDMART)
+WHERE i <> i2
+RETURN i.id AS collectionId, COLLECT(DISTINCT sec_rel.sessionid) AS collectios, COLLECT(i2.id) AS items
+ORDER BY COALESCE(collectionId, -5000) DESC
+LIMIT 100
+
+
+#DELETE ITEMS
+MATCH (i :TEST :ITEM {id : 4})
+WITH i, i.id AS itemId
+OPTIONAL MATCH (i)-[r]-()
+DELETE r, n
+RETURN itemId
+
+
+########################################################################################################################
+
+####other items viewed/purchased together
+MATCH (i :%s:%s{id:{item_id}})<-[r :%s]-(s :%s:%s)-[:%s]->(x :%s:%s)
+WHERE i <> x
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT {limit}
+
+REPLACE BY:
+MATCH (i :redmart:item {id:5132})
+WITH i
+MATCH (i)<-[r :buy]-(s :redmart:session)
+WITH DISTINCT s, i, r
+ORDER BY r.timestamp DESC
+LIMIT 200
+MATCH (s)-[:buy]->(x :redmart:item)
+WHERE i <> x
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+###other items viewed/purchased
+
+'''
+MATCH (i :%s:%s {id:{item_id}})<-[r1 :%s]-(s1 :%s:%s)-[:by]->(u :%s:%s)<-[:by]-(s2 :%s:%s)-[:%s]->(x :%s:%s)
+WHERE i <> x AND s1 <> s2
+RETURN x.id AS id
+LIMIT {limit}
+'''
+
+MATCH (i :redmart:item {id:5132})<-[r1 :buy]-(s1 :redmart:session)-[:by]->(u :redmart:user)<-[:by]-(s2 :redmart:session)-[:buy]->(x :redmart:user)
+WHERE i <> x AND s1 <> s2
+RETURN x.id AS id
+LIMIT 300
+
+
+###user: most recently purchase/viewed/bought (for users with many transactions, this takes time)
+items: 33439; 32766
+
+MATCH (u:redmart:user {id:33439})<-[:by]-(:redmart:session)-[r :buy]->(x:redmart:item)
+WITH DISTINCT r, x
+ORDER BY r.timestamp DESC
+LIMIT 50
+RETURN DISTINCT x.id AS id, COUNT(x.id) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+REPLACED BY:
+
+'''
+MATCH (u:%s:%s {id:{item_id}})
+WITH u
+MATCH (u)<-[:by]-(s:%s:%s)
+WITH DISTINCT s
+MATCH (s)-[r :%s]->(x:%s:%s)
+WITH r, x
+ORDER BY r.timestamp DESC
+LIMIT {ntx}
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT {limit}
+'''
+
+MATCH (u:user:redmart {id:33439})
+WITH u
+MATCH (u)<-[:by]-(s:redmart:session)
+WITH DISTINCT s
+MATCH (s)-[r :buy]->(x:redmart:item)
+WITH r, x
+ORDER BY r.timestamp DESC
+LIMIT 50
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+
+###Out of the last 50 viewed/added to cart items, which ones have never been purchased by the user?
+MATCH (u :redmart:user {id:33439})
+WITH u
+MATCH (u)<-[:by]-(s :redmart:session)
+WITH DISTINCT s
+MATCH (s)-[vr :view]->(x :redmart:item)
+WITH vr, x, s
+ORDER BY vr.timestamp DESC
+LIMIT 50
+OPTIONAL MATCH (s)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+
+'''
+MATCH (u :redmart:user {id:33439})
+WITH u
+MATCH (u)<-[:by]-(s :redmart:session)
+WITH DISTINCT s
+MATCH (s)-[vr :view]->(x :redmart:item)
+WITH vr, x, s
+ORDER BY vr.timestamp DESC
+LIMIT 50
+OPTIONAL MATCH (s)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT x.id AS id, COUNT(x) AS matches
+ORDER BY matches DESC
+LIMIT 5
+'''
+
+
+#Query data
+
+##user activity
+MATCH (n:user:redmart {id:37103})-[]-()-[r]-(x:redmart:item) RETURN n,x,r
+
+###busiest users: [33439,35625, 51512, 33370, 28278, 48870, 32766, 4833, 42803, 33426]
+MATCH (u :redmart:user)<-[:by]-(s :redmart:session)-[vr :view|:buy]->(x :redmart:item)
+WITH DISTINCT u, x, vr
+RETURN u.id AS user, COUNT(x) AS total
+ORDER BY total DESC
+LIMIT 10
+
+###users with most items that didnt' make it to checkout: [16, 32766, 33268, 4833, 14356]
+MATCH (u:redmart:user)<-[:by]-(s:redmart:session)-[vr :add_to_cart]->(x:redmart:item)
+WITH DISTINCT s, vr, x, u
+OPTIONAL MATCH (u)<-[:by]-(s)-[br :buy]->(x)
+WHERE br is NULL
+RETURN DISTINCT u.id AS user, COLLECT(DISTINCT x.id) AS items, COUNT(DISTINCT x.id) AS total
+ORDER BY total DESC
+LIMIT 5
