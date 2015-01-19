@@ -1,10 +1,10 @@
 __author__ = 'guilherme'
 
-from tapirus.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
-from tapirus.engine.models.resources.item import ItemSchema
-from tapirus.engine.models.resources.session import SessionSchema
-from tapirus.engine.models.resources.browser import BrowserSchema
-from tapirus.engine.models.resources.user import UserSchema
+from tapirus.core.db.i2.query.generator.resources.base import ResourceQueryGeneratorBase
+from tapirus.models.item import ItemSchema
+from tapirus.models.session import SessionSchema
+from tapirus.models.browser import BrowserSchema
+from tapirus.models.user import UserSchema
 
 
 class ActionQueryGenerator(ResourceQueryGeneratorBase):

@@ -28,8 +28,6 @@ def error(err, e=None, property=None, message=None):
                         message="For unknown reasons, the transaction has failed.", status=500)
     }
 
-
-
     if err in errors:
         e = errors[err]
     else:

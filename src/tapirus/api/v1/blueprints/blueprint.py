@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 from flask_restful import Resource
 from flask import request
-from tapirus.utils.log.logger import Logger
+from tapirus.utils.logger import Logger
 
 
 class BlueprintBase(Resource):

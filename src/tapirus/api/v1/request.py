@@ -3,7 +3,7 @@ __author__ = 'guilherme'
 import re
 
 from tapirus.api.v1.errors import error
-from tapirus.utils.log.logger import Logger
+from tapirus.utils.logger import Logger
 
 
 NEO_VAR_NAME_REGEX = "^[a-zA-Z]{1,}(_){0,}([a-zA-Z0-9]{0,})?$"

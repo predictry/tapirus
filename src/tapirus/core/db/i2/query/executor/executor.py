@@ -3,10 +3,9 @@ __author__ = 'guilherme'
 from py2neo import cypher
 
 from py2neo.packages.httpstream.http import SocketError
-from tapirus.engine.graph.query.executor.base import QueryExecutorBase
-from tapirus.utils.helpers import text
-from tapirus.utils.log.logger import Logger
-from tapirus.utils import config
+from tapirus.core.db.i2.query.executor.base import QueryExecutorBase
+from tapirus.utils.logger import Logger
+from tapirus.utils import config, text
 
 conf = config.load_configuration()
 

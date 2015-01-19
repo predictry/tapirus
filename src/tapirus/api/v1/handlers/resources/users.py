@@ -1,12 +1,14 @@
+from tapirus.utils import text
+
 __author__ = 'guilherme'
 
 from tapirus.api.v1.errors import error
-from tapirus.engine.graph.query.generator.resources.user import UserQueryGenerator
-from tapirus.engine.graph.query.executor.executor import QueryExecutor
-from tapirus.engine.models.resources.user import UserSchema
+from tapirus.core.db.i2.query.generator.resources.user import UserQueryGenerator
+from tapirus.core.db.i2.query.executor.executor import QueryExecutor
+from tapirus.models.user import UserSchema
 from tapirus.utils.neo4j import cypher
-from tapirus.utils.helpers import text, payload
-from tapirus.utils.log.logger import Logger
+from tapirus.utils.helpers import payload
+from tapirus.utils.logger import Logger
 
 
 class UserHandler():

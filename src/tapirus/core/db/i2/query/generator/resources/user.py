@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
-from tapirus.engine.graph.query.generator.resources.base import ResourceQueryGeneratorBase
-from tapirus.engine.models.resources.user import UserSchema
+from tapirus.core.db.i2.query.generator.resources.base import ResourceQueryGeneratorBase
+from tapirus.models.user import UserSchema
 
 
 class UserQueryGenerator(ResourceQueryGeneratorBase):
