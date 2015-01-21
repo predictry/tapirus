@@ -23,9 +23,9 @@ class Logger:
                     with open(path, 'rt') as f:
                         config = json.load(f)
                     logging.config.dictConfig(config)
-                except ValueError, e:
-                    print "Unable to configure logging:", e
-                    print "Loading basic configuration"
+                except ValueError as e:
+                    print("Unable to configure logging: \n\t{0}".format(e))
+                    print("Loading basic configuration")
                     logging.basicConfig(level=default_level)
                 else:
                     pass

@@ -18,7 +18,7 @@ def load_configuration():
         try:
             conf = json.loads(contents)
         except ValueError as err:
-            print "[{0}] There was an error reading the '{1}' file: \n\t'{2}'".format(__name__, CONFIG_FILE, err)
+            print("[{0}] There was an error reading the '{1}' file: \n\t'{2}'".format(__name__, CONFIG_FILE, err))
             return None
 
         if "log_config_file_name" in conf:
