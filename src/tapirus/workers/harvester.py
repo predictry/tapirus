@@ -644,6 +644,29 @@ def delete_file(file_name):
     os.remove(file_name)
 
 
+def delete_message_from_queue(msg):
+
+    conf = config.load_configuration()
+
+    if not conf:
+        print("Aborting `Queue Message Delete` operation")
+        return
+
+    conn = boto.sqs.connect_to_region(conf["sqs"]["region"])
+
+    queue = conn.get_queue(conf["sqs"]["queue"])
+
+    if queue:
+        rs = queue.delete_message(msg)
+
+        return rs
+
+    else:
+        print("Couldn't delete message from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
+        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
+
+        return False
+
 #todo: Serialize & deserialize nested structures
 '''
 def __flatten_map(data, prefix="", call=0):
@@ -689,6 +712,7 @@ def run():
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
     delete_file(file_name)
+    delete_message_from_queue(message)
 
 
 if __name__ == "__main__":
