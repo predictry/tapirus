@@ -12,4 +12,4 @@ if __name__ == "__main__":
     if conf:
 
         timeout = conf["app"]["intervals"]["harvester"]
-        threads.repeat(60*10, harvester.run)
+        threads.repeat(timeout, harvester.run)
