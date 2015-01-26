@@ -639,6 +639,11 @@ def insert_data_to_db():
     pass
 
 
+def delete_file(file_name):
+
+    os.remove(file_name)
+
+
 #todo: Serialize & deserialize nested structures
 '''
 def __flatten_map(data, prefix="", call=0):
@@ -683,6 +688,7 @@ def run():
     file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
+    delete_file(file_name)
 
 
 if __name__ == "__main__":
