@@ -10,3 +10,4 @@ Logger.setup_logging(conf["log_config_file"])
 #todo: process log file
 #todo: update flask restful
 #todo: create batch endpoints
+#todo: centralized logging

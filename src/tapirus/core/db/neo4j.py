@@ -245,8 +245,10 @@ def run_query(query, params=None, commit=False):
 
     except SocketError as err:
         raise err
+    q = query.query
+    p = {param.key: param.value for param in query.params}
 
-    tx.append(query, params)
+    tx.append(q, p)
     result = tx.process()[0]
 
     if commit:
@@ -255,7 +257,59 @@ def run_query(query, params=None, commit=False):
     return result
 
 
-def run_batch_query(batch, commit):
+class Parameter:
+
+    def __init__(self, key, value):
+
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+
+        return "Parameter({0}, {1})".format(self.key, self.value)
+
+    def __eq__(self, other):
+
+        if isinstance(other, Parameter):
+            return self.key == other.key and self.value == other.value
+        else:
+            return False
+
+    def __ne__(self, other):
+
+        return not self.__eq__(other)
+
+    def __hash__(self):
+
+        return hash(self.__repr__())
+
+
+class Query:
+
+    def __init__(self, query, params):
+
+        self.query = query
+        self.params = params
+
+    '''
+    def __repr__(self):
+        return "Query({0}, {1})".format(self.query, self.params)
+
+    def __eq__(self, other):
+        if isinstance(other, Query):
+            return self.query == other.query and self.params == other.params
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.__repr__())
+    '''
+
+
+def run_batch_query(queries, commit):
 
     try:
         graph = get_connection()
@@ -264,8 +318,11 @@ def run_batch_query(batch, commit):
     except SocketError as err:
         raise err
 
-    for bp in batch:
-        tx.append(bp["query"], bp["params"])
+    for query in queries:
+        q = query.query
+        params = {param.key: param.value for param in query.params}
+
+        tx.append(q, params)
 
     #notice that we don't take the first result only, but all of them
     result = tx.process()
