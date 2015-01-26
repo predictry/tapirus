@@ -1,9 +1,0 @@
-CREATE INDEX ON :item(id)
-CREATE INDEX ON :user(id)
-CREATE INDEX ON :session(id)
-CREATE INDEX ON :browser(id)
-
-CREATE CONSTRAINT ON (i:item:verve) ASSERT i.id IS UNIQUE;
-CREATE CONSTRAINT ON (u:user:verve) ASSERT u.id IS UNIQUE;
-CREATE CONSTRAINT ON (s:session:verve) ASSERT i.id IS UNIQUE;
-CREATE CONSTRAINT ON (b:browser:verve) ASSERT u.id IS UNIQUE;

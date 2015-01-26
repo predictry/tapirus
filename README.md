@@ -1,12 +1,8 @@
 #Tapirus 
-##Predictry's real-time recommendation engine
+##Predictry's data collection & storage service
 
-This is a recommendation engine, based on the graph database Neo4j, designed for ecommerce, and other application contexts.
+This application collects transaction data from logs and stores them on the graph data store.
+It solves provides an endpoint for data reads/writes.
 
 ##Version
-Beta 0.1.15
-
-##Changelog
-
-###v0.1.15
--Fixed repeated connection between users/browsers and sessions
+Beta 0.1.2
