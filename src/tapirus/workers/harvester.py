@@ -126,9 +126,10 @@ def process_log(file_name):
                 except ValueError:
 
                     print("Error: [{0}]".format(l[11]))
+                    Logger.error("Error: [{0}]".format(l[11]))
 
-                    with open("{1}-{0}.json".format(file_name, count), "w") as tmp:
-                        json.dump(l[11], tmp, indent=4)
+                    #with open("{1}-{0}.json".format(file_name, count), "w") as tmp:
+                    #    json.dump(l[11], tmp, indent=4)
 
                     continue
 
@@ -154,12 +155,8 @@ def process_log(file_name):
 
                 queries.clear()
 
-        #todo: run remaining queries
         rs = neo4j.run_batch_query(queries, commit=True)
-        #for q in queries:
-        #    rs = neo4j.run_query(q, commit=True)
 
-        #todo: print counter
         print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
             (count//batch_size + 1)*batch_size - count,
             count,
@@ -304,7 +301,7 @@ def build_queries(date, time, ip, path, payload):
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)" \
+                "\nMERGE (s)-[r :`{REL}`]->(i)"
                 #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
@@ -346,7 +343,7 @@ def build_queries(date, time, ip, path, payload):
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)" \
+                "\nMERGE (s)-[r :`{REL}`]->(i)"
                 #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
@@ -393,7 +390,7 @@ def build_queries(date, time, ip, path, payload):
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)" \
+                "\nMERGE (s)-[r :`{REL}`]->(i)"
                 #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
@@ -445,7 +442,7 @@ def build_queries(date, time, ip, path, payload):
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)" \
+                "\nMERGE (s)-[r :`{REL}`]->(i)"
                 #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
@@ -467,8 +464,39 @@ def build_queries(date, time, ip, path, payload):
             #print(''.join(query))
 
     elif payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_SEARCH.lower():
-        #todo: Search node (action type)
-        pass
+
+        q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
+            "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
+            "\nMERGE (s)-[r :`{REL}`]->(n)"
+
+        #collect items
+        query = [q.format(
+            SEARCH_LABEL=store.LABEL_SEARCH,
+            SESSION_LABEL=store.LABEL_SESSION,
+            STORE_ID=payload[TENANT_ID],
+            REL=store.REL_ACTION_TYPE_SEARCH
+        )]
+
+        params = [neo4j.Parameter("keywords", payload[ACTION][KEYWORDS]),
+                  neo4j.Parameter("session_id", payload[SESSION_ID]),
+                  neo4j.Parameter("datetime", dt)]
+
+        queries.append(neo4j.Query(''.join(query), params))
+
+        for k, v in payload[ACTION].items():
+
+            if k != KEYWORDS and is_acceptable_data_type(v):
+
+                params.append(neo4j.Parameter(k, v))
+                query.append("\nSET n.{0} = {{ {0} }}".format(
+                    k
+                ))
+
+        query.append("\nSET r.{0} = {{ {0} }}".format(
+            "datetime"
+        ))
+
+        queries.append(neo4j.Query(''.join(query), params))
 
     return queries
 
