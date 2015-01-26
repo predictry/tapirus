@@ -179,8 +179,6 @@ class Neo4jTraversePathTest(unittest.TestCase):
             "J": []
         }
 
-        #todo: fix this test 3to2
-
         def test_001_should_create_nodes_and_connect_them(self):
 
             nodes = [{"id": id} for id in list(map(chr, range(65, 75)))]

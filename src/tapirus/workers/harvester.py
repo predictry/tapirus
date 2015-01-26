@@ -7,6 +7,7 @@ import json
 import ast
 import gzip
 import math
+import tempfile
 import dateutil.parser, dateutil.tz
 import pytz
 import boto.sqs
@@ -41,44 +42,55 @@ SUB_TOTAL = "sub_total"
 ITEMS = "items"
 KEYWORDS = "keywords"
 
+TEMP_DIR = "/tmp/"
+
 
 def get_file_from_queue():
 
     conf = config.load_configuration()
 
-    conn = boto.sqs.connect_to_region(conf["region"])
+    if not conf:
+        print("Aborting `Queue Read` operation")
+        return
 
-    queue = conn.get_queue(conf["queue"])
+    conn = boto.sqs.connect_to_region(conf["sqs"]["region"])
+
+    queue = conn.get_queue(conf["sqs"]["queue"])
+    vs_timeout = int(conf["sqs"]["visibility_timeout"])
 
     if queue:
         #10 minutes
-        rs = queue.get_messages(1, visibility_timeout=60*10)
+        rs = queue.get_messages(1, visibility_timeout=vs_timeout)
         message = rs[0]
-        f = message.get_body()
+        f = json.loads(message.get_body(), encoding="utf-8")
 
     else:
         print("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
+        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
 
         f, message = None, None
 
-    return f, message
+    return f["data"]["full_path"], message
 
 
 def download_log_from_s3(s3_log, file_path):
 
     conn = S3Connection()
 
-    bucket = conn.get_bucket('trackings-test')
+    bucket = conn.get_bucket(s3_log.split("/")[0])
 
     key = Key(bucket)
-    key.key = "action-logs/ER1VHJSBZAAAA.2015-01-15-09.8b10c614.gz"
+    key.key = '/'.join(s3_log.split("/")[1:])
 
     #download
-    key.get_contents_to_filename('/tmp/ER1VHJSBZAAAA.2015-01-15-09.8b10c614.gz')
+    #print("[BUCKET] `{0}`".format(s3_log.split("/")[0]))
+    #print("[KEY] `{0}`".format('/'.join(s3_log.split("/")[1:])))
+    #print(file_path)
 
-    #todo: return file address
+    Logger.info("Getting log file from S3: {0}".format(s3_log))
+    key.get_contents_to_filename(file_path)
 
-    return "/tmp/ER1VHJSBZAAAA.2015-01-12-08.3cd14307.gz"
+    return file_path
 
 
 def process_log(file_name):
@@ -153,6 +165,12 @@ def process_log(file_name):
                     len(queries))
                 )
 
+                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                    (count//batch_size + 1)*batch_size - count,
+                    count,
+                    len(queries))
+                )
+
                 queries.clear()
 
         rs = neo4j.run_batch_query(queries, commit=True)
@@ -163,12 +181,18 @@ def process_log(file_name):
             len(queries))
         )
 
+        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+            (count//batch_size + 1)*batch_size - count,
+            count,
+            len(queries))
+        )
+
         #todo: any data left upload
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
 
 
 def build_queries(date, time, ip, path, payload):
-    #todo: deal with extra parameters
+    #todo: deal with extra parameters (location)
     #items, session, user, agent
     #session -> item
     #session -> user
@@ -195,7 +219,7 @@ def build_queries(date, time, ip, path, payload):
 
     #user
     if USER in payload:
-        #todo: if user is not given, use anonymous user id
+        #todo: if user is not given, use anonymous user id?
 
         query = ["MERGE (n :`{USER_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
             USER_LABEL=store.LABEL_USER,
@@ -650,42 +674,16 @@ def flatten_map(data):
 
 
 def rebuild_map(target):
-
     pass
 
-if __name__ == "__main__":
 
-    #filename = download_log_from_s3(None, None)
-    file_name = "/tmp/ER1VHJSBZAAAA.2015-01-15-09.8b10c614.gz"
+def run():
 
-    data = {
-
-        "brand": "Samsung",
-        "description": "GARANSI MESIN 1BULAN\r\nAKSESORIS TIDAK GARANSI DENGAN ALASAN APAPUN\r\n\r\nFAST RESPON JAM KERJA 8.00-18.00\r\n\r\nSETIAP PENGIRIMAN KITA CEK TERLEBIH DAHULU UNTUK MEMINIMALISASIKAN TERJADINYA RETUR\r\nDAN BILA TERJADI RETUR.. ONGKIR RETURAN FULL DITANGGUNG PEMBELI\r\n\r\nDENGAN MEMBELI BERARTI ANDA MENGIKUTI PROSEDUR DIATAS THX\r\n\r\nSELAMAT BERBELANJA",
-        "img_url": "https://s0.bukalapak.com/system/images/1/4/4/6/3/5/8/0/large/nt57.jpg",
-        "item_url": "https://www.bukalapak.com/p/handphone/hp-smartphone/ymit-jual-agen-suplier-replika-supercopy-samsung-note-3-5-7-quadcore-ram-2gb-sensor-2-arah-camera-13mp-mt6582-made-in-korea",
-        "item_id": "ymit",
-        "subcategory": [
-            "HP & Smartphone"
-        ],
-        "price": "1230000",
-        "name": "AGEN - SUPLIER REPLIKA SUPERCOPY SAMSUNG NOTE 3 5,7\" QUADCORE RAM 2GB SENSOR 2 ARAH CAMERA 13MP MT6582 MADE IN KOREA",
-        "inventory_qty": "84",
-        "category": "Handphone",
-        "location": {
-            "coordinates": {
-                "lat": 12,
-                "long": 15.3
-            },
-            "city": "KAO",
-            "country": "Sanfrey"
-        }
-    }
-
-    #print(flatten_map(data))
+    s3_file_path, message = get_file_from_queue()
+    file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
+    download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
 
 
-
-#q = "MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {id: {{session_id}}})-[:`{REL}` {REL_PROPS}]->(x :`{ITEM_LABEL}` :`{STORE_ID}` {id: {{item_id}}})"
-#print(jsonuri.deserialize("action:name=buy&action:total=120703&items%255B0%255D%255B0%255Ditem_id=3n910&items%255B0%255D%255B0%255Dqty=1&items%255B0%255D%255B0%255Dsub_total=112000&user:user_id=732515&user:email=r_gages%2540yahoo.com&session_id=jxYgCGZVhz7y3l1&user_id=gMxQfldyhI0UZQn&browser_id=9gACE5y06p3iden&tenant_id=bukalapak&api_key=8f44921c2dc2d5fe47aa44b3625f12c9"))
+if __name__ == "__main__":
+    run()

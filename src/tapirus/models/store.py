@@ -46,7 +46,7 @@ class Item:
 
     def __init__(self, id, domain, uuid):
         self.id = id
-        self.domain
+        self.domain = domain
         self.uuid = uuid
 
 

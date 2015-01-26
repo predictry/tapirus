@@ -1,7 +1,15 @@
 __author__ = 'guilherme'
 
-from tapirus.utils.threading import mp
-from tapirus.engine.compute.services.workers import trending
+from tapirus.utils import threads
+from tapirus.workers import harvester
+from tapirus.utils import config
+
 
 if __name__ == "__main__":
-    mp.repeat(60*10, trending.run)
+
+    conf = config.load_configuration()
+
+    if conf:
+
+        timeout = conf["app"]["intervals"]["harvester"]
+        threads.repeat(60*10, harvester.run)
