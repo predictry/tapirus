@@ -4,12 +4,9 @@ __author__ = 'guilherme'
 
 import os
 import json
-import ast
 import gzip
-import math
 import tempfile
 import dateutil.parser, dateutil.tz
-import pytz
 import boto.sqs
 from boto.sqs.message import Message
 from boto.s3.connection import S3Connection
@@ -41,8 +38,6 @@ TOTAL = "total"
 SUB_TOTAL = "sub_total"
 ITEMS = "items"
 KEYWORDS = "keywords"
-
-TEMP_DIR = "/tmp/"
 
 
 def get_file_from_queue():
