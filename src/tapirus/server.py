@@ -1,7 +1,7 @@
 __author__ = 'guilherme'
 
 
-from flask import Flask, Response, url_for, request
+from flask import Flask, Response
 import json
 
 
@@ -15,6 +15,7 @@ def hello():
     }
 
     return Response(json.dumps(data), status=200, mimetype="application/json")
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True)
