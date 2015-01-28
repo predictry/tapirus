@@ -705,7 +705,11 @@ def run():
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
     delete_file(file_name)
-    delete_message_from_queue(message)
+
+    conf = config.load_configuration()
+
+    if conf["sqs"]["delete"] is True:
+        delete_message_from_queue(message)
 
 
 if __name__ == "__main__":
