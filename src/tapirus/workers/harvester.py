@@ -704,8 +704,8 @@ def run():
     file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
-    #delete_file(file_name)
-    #delete_message_from_queue(message)
+    delete_file(file_name)
+    delete_message_from_queue(message)
 
 
 if __name__ == "__main__":
