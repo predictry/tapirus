@@ -18,9 +18,6 @@ from tapirus.core.db import neo4j
 from tapirus.models import store
 from tapirus.utils.logger import Logger
 
-SRC_ROOT = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE = os.path.join(SRC_ROOT, "../../../config.json")
-
 LOG_FILE_COLUMN_SEPARATOR = "\t"
 
 
@@ -148,11 +145,12 @@ def process_log(file_name):
 
                 #upload
                 #run queries
-                #try:
-                rs = neo4j.run_batch_query(queries, commit=True)
+                try:
+                    rs = neo4j.run_batch_query(queries, commit=True)
 
-                #except Exception as e:
-                #    print(e)
+                except Exception as e:
+                    Logger.error(e)
+                    raise e
 
                 print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
                     (count//batch_size + 1)*batch_size - count,
@@ -706,8 +704,8 @@ def run():
     file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
-    delete_file(file_name)
-    delete_message_from_queue(message)
+    #delete_file(file_name)
+    #delete_message_from_queue(message)
 
 
 if __name__ == "__main__":
