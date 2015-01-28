@@ -624,6 +624,8 @@ def is_acceptable_data_type(e):
     else:
         return False
 
+    return True
+
 
 def insert_data_to_db():
     #validate
