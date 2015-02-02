@@ -27,7 +27,9 @@ function buildEnvironment(){
 
     export PYTHONPATH=${PYTHONPATH}:${SRCROOT}
 
-    ${PYTHONENV}/pip install -r ${REQUIREMENTS}
+    if [ -f ${REQUIREMENTS} ]; then
+        ${PYTHONENV}/pip install -r ${REQUIREMENTS}
+    fi
 }
 
 buildEnvironment
