@@ -3,3 +3,4 @@ uwsgi==2.0.8
 py2neo==2.0.3
 boto==2.34.0
 python-dateutil==2.4.0
+requests==2.5.1

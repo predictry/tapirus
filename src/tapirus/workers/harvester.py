@@ -12,6 +12,8 @@ import boto.sqs
 from boto.sqs.message import Message
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+import requests
+import requests.exceptions
 
 from tapirus.utils import jsonuri
 from tapirus.utils import config
@@ -20,7 +22,8 @@ from tapirus.model import store
 from tapirus.utils.logger import Logger
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
-
+LOG_KEEPER_FILE_NAME = "log.keeper.list.db"
+LOG_KEEPER_DB = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../{0}".format(LOG_KEEPER_FILE_NAME))
 
 SESSION_ID = "session_id"
 TENANT_ID = "tenant_id"
@@ -42,6 +45,10 @@ COUNTRY = "country"
 
 
 def get_file_from_queue():
+    """
+
+    :return:
+    """
 
     conf = config.load_configuration()
 
@@ -69,6 +76,12 @@ def get_file_from_queue():
 
 
 def download_log_from_s3(s3_log, file_path):
+    """
+
+    :param s3_log:
+    :param file_path:
+    :return:
+    """
 
     conn = S3Connection()
 
@@ -84,6 +97,11 @@ def download_log_from_s3(s3_log, file_path):
 
 
 def process_log(file_name):
+    """
+
+    :param file_name:
+    :return:
+    """
 
     conf = config.load_configuration()
 
@@ -181,6 +199,16 @@ def process_log(file_name):
 
 
 def build_queries(date, time, ip, path, payload):
+    """
+
+    :param date:
+    :param time:
+    :param ip:
+    :param path:
+    :param payload:
+    :return:
+    """
+
     #todo: deal with extra parameters (location)
     #items, session, user, agent
     #session -> item
@@ -539,6 +567,11 @@ def build_queries(date, time, ip, path, payload):
 
 
 def is_data_valid(data):
+    """
+
+    :param data:
+    :return:
+    """
 
     #todo: log any missing data
 
@@ -630,6 +663,11 @@ def is_data_valid(data):
 
 
 def is_acceptable_data_type(e):
+    """
+
+    :param e:
+    :return:
+    """
 
     if type(e) in [bool, int, float, complex, str, bytes, list, set]:
 
@@ -648,6 +686,11 @@ def is_acceptable_data_type(e):
 
 
 def delete_file(file_name):
+    """
+
+    :param file_name:
+    :return:
+    """
 
     #todo: check for IO errors/exceptions
     #todo: return True/False
@@ -656,11 +699,17 @@ def delete_file(file_name):
 
 
 def delete_message_from_queue(msg):
+    """
+
+    :param msg:
+    :return:
+    """
 
     conf = config.load_configuration()
 
     if not conf:
         print("Aborting `Queue Message Delete` operation")
+        Logger.info("Aborting `Queue Message Delete` operation. App configuration not found")
         return
 
     conn = boto.sqs.connect_to_region(conf["sqs"]["region"])
@@ -679,19 +728,141 @@ def delete_message_from_queue(msg):
         return False
 
 
+def notify_log_keeper(file_name, status):
+    """
+
+    :param file_name:
+    :param status:
+    :return:
+    """
+
+    conf = config.load_configuration()
+
+    if conf:
+        if "log_keeper" in conf:
+            log_keeper = conf["log_keeper"]
+
+            uri = '/'.join([log_keeper["url"], log_keeper["endpoint"], file_name])
+            payload = dict(status=status)
+
+            try:
+                response = requests.post(url=uri, json=payload)
+            except requests.exceptions.ConnectionError as e:
+                Logger.error("Connection error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+                return False
+            except requests.exceptions.HTTPError as e:
+                Logger.error("HTTP error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+                return False
+            except Exception as e:
+                Logger.error("Unexpected error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+                return False
+            else:
+
+                if response.status_code != 200:
+
+                    Logger.error("LogKeeper@{0} Response:\n\t{1}".format(uri, response.status_code))
+                    return False
+
+                else:
+
+                    Logger.info("Notified LogKeeper of processed file `{0}`".format(file_name))
+                    return True
+
+        else:
+            Logger.info("Log keeper configuration has not been defined")
+            return False
+    else:
+        return False
+
+
+def notify_log_keeper_of_backlogs():
+    """
+    Tries notify the log keeper of all files in the waiting list
+    :return:
+    """
+
+    file_names = get_log_keeper_files()
+
+    for file_name in file_names:
+
+        if notify_log_keeper(file_name, status="processed"):
+            remove_log_keeper_file(file_name)
+
+
+def add_log_keeper_file(file_name):
+    """
+    Adds a file to the list of files to notify the log keeper about
+    :param file_name:
+    :return:
+    """
+
+    files_names = get_log_keeper_files()
+
+    if file_name not in files_names:
+
+        with open(LOG_KEEPER_DB, "a+") as f:
+            f.write(''.join([file_name, "\n"]))
+
+
+def remove_log_keeper_file(file_name):
+    """
+    Removes a file from the log keeper's pending notification list
+    :param file_name:
+    :return:
+    """
+
+    files_names = get_log_keeper_files()
+
+    #if file is present, remove it
+    if file_name in files_names:
+        files_names.remove(file_name)
+
+        #update file (or just re-write it)
+        with open(LOG_KEEPER_DB, "w+") as f:
+            for file_name in set(files_names):
+                f.write(''.join([file_name, "\n"]))
+
+
+def get_log_keeper_files():
+    """
+    Gets the list of files pending notification to the log keeper
+    :return:
+    """
+
+    file_names = []
+
+    if os.path.exists(LOG_KEEPER_DB):
+
+        with open(LOG_KEEPER_DB, "r") as f:
+
+            for line in f:
+                file_names.append(line.strip())
+
+    return file_names
+
+
 def run():
+    """
+    Execute harvesting procedure.
+    :return:
+    """
 
     s3_file_path, message = get_file_from_queue()
     file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
     download_log_from_s3(s3_file_path, file_name)
     process_log(file_name)
     delete_file(file_name)
+    if not notify_log_keeper(file_name, status="processed"):
+        add_log_keeper_file(file_name)
 
     conf = config.load_configuration()
 
-    if conf["sqs"]["delete"] is True:
-        delete_message_from_queue(message)
+    if "sqs" in conf:
+        if "delete" in conf["sqs"]:
+            if conf["sqs"]["delete"] is True:
+                delete_message_from_queue(message)
 
+    notify_log_keeper_of_backlogs()
 
 if __name__ == "__main__":
     run()
