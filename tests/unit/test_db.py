@@ -17,6 +17,8 @@ class Neo4jTest(unittest.TestCase):
 
     def test_001_should_connect_to_db(self):
 
+        print("Testing connecting to `{0}`".format("neo4j"))
+
         db_conn = None
 
         assert db_conn is None
@@ -52,6 +54,9 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
         pass
 
     def test_001_should_create_node(self):
+
+        print("Testing creation of `{0}`".format("Node"))
+
         assert isinstance(self.jane, dict)
         assert isinstance(self.john, dict)
         assert isinstance(self.label, str)
@@ -73,6 +78,8 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
         assert neo4j.is_node_exists(self.label, "name", self.john["name"]) is True
 
     def test_002_should_verify_node_properties(self):
+
+        print("Testing verification of properties in `{0}`".format("Node"))
 
         assert neo4j.is_node_exists(self.label, "name", self.jane["name"]) is True
         assert neo4j.is_node_exists(self.label, "name", self.john["name"]) is True
@@ -97,6 +104,9 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
         assert self.label in labels_john
 
     def test_003_should_create_a_relationship(self):
+
+        print("Testing creation of `{0}`".format("Relationship"))
+
         n_jane = neo4j.get_node(self.label, "name", self.jane["name"])
         n_john = neo4j.get_node(self.label, "name", self.john["name"])
 
@@ -112,6 +122,9 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
             assert r.end_node.properties[k] == n_john.properties[k]
 
     def test_004_should_verify_relationship_properties(self):
+
+        print("Testing verification of properties in `{0}`".format("Relationship"))
+
         n_jane = neo4j.get_node(self.label, "name", self.jane["name"])
         n_john = neo4j.get_node(self.label, "name", self.john["name"])
 
@@ -124,6 +137,9 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
             assert r.properties[k] == self.relationship_props[k]
 
     def test_005_should_delete_relationship(self):
+
+        print("Testing deletion of `{0}`".format("Relationship"))
+
         n_jane = neo4j.get_node(self.label, "name", self.jane["name"])
         n_john = neo4j.get_node(self.label, "name", self.john["name"])
 
@@ -137,6 +153,8 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
 
     def test_006_should_validate_labels(self):
 
+        print("Testing validation of `{0}`".format("Labels"))
+
         for label in self.invalid_labels:
             assert neo4j.is_valid_label(label) is False
 
@@ -144,6 +162,9 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
             assert neo4j.is_valid_label(label) is True
 
     def test_007_should_delete_nodes(self):
+
+        print("Testing deletion of `{0}`".format("Node"))
+
         n_jane = neo4j.get_node(self.label, "name", self.jane["name"])
         n_john = neo4j.get_node(self.label, "name", self.john["name"])
 
@@ -154,10 +175,14 @@ class Neo4jNodeRelationshipTest(unittest.TestCase):
 
     def test_008_should_fail_to_create_node(self):
 
+        print("Testing failure to create `{0}`".format("Node"))
+
         for label in self.invalid_labels:
             self.assertRaises(errors.InvalidLabelError, neo4j.create_node, self.jane, label)
 
     def test_009_should_fail_to_check_node(self):
+
+        print("Testing identification of invalid `{0}`".format("Labels"))
 
         for label in self.invalid_labels:
             self.assertRaises(errors.InvalidLabelError, neo4j.is_node_exists, label, "name", "random")
@@ -181,6 +206,8 @@ class Neo4jTraversePathTest(unittest.TestCase):
 
         def test_001_should_create_nodes_and_connect_them(self):
 
+            print("Testing generation of `{0}`".format("Path"))
+
             nodes = [{"id": id} for id in list(map(chr, range(65, 75)))]
 
             n_nodes = {}
@@ -200,6 +227,8 @@ class Neo4jTraversePathTest(unittest.TestCase):
 
         def test_002_should_traverse_path_and_find_all_nodes(self):
 
+            print("Testing traversal of `{0}`".format("Path"))
+
             nodes = [{"id": id} for id in list(map(chr, range(65, 75)))]
 
             n_start = neo4j.get_node(self.label, key="id", value=nodes[0]["id"])
@@ -216,6 +245,8 @@ class Neo4jTraversePathTest(unittest.TestCase):
 
         def test_003_should_delete_nodes_in_path(self):
 
+            print("Testing deletion of nodes in `{0}`".format("Path"))
+
             nodes = [{"id": id} for id in list(map(chr, range(65, 75)))]
 
             n_start = neo4j.get_node(self.label, key="id", value=nodes[0]["id"])
@@ -227,6 +258,8 @@ class Neo4jTraversePathTest(unittest.TestCase):
 
         def test_004_should_verify_nodes_were_deleted(self):
 
+            print("Testing verification of deletion of nodes `{0}`".format("Nodes"))
+
             path_letters = list(map(chr, range(66, 75)))
 
             for letter in path_letters:
@@ -234,6 +267,8 @@ class Neo4jTraversePathTest(unittest.TestCase):
                 assert neo4j.is_node_exists(self.label, key="name", value=letter) is False
 
         def test_005_should_delete_leading_node(self):
+
+            print("Testing deletion of head `{0}`".format("Path"))
 
             n = neo4j.get_node(self.label, key="id", value="A")
 
