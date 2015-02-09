@@ -131,8 +131,6 @@ def process_log(file_name):
 
             if len(l) >= 12:
 
-                count += 1
-
                 date, time, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
 
                 if ".gif" not in path or status not in [0, 200, 304]:
@@ -144,17 +142,14 @@ def process_log(file_name):
 
                 except ValueError:
 
-                    #print("Error: [{0}]".format(l[11]))
                     Logger.error("Error: [{0}]".format(l[11]))
-
-                    #with open("{1}-{0}.json".format(file_name, count), "w") as tmp:
-                    #    json.dump(l[11], tmp, indent=4)
 
                     continue
 
                 #print("[`{0}`][`{1}`][`{2}`][{3}]".format(date, time, status, payload))
 
                 queries.extend(build_queries(date, time, ip, path, payload))
+                count += 1
 
             if count % batch_size == 0:
 
@@ -867,4 +862,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-    
