@@ -36,7 +36,7 @@ TOTAL = "total"
 SUB_TOTAL = "sub_total"
 ITEMS = "items"
 KEYWORDS = "keywords"
-LOCATION = "location"
+LOCATION = "locations"
 CITY = "city"
 COUNTRY = "country"
 
@@ -55,7 +55,6 @@ def get_file_from_queue():
     vs_timeout = int(conf["sqs"]["visibility_timeout"])
 
     if queue:
-        #10 minutes
         rs = queue.get_messages(1, visibility_timeout=vs_timeout)
         message = rs[0]
         f = json.loads(message.get_body(), encoding="utf-8")
@@ -77,11 +76,6 @@ def download_log_from_s3(s3_log, file_path):
 
     key = Key(bucket)
     key.key = '/'.join(s3_log.split("/")[1:])
-
-    #download
-    #print("[BUCKET] `{0}`".format(s3_log.split("/")[0]))
-    #print("[KEY] `{0}`".format('/'.join(s3_log.split("/")[1:])))
-    #print(file_path)
 
     Logger.info("Getting log file from S3: {0}".format(s3_log))
     key.get_contents_to_filename(file_path)
@@ -116,7 +110,6 @@ def process_log(file_name):
         for line in f:
 
             l = line.decode(encoding="utf-8").split(LOG_FILE_COLUMN_SEPARATOR)
-            #print(l)
 
             if len(l) >= 12:
 
@@ -195,7 +188,6 @@ def build_queries(date, time, ip, path, payload):
     #session -> agent
 
     dt = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
-    #print("[`{0}`]".format(dt))
 
     if is_data_valid(payload) is False:
         return []
@@ -211,7 +203,6 @@ def build_queries(date, time, ip, path, payload):
     params = [neo4j.Parameter("id", payload[SESSION_ID])]
 
     queries.append(neo4j.Query(''.join(query), params))
-    #print(''.join(query))
 
     #user
     if USER in payload:
@@ -234,14 +225,12 @@ def build_queries(date, time, ip, path, payload):
                 ))
 
         queries.append(neo4j.Query(''.join(query), params))
-        #print(''.join(query))
 
         #(session)-[r]-(user)
 
         q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
             "\nMERGE (i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
             "\nMERGE (s)-[r :`{REL}`]->(i)"
-            #"(i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})"
 
         query = [q.format(
             SESSION_LABEL=store.LABEL_SESSION,
@@ -255,7 +244,6 @@ def build_queries(date, time, ip, path, payload):
                   neo4j.Parameter("session_id", payload[SESSION_ID])]
 
         queries.append(neo4j.Query(''.join(query), params))
-        #print(''.join(query))
 
     #agent
     if AGENT_ID in payload:
@@ -268,7 +256,6 @@ def build_queries(date, time, ip, path, payload):
         params = [neo4j.Parameter("id", payload[AGENT_ID])]
 
         queries.append(neo4j.Query(''.join(query), params))
-        #print(''.join(query))
 
         #(session)-[r]-(agent)
         q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
@@ -288,7 +275,6 @@ def build_queries(date, time, ip, path, payload):
                   neo4j.Parameter("session_id", payload[SESSION_ID])]
 
         queries.append(neo4j.Query(''.join(query), params))
-        #print(''.join(query))
 
     #actions
     if payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_VIEW.lower():
@@ -315,18 +301,54 @@ def build_queries(date, time, ip, path, payload):
                     ))
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
             #(item)-[r]-(location)
 
-            #todo: add location
+            if LOCATION in item:
+
+                if COUNTRY in item[LOCATION]:
+
+                    q = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_COUNTRY}` :`{STORE_ID}` {{name: {{name}} }})" \
+                        "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                        "\nMERGE (i)-[:`{REL}`]->(l)"
+
+                    query = [q.format(
+                        LOCATION_LABEL=store.LABEL_LOCATION,
+                        LOCATION_COUNTRY=store.LABEL_LOCATION_COUNTRY,
+                        ITEM_LABEL=store.LABEL_ITEM,
+                        STORE_ID=payload[TENANT_ID],
+                        REL=store.REL_ITEM_LOCATION
+                    )]
+
+                    params = [neo4j.Parameter("name", item[LOCATION][COUNTRY]),
+                              neo4j.Parameter("item_id", item[ITEM_ID])]
+
+                    queries.append(neo4j.Query(''.join(query), params))
+
+                if CITY in item[LOCATION]:
+
+                    q = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_CITY}` :`{STORE_ID}` {{name: {{name}} }})" \
+                        "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                        "\nMERGE (i)-[:`{REL}`]->(l)"
+
+                    query = [q.format(
+                        LOCATION_LABEL=store.LABEL_LOCATION,
+                        LOCATION_CITY=store.LABEL_LOCATION_CITY,
+                        ITEM_LABEL=store.LABEL_ITEM,
+                        STORE_ID=payload[TENANT_ID],
+                        REL=store.REL_ITEM_LOCATION
+                    )]
+
+                    params = [neo4j.Parameter("name", item[LOCATION][CITY]),
+                              neo4j.Parameter("item_id", item[ITEM_ID])]
+
+                    queries.append(neo4j.Query(''.join(query), params))
 
             #(item)-[r]-(session)
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
-                #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
                 SESSION_LABEL=store.LABEL_SESSION,
@@ -344,7 +366,6 @@ def build_queries(date, time, ip, path, payload):
             ))
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
     elif payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_ADD_TO_CART.lower():
 
@@ -361,7 +382,6 @@ def build_queries(date, time, ip, path, payload):
             params = [neo4j.Parameter("id", item[ITEM_ID])]
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
             #(item)-[r]-(session)
 
@@ -391,7 +411,6 @@ def build_queries(date, time, ip, path, payload):
             ))
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
     elif payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_BUY.lower():
 
@@ -408,14 +427,12 @@ def build_queries(date, time, ip, path, payload):
             params = [neo4j.Parameter("id", item[ITEM_ID])]
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
             #(item)-[r]-(session)
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
-                #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
                 SESSION_LABEL=store.LABEL_SESSION,
@@ -443,7 +460,6 @@ def build_queries(date, time, ip, path, payload):
             ))
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
     elif payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_STARTED_CHECKOUT.lower():
 
@@ -460,14 +476,12 @@ def build_queries(date, time, ip, path, payload):
             params = [neo4j.Parameter("id", item[ITEM_ID])]
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
             #(item)-[r]-(session)
 
             q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
-                #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
             query = [q.format(
                 SESSION_LABEL=store.LABEL_SESSION,
@@ -485,7 +499,6 @@ def build_queries(date, time, ip, path, payload):
             ))
 
             queries.append(neo4j.Query(''.join(query), params))
-            #print(''.join(query))
 
     elif payload[ACTION][NAME].lower() == store.REL_ACTION_TYPE_SEARCH.lower():
 
