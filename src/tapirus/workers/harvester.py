@@ -1,6 +1,7 @@
 __author__ = 'guilherme'
 
-#todo: Make this operation configuration (e.g. if clientT sends actionX read it this way
+#todo: Make this operation configurable (e.g. if clientT sends actionX read it this way
+#todo: Unit tests
 
 import os
 import json
@@ -15,7 +16,7 @@ from boto.s3.key import Key
 from tapirus.utils import jsonuri
 from tapirus.utils import config
 from tapirus.core.db import neo4j
-from tapirus.models import store
+from tapirus.model import store
 from tapirus.utils.logger import Logger
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
@@ -35,6 +36,9 @@ TOTAL = "total"
 SUB_TOTAL = "sub_total"
 ITEMS = "items"
 KEYWORDS = "keywords"
+LOCATION = "location"
+CITY = "city"
+COUNTRY = "country"
 
 
 def get_file_from_queue():
@@ -129,7 +133,7 @@ def process_log(file_name):
 
                 except ValueError:
 
-                    print("Error: [{0}]".format(l[11]))
+                    #print("Error: [{0}]".format(l[11]))
                     Logger.error("Error: [{0}]".format(l[11]))
 
                     #with open("{1}-{0}.json".format(file_name, count), "w") as tmp:
@@ -152,13 +156,13 @@ def process_log(file_name):
                     Logger.error(e)
                     raise e
 
-                print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                print("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
                     (count//batch_size + 1)*batch_size - count,
                     count,
                     len(queries))
                 )
 
-                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
                     (count//batch_size + 1)*batch_size - count,
                     count,
                     len(queries))
@@ -180,7 +184,6 @@ def process_log(file_name):
             len(queries))
         )
 
-        #todo: any data left upload
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
 
 
@@ -313,6 +316,10 @@ def build_queries(date, time, ip, path, payload):
 
             queries.append(neo4j.Query(''.join(query), params))
             #print(''.join(query))
+
+            #(item)-[r]-(location)
+
+            #todo: add location
 
             #(item)-[r]-(session)
 
@@ -627,14 +634,10 @@ def is_acceptable_data_type(e):
     return True
 
 
-def insert_data_to_db():
-    #validate
-    #check site domain
-    #validate
-    pass
-
-
 def delete_file(file_name):
+
+    #todo: check for IO errors/exceptions
+    #todo: return True/False
 
     os.remove(file_name)
 
@@ -661,43 +664,6 @@ def delete_message_from_queue(msg):
         Logger.error("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
 
         return False
-
-#todo: Serialize & deserialize nested structures
-'''
-def __flatten_map(data, prefix="", call=0):
-
-    if call == 0 and type(data) is not dict:
-        return None
-
-    object = {}
-
-    if type(data) is dict:
-
-        for k, v in data.items():
-
-            sep = ""
-
-            if prefix:
-                if prefix[-1] != "]":
-                    sep = "."
-
-            object = dict(list(__flatten_map(v, ''.join([prefix, sep, k]), call + 1).items()) + list(object.items()))
-
-    else:
-
-        object[prefix] = data
-
-    return object
-
-
-def flatten_map(data):
-
-    return __flatten_map(data, "", 0)
-'''
-
-
-def rebuild_map(target):
-    pass
 
 
 def run():
