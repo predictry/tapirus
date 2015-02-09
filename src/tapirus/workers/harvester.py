@@ -746,7 +746,7 @@ def notify_log_keeper(file_name, status):
             payload = dict(status=status)
 
             try:
-                response = requests.post(url=uri, json=payload)
+                response = requests.put(url=uri, json=payload)
             except requests.exceptions.ConnectionError as e:
                 Logger.error("Connection error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
                 return False
@@ -848,10 +848,11 @@ def run():
     """
 
     s3_file_path, message = get_file_from_queue()
-    file_name = os.path.join(tempfile.gettempdir(), s3_file_path.split("/")[-1])
-    download_log_from_s3(s3_file_path, file_name)
-    process_log(file_name)
-    delete_file(file_name)
+    file_name = s3_file_path.split("/")[-1]
+    file_path = os.path.join(tempfile.gettempdir(), file_name)
+    download_log_from_s3(s3_file_path, file_path)
+    process_log(file_path)
+    delete_file(file_path)
     if not notify_log_keeper(file_name, status="processed"):
         add_log_keeper_file(file_name)
 
@@ -866,3 +867,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    
