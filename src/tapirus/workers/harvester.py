@@ -8,6 +8,8 @@ import json
 import gzip
 import tempfile
 import dateutil.parser, dateutil.tz
+import traceback
+
 import boto.sqs
 from boto.sqs.message import Message
 from boto.s3.connection import S3Connection
@@ -140,9 +142,9 @@ def process_log(file_name):
 
                     payload = jsonuri.deserialize(l[11])
 
-                except ValueError:
+                except ValueError as e:
 
-                    Logger.error("Error: [{0}]".format(l[11]))
+                    Logger.error("Error deserializing with payload: [{0}]\n\t{1}".format(l[11], e))
 
                     continue
 
@@ -159,7 +161,7 @@ def process_log(file_name):
                     rs = neo4j.run_batch_query(queries, commit=True)
 
                 except Exception as e:
-                    Logger.error(e)
+                    Logger.error(traceback.format_exc())
                     raise e
 
                 print("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
