@@ -291,23 +291,6 @@ class Query:
         self.query = query
         self.params = params
 
-    '''
-    def __repr__(self):
-        return "Query({0}, {1})".format(self.query, self.params)
-
-    def __eq__(self, other):
-        if isinstance(other, Query):
-            return self.query == other.query and self.params == other.params
-        else:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.__repr__())
-    '''
-
 
 def run_batch_query(queries, commit):
 
