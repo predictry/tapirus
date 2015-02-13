@@ -4,10 +4,12 @@ __author__ = 'guilherme'
 #todo: Unit tests
 
 import os
+import os.path
 import json
 import gzip
 import tempfile
-import dateutil.parser, dateutil.tz
+import dateutil.parser
+import dateutil.tz
 import traceback
 
 import boto.sqs
@@ -20,6 +22,7 @@ import requests.exceptions
 from tapirus.utils import jsonuri
 from tapirus.utils import config
 from tapirus.core.db import neo4j
+from tapirus.core import aws
 from tapirus.model import store
 from tapirus.utils.logger import Logger
 
@@ -55,47 +58,27 @@ def get_file_from_queue():
     conf = config.load_configuration()
 
     if not conf:
-        print("Aborting `Queue Read` operation")
-        return
+        Logger.critical("Aborting `Queue Read` operation. Configuration `")
 
-    conn = boto.sqs.connect_to_region(conf["sqs"]["region"])
+        return None, None
 
-    queue = conn.get_queue(conf["sqs"]["queue"])
-    vs_timeout = int(conf["sqs"]["visibility_timeout"])
+    region = conf["sqs"]["region"]
+    queue_name = conf["sqs"]["queue"]
+    visibility_timeout = conf["sqs"]["visibility_timeout"]
+    count = 1
 
-    if queue:
-        rs = queue.get_messages(1, visibility_timeout=vs_timeout)
-        message = rs[0]
-        f = json.loads(message.get_body(), encoding="utf-8")
+    messages = aws.read_queue(region, queue_name, visibility_timeout, count)
+
+    if messages and len(messages) > 0:
+
+        msg = messages[0]
+        f = json.loads(msg.get_body(), encoding="utf-8")
+
+        return f["data"]["full_path"], msg
 
     else:
-        print("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
-        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
 
-        f, message = None, None
-
-    return f["data"]["full_path"], message
-
-
-def download_log_from_s3(s3_log, file_path):
-    """
-
-    :param s3_log:
-    :param file_path:
-    :return:
-    """
-
-    conn = S3Connection()
-
-    bucket = conn.get_bucket(s3_log.split("/")[0])
-
-    key = Key(bucket)
-    key.key = '/'.join(s3_log.split("/")[1:])
-
-    Logger.info("Getting log file from S3: {0}".format(s3_log))
-    key.get_contents_to_filename(file_path)
-
-    return file_path
+        return None, None
 
 
 def process_log(file_name):
@@ -716,24 +699,13 @@ def delete_message_from_queue(msg):
     conf = config.load_configuration()
 
     if not conf:
-        print("Aborting `Queue Message Delete` operation")
-        Logger.info("Aborting `Queue Message Delete` operation. App configuration not found")
-        return
-
-    conn = boto.sqs.connect_to_region(conf["sqs"]["region"])
-
-    queue = conn.get_queue(conf["sqs"]["queue"])
-
-    if queue:
-        rs = queue.delete_message(msg)
-
-        return rs
-
-    else:
-        print("Couldn't delete message from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
-        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(conf["queue"], conf["region"]))
-
+        Logger.critical("Aborting `Queue Message Delete` operation. App configuration not found")
         return False
+
+    region = conf["sqs"]["region"]
+    queue_name = conf["sqs"]["queue"]
+
+    return aws.delete_message_from_queue(region, queue_name, msg)
 
 
 def notify_log_keeper(file_name, status):
@@ -856,9 +828,14 @@ def run():
     """
 
     s3_file_path, message = get_file_from_queue()
+
+    if not s3_file_path or not message:
+        Logger.error("Couldn't retrieve file from SQS queue. Stopping process")
+        return
+
     file_name = s3_file_path.split("/")[-1]
     file_path = os.path.join(tempfile.gettempdir(), file_name)
-    download_log_from_s3(s3_file_path, file_path)
+    aws.download_log_from_s3(s3_file_path, file_path)
     process_log(file_path)
     delete_file(file_path)
     if not notify_log_keeper(file_name, status="processed"):
