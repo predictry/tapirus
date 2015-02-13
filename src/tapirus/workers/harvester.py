@@ -12,10 +12,6 @@ import dateutil.parser
 import dateutil.tz
 import traceback
 
-import boto.sqs
-from boto.sqs.message import Message
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 import requests
 import requests.exceptions
 
@@ -81,16 +77,13 @@ def get_file_from_queue():
         return None, None
 
 
-def process_log(file_name):
+def process_log(file_name, batch_size):
     """
 
     :param file_name:
     :return:
     """
 
-    conf = config.load_configuration()
-
-    batch_size = conf["app"]["batch"]["write"]["size"]
     queries = []
 
     with gzip.open(file_name, 'rb') as f:
@@ -127,11 +120,9 @@ def process_log(file_name):
 
                 except ValueError as e:
 
-                    Logger.error("Error deserializing with payload: [{0}]\n\t{1}".format(l[11], e))
+                    Logger.error("Error in deserialization of payload: [{0}]\n\t{1}".format(l[11], e))
 
                     continue
-
-                #print("[`{0}`][`{1}`][`{2}`][{3}]".format(date, time, status, payload))
 
                 queries.extend(build_queries(date, time, ip, path, payload))
                 count += 1
@@ -689,26 +680,7 @@ def delete_file(file_name):
     os.remove(file_name)
 
 
-def delete_message_from_queue(msg):
-    """
-
-    :param msg:
-    :return:
-    """
-
-    conf = config.load_configuration()
-
-    if not conf:
-        Logger.critical("Aborting `Queue Message Delete` operation. App configuration not found")
-        return False
-
-    region = conf["sqs"]["region"]
-    queue_name = conf["sqs"]["queue"]
-
-    return aws.delete_message_from_queue(region, queue_name, msg)
-
-
-def notify_log_keeper(file_name, status):
+def notify_log_keeper(url, file_name, status):
     """
 
     :param file_name:
@@ -716,46 +688,34 @@ def notify_log_keeper(file_name, status):
     :return:
     """
 
-    conf = config.load_configuration()
+    uri = '/'.join([url, file_name])
+    payload = dict(status=status)
 
-    if conf:
-        if "log_keeper" in conf:
-            log_keeper = conf["log_keeper"]
+    try:
+        response = requests.put(url=uri, json=payload)
+    except requests.exceptions.ConnectionError as e:
+        Logger.error("Connection error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+        return False
+    except requests.exceptions.HTTPError as e:
+        Logger.error("HTTP error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+        return False
+    except Exception as e:
+        Logger.error("Unexpected error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
+        return False
+    else:
 
-            uri = '/'.join([log_keeper["url"], log_keeper["endpoint"], file_name])
-            payload = dict(status=status)
+        if response.status_code != 200:
 
-            try:
-                response = requests.put(url=uri, json=payload)
-            except requests.exceptions.ConnectionError as e:
-                Logger.error("Connection error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
-                return False
-            except requests.exceptions.HTTPError as e:
-                Logger.error("HTTP error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
-                return False
-            except Exception as e:
-                Logger.error("Unexpected error while trying to notify LogKeeper@{0}:\n\t{1}".format(uri, e))
-                return False
-            else:
-
-                if response.status_code != 200:
-
-                    Logger.error("LogKeeper@{0} Response:\n\t{1}".format(uri, response.status_code))
-                    return False
-
-                else:
-
-                    Logger.info("Notified LogKeeper of processed file `{0}`".format(file_name))
-                    return True
+            Logger.error("LogKeeper@{0} Response:\n\t`{1}`".format(uri, response.status_code))
+            return False
 
         else:
-            Logger.info("Log keeper configuration has not been defined")
-            return False
-    else:
-        return False
+
+            Logger.info("Notified LogKeeper of processed file `{0}`".format(file_name))
+            return True
 
 
-def notify_log_keeper_of_backlogs():
+def notify_log_keeper_of_backlogs(url):
     """
     Tries notify the log keeper of all files in the waiting list
     :return:
@@ -765,7 +725,7 @@ def notify_log_keeper_of_backlogs():
 
     for file_name in file_names:
 
-        if notify_log_keeper(file_name, status="processed"):
+        if notify_log_keeper(url, file_name, status="processed"):
             remove_log_keeper_file(file_name)
 
 
@@ -827,29 +787,60 @@ def run():
     :return:
     """
 
-    s3_file_path, message = get_file_from_queue()
-
-    if not s3_file_path or not message:
-        Logger.error("Couldn't retrieve file from SQS queue. Stopping process")
-        return
-
-    file_name = s3_file_path.split("/")[-1]
-    file_path = os.path.join(tempfile.gettempdir(), file_name)
-    aws.download_log_from_s3(s3_file_path, file_path)
-    process_log(file_path)
-    delete_file(file_path)
-    if not notify_log_keeper(file_name, status="processed"):
-        add_log_keeper_file(file_name)
-
+    #Read configuration
     conf = config.load_configuration()
 
-    if "sqs" in conf:
+    if not conf:
+        Logger.critical("Aborting `Queue Read` operation. Couldn't read app configuration `")
+        return
+
+    region = conf["sqs"]["region"]
+    queue_name = conf["sqs"]["queue"]
+    visibility_timeout = conf["sqs"]["visibility_timeout"]
+    count = 1
+    batch_size = conf["app"]["batch"]["write"]["size"]
+
+    #Get name of file to download from SQS
+    messages = aws.read_queue(region, queue_name, visibility_timeout, count)
+
+    if messages and len(messages) > 0:
+
+        msg = messages[0]
+        f = json.loads(msg.get_body(), encoding="utf-8")
+
+        s3_file_path, message = f["data"]["full_path"], msg
+
+        file_name = s3_file_path.split("/")[-1]
+        file_path = os.path.join(tempfile.gettempdir(), file_name)
+
+        #Download file from S3
+        aws.download_log_from_s3(s3_file_path, file_path)
+
+        #Process log
+        process_log(file_path, batch_size)
+
+        #Delete downloaded file
+        delete_file(file_path)
+
+        if "log_keeper" in conf:
+            log_keeper = conf["log_keeper"]
+
+            url = '/'.join([log_keeper["url"], log_keeper["endpoint"]])
+
+            if not notify_log_keeper(url, file_name, status="processed"):
+                add_log_keeper_file(file_name)
+
         if "delete" in conf["sqs"]:
             if conf["sqs"]["delete"] is True:
-                delete_message_from_queue(message)
+                aws.delete_message_from_queue(region, queue_name, message)
 
-    notify_log_keeper_of_backlogs()
+        notify_log_keeper_of_backlogs(url)
 
+    else:
+
+        Logger.error("Couldn't retrieve file from SQS queue. Stopping process")
+
+    return
 
 if __name__ == "__main__":
     run()
