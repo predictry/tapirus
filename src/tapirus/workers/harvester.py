@@ -163,34 +163,44 @@ def process_log(file_name):
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     raise e
+                else:
 
-                print("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
-                    (count//batch_size + 1)*batch_size - count,
-                    count,
-                    len(queries))
-                )
+                    print("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
+                        (count//batch_size + 1)*batch_size - count,
+                        count,
+                        len(queries))
+                    )
 
-                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
-                    (count//batch_size + 1)*batch_size - count,
-                    count,
-                    len(queries))
-                )
+                    Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
+                        (count//batch_size + 1)*batch_size - count,
+                        count,
+                        len(queries))
+                    )
 
-                queries.clear()
+                    queries.clear()
 
-        rs = neo4j.run_batch_query(queries, commit=True)
+        try:
 
-        print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-            (count//batch_size + 1)*batch_size - count,
-            count,
-            len(queries))
-        )
+            rs = neo4j.run_batch_query(queries, commit=True)
 
-        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-            (count//batch_size + 1)*batch_size - count,
-            count,
-            len(queries))
-        )
+        except Exception as e:
+            Logger.error(traceback.format_exc())
+            raise e
+
+        else:
+            print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                (count//batch_size + 1)*batch_size - count,
+                count,
+                len(queries))
+            )
+
+            Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                (count//batch_size + 1)*batch_size - count,
+                count,
+                len(queries))
+            )
+
+            queries.clear()
 
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
 
@@ -861,6 +871,7 @@ def run():
                 delete_message_from_queue(message)
 
     notify_log_keeper_of_backlogs()
+
 
 if __name__ == "__main__":
     run()
