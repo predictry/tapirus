@@ -179,28 +179,29 @@ def process_log(file_name):
 
                     queries.clear()
 
-        try:
+        if queries:
+            try:
 
-            rs = neo4j.run_batch_query(queries, commit=True)
+                rs = neo4j.run_batch_query(queries, commit=True)
 
-        except Exception as e:
-            Logger.error(traceback.format_exc())
-            raise e
+            except Exception as e:
+                Logger.error(traceback.format_exc())
+                raise e
 
-        else:
-            print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-                (count//batch_size + 1)*batch_size - count,
-                count,
-                len(queries))
-            )
+            else:
+                print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                    (count//batch_size + 1)*batch_size - count,
+                    count,
+                    len(queries))
+                )
 
-            Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-                (count//batch_size + 1)*batch_size - count,
-                count,
-                len(queries))
-            )
+                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                    (count//batch_size + 1)*batch_size - count,
+                    count,
+                    len(queries))
+                )
 
-            queries.clear()
+                queries.clear()
 
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
 
