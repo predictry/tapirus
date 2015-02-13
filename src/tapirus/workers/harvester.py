@@ -153,7 +153,7 @@ def process_log(file_name):
                 queries.extend(build_queries(date, time, ip, path, payload))
                 count += 1
 
-            if count % batch_size == 0:
+            if count % batch_size == 0 and count > 0:
 
                 #upload
                 #run queries
