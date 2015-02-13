@@ -237,7 +237,7 @@ def is_valid_label(label):
         return False
 
 
-def run_query(query, params=None, commit=False):
+def run_query(query, commit=False):
 
     try:
         graph = get_connection()
