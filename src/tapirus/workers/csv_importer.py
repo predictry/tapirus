@@ -1,62 +1,61 @@
 __author__ = 'guilherme'
 
-#todo: Make this operation configurable (e.g. if clientT sends actionX read it this way
-#todo: Unit tests
-
 import os
 import os.path
 import json
 import tempfile
+import subprocess
 
-from tapirus.utils import config
-from tapirus.core.db import neo4j
 from tapirus.core import aws
+from tapirus.utils import io
+from tapirus.utils import config
+from tapirus.utils.logger import Logger
 from tapirus.operator import log
 from tapirus.operator import log_keeper
-from tapirus.utils.logger import Logger
-from tapirus.utils import io
+
+NEO4J_SHELL = "neo4j-shell"
 
 
-def get_file_from_queue():
-    """
+def neo4j_shell_import(queries):
 
-    :return:
-    """
+    p = subprocess.Popen(["which", NEO4J_SHELL], stdout=subprocess.PIPE, shell=False)
 
-    conf = config.load_configuration()
+    output, err = p.communicate()
 
-    if not conf:
-        Logger.critical("Aborting `Queue Read` operation. Configuration `")
+    if p.returncode == 0:
 
-        return None, None
+        NEO4J_SHELL_PATH = output
 
-    region = conf["sqs"]["region"]
-    queue_name = conf["sqs"]["queue"]
-    visibility_timeout = conf["sqs"]["visibility_timeout"]
-    count = 1
+        file_path = "/tmp/{0}".format('__'.join([__name__, "cypher.query"]))
+        with open(file_path, "w") as f:
 
-    messages = aws.read_queue(region, queue_name, visibility_timeout, count)
+            for query in queries:
 
-    if messages and len(messages) > 0:
+                for k, v in query.parameters.items():
+                    f.write("export {0}={1};\n".format(k, v))
 
-        msg = messages[0]
-        f = json.loads(msg.get_body(), encoding="utf-8")
+                f.write("{0};\n".format(query.query))
 
-        return f["data"]["full_path"], msg
+        p = subprocess.Popen([NEO4J_SHELL_PATH, "-file", file_path], stdout=subprocess.PIPE, shell=False)
 
+        output, err = p.communicate()
+
+        if p.returncode == 1:
+
+            Logger.error("Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, err))
+
+        elif p.returncode == 0:
+
+            Logger.info(output)
+
+        io.delete_file(file_path)
     else:
-
-        return None, None
-
-
-def processor(queries):
-
-    rs = neo4j.run_batch_query(queries, commit=True)
+        raise ChildProcessError("Couldn't find neo4j-shell executable path")
 
 
 def run():
     """
-    Execute harvesting procedure.
+
     :return:
     """
 
@@ -90,7 +89,7 @@ def run():
         aws.download_log_from_s3(s3_file_path, file_path)
 
         #Process log
-        log.process_log(file_path, batch_size, processor)
+        log.process_log(file_path, batch_size, neo4j_shell_import)
 
         #Delete downloaded file
         io.delete_file(file_path)
