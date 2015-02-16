@@ -20,6 +20,7 @@ from tapirus.utils import config
 from tapirus.core.db import neo4j
 from tapirus.core import aws
 from tapirus.model import store
+from tapirus.operator import schema
 from tapirus.utils.logger import Logger
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
@@ -199,7 +200,7 @@ def build_queries(date, time, ip, path, payload):
 
     dt = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
 
-    if is_data_valid(payload) is False:
+    if schema.is_data_valid(payload) is False:
         return []
 
     queries = []
@@ -548,102 +549,6 @@ def build_queries(date, time, ip, path, payload):
     return queries
 
 
-def is_data_valid(data):
-    """
-
-    :param data:
-    :return:
-    """
-
-    #todo: log any missing data
-
-    if SESSION_ID not in data:
-        return False
-
-    if TENANT_ID not in data:
-        return False
-
-    if ACTION not in data:
-        return False
-
-    if NAME not in data[ACTION]:
-        return False
-
-    if USER in data:
-
-        if USER_ID not in data[USER]:
-            return False
-
-    if data[ACTION][NAME].lower() == store.REL_ACTION_TYPE_SEARCH.lower():
-
-        if KEYWORDS not in data[ACTION]:
-            return False
-
-    elif data[ACTION][NAME].lower() == store.REL_ACTION_TYPE_VIEW.lower():
-
-        if ITEMS not in data:
-            return False
-
-        if type(data[ITEMS]) is not list:
-            return False
-
-        for item in data[ITEMS]:
-
-            if ITEM_ID not in item:
-                return False
-
-            #if QUANTITY not in item:
-            #    return False
-
-    elif data[ACTION][NAME].lower() == store.REL_ACTION_TYPE_ADD_TO_CART.lower():
-
-        if ITEMS not in data:
-            return False
-
-        if type(data[ITEMS]) is not list:
-            return False
-
-        for item in data[ITEMS]:
-
-            if ITEM_ID not in item:
-                return False
-
-            if QUANTITY not in item:
-                return False
-
-    elif data[ACTION][NAME].lower() == store.REL_ACTION_TYPE_STARTED_CHECKOUT.lower():
-
-        if ITEMS not in data:
-            return False
-
-        if type(data[ITEMS]) is not list:
-            return False
-
-        for item in data[ITEMS]:
-
-            if ITEM_ID not in item:
-                return False
-
-    elif data[ACTION][NAME].lower() == store.REL_ACTION_TYPE_BUY.lower():
-
-        if ITEMS not in data:
-            return False
-
-        if type(data[ITEMS]) is not list:
-            return False
-
-        for item in data[ITEMS]:
-
-            if ITEM_ID not in item:
-                return False
-            if QUANTITY not in item:
-                return False
-            if SUB_TOTAL not in item:
-                return False
-
-    return True
-
-
 def is_acceptable_data_type(e):
     """
 
@@ -841,6 +746,7 @@ def run():
         Logger.error("Couldn't retrieve file from SQS queue. Stopping process")
 
     return
+
 
 if __name__ == "__main__":
     run()
