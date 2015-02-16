@@ -8,8 +8,6 @@ import os.path
 import json
 import gzip
 import tempfile
-import dateutil.parser
-import dateutil.tz
 import traceback
 
 import requests
@@ -19,7 +17,6 @@ from tapirus.utils import jsonuri
 from tapirus.utils import config
 from tapirus.core.db import neo4j
 from tapirus.core import aws
-from tapirus.model import store
 from tapirus.operator import schema
 from tapirus.utils.logger import Logger
 from tapirus.utils import io
