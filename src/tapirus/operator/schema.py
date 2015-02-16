@@ -9,6 +9,8 @@ from tapirus.core.db import neo4j
 from tapirus.model import store
 from tapirus.utils.logger import Logger
 
+#todo: {'action': {'name': 'check_delete_item'}, 'widget_instance_id': 1789} -> DELETE ITEM
+
 SCHEMA_BASE = "Base"
 
 SCHEMA_KEY_SESSION_ID = "session_id"

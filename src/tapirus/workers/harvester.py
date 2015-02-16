@@ -17,41 +17,9 @@ from tapirus.utils.logger import Logger
 from tapirus.utils import io
 
 
-def get_file_from_queue():
-    """
-
-    :return:
-    """
-
-    conf = config.load_configuration()
-
-    if not conf:
-        Logger.critical("Aborting `Queue Read` operation. Configuration `")
-
-        return None, None
-
-    region = conf["sqs"]["region"]
-    queue_name = conf["sqs"]["queue"]
-    visibility_timeout = conf["sqs"]["visibility_timeout"]
-    count = 1
-
-    messages = aws.read_queue(region, queue_name, visibility_timeout, count)
-
-    if messages and len(messages) > 0:
-
-        msg = messages[0]
-        f = json.loads(msg.get_body(), encoding="utf-8")
-
-        return f["data"]["full_path"], msg
-
-    else:
-
-        return None, None
-
-
 def processor(queries):
 
-    rs = neo4j.run_batch_query(queries, commit=True)
+    neo4j.run_batch_query(queries, commit=True)
 
 
 def run():
