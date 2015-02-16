@@ -369,13 +369,12 @@ def run():
 
             if not notify_log_keeper(url, file_name, status="processed"):
                 add_log_keeper_file(file_name)
+            else:
+                notify_log_keeper_of_backlogs(url)
 
         if "delete" in conf["sqs"]:
             if conf["sqs"]["delete"] is True:
                 aws.delete_message_from_queue(region, queue_name, message)
-
-        #todo: fix url reference issue
-        notify_log_keeper_of_backlogs(url)
 
     else:
 
