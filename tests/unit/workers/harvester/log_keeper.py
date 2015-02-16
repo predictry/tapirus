@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 
 import unittest
-from tapirus.workers import harvester
+from tapirus.operator import log_keeper
 
 
 class TestLogKeeper(unittest.TestCase):
@@ -13,26 +13,26 @@ class TestLogKeeper(unittest.TestCase):
 
         print("Testing addition of files to LogKeeper's list")
 
-        harvester.add_log_keeper_file(self.files[0])
+        log_keeper.add_log_keeper_file(self.files[0])
 
-        files = harvester.get_log_keeper_files()
+        files = log_keeper.get_log_keeper_files()
         assert self.files[0] in files
 
-        harvester.add_log_keeper_file(self.files[1])
+        log_keeper.add_log_keeper_file(self.files[1])
 
-        files = harvester.get_log_keeper_files()
+        files = log_keeper.get_log_keeper_files()
         assert self.files[1] in files
 
     def test_02_should_remove_file_from_list(self):
 
         print("Testing removal of files to LogKeeper's list")
 
-        harvester.remove_log_keeper_file(self.files[0])
+        log_keeper.remove_log_keeper_file(self.files[0])
 
-        files = harvester.get_log_keeper_files()
+        files = log_keeper.get_log_keeper_files()
         assert self.files[0] not in files
 
-        harvester.remove_log_keeper_file(self.files[1])
+        log_keeper.remove_log_keeper_file(self.files[1])
 
-        files = harvester.get_log_keeper_files()
+        files = log_keeper.get_log_keeper_files()
         assert self.files[1] not in files

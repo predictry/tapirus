@@ -50,7 +50,7 @@ def neo4j_shell_import(queries):
 
         io.delete_file(file_path)
     else:
-        raise ChildProcessError("Couldn't find neo4j-shell executable path")
+        raise ChildProcessError("Couldn't find neo4j-shell executable path:\n\t{0}".format(err))
 
 
 def run():
