@@ -5,6 +5,7 @@ import os.path
 import json
 import tempfile
 import subprocess
+import shutil
 
 from tapirus.core import aws
 from tapirus.utils import io
@@ -14,43 +15,43 @@ from tapirus.operator import log
 from tapirus.operator import log_keeper
 
 NEO4J_SHELL = "neo4j-shell"
+PATHS = ["/usr/local/bin"]
 
 
 def neo4j_shell_import(queries):
 
-    p = subprocess.Popen(["which", NEO4J_SHELL], stdout=subprocess.PIPE, shell=False)
+    for path in PATHS:
+        os.environ["PATH"] = ''.join([os.environ["PATH"], os.pathsep, path])
+
+    neo4j_shell_path = shutil.which(NEO4J_SHELL)
+
+    if not neo4j_shell_path:
+        raise ChildProcessError("Couldn't find {0} executable path".format(NEO4J_SHELL))
+
+    file_path = "/tmp/{0}".format('__'.join([__name__, "cypher.query"]))
+
+    with open(file_path, "w") as f:
+
+        for query in queries:
+
+            for k, v in query.parameters.items():
+                f.write("export {0}={1};\n".format(k, v))
+
+            f.write("{0};\n".format(query.query))
+
+    p = subprocess.Popen([neo4j_shell_path, "-file", file_path], stdout=subprocess.PIPE, shell=False)
 
     output, err = p.communicate()
 
-    if p.returncode == 0:
+    if p.returncode == 1:
 
-        NEO4J_SHELL_PATH = output
+        Logger.error("Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, err))
 
-        file_path = "/tmp/{0}".format('__'.join([__name__, "cypher.query"]))
-        with open(file_path, "w") as f:
+    elif p.returncode == 0:
 
-            for query in queries:
+        Logger.info(output)
 
-                for k, v in query.parameters.items():
-                    f.write("export {0}={1};\n".format(k, v))
-
-                f.write("{0};\n".format(query.query))
-
-        p = subprocess.Popen([NEO4J_SHELL_PATH, "-file", file_path], stdout=subprocess.PIPE, shell=False)
-
-        output, err = p.communicate()
-
-        if p.returncode == 1:
-
-            Logger.error("Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, err))
-
-        elif p.returncode == 0:
-
-            Logger.info(output)
-
-        io.delete_file(file_path)
-    else:
-        raise ChildProcessError("Couldn't find neo4j-shell executable path:\n\t{0}".format(err))
+    io.delete_file(file_path)
 
 
 def run():
