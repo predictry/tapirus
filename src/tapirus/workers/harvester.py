@@ -22,6 +22,7 @@ from tapirus.core import aws
 from tapirus.model import store
 from tapirus.operator import schema
 from tapirus.utils.logger import Logger
+from tapirus.utils import io
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
 LOG_KEEPER_FILE_NAME = "log.keeper.list.db"
@@ -206,20 +207,6 @@ def is_acceptable_data_type(e):
     return True
 
 
-def delete_file(file_name):
-    """
-
-    :param file_name:
-    :return:
-    """
-
-    #todo: check for IO errors/exceptions
-    #todo: return True/False
-    #todo: move to utils
-
-    os.remove(file_name)
-
-
 def notify_log_keeper(url, file_name, status):
     """
 
@@ -360,7 +347,7 @@ def run():
         process_log(file_path, batch_size)
 
         #Delete downloaded file
-        delete_file(file_path)
+        io.delete_file(file_path)
 
         if "log_keeper" in conf:
             log_keeper = conf["log_keeper"]
