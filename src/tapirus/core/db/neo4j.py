@@ -7,6 +7,7 @@ from py2neo.packages.httpstream.http import SocketError
 
 from tapirus.core import errors
 from tapirus.utils import config
+from tapirus.utils.logger import Logger
 
 #note: do not reuse connections: timeout, re-connection slows down everything for some reason
 NEO_VAR_NAME_LABEL_REGEX = "^[a-zA-Z_][a-zA-Z0-9_]*$"
@@ -19,6 +20,7 @@ def get_connection():
     :return: py2neo GraphDatabaseService object
     """
 
+    #todo: use classes; if endpoint is not defined, try localhost; if there is no response, thrown an except
     conf = config.load_configuration()
 
     try:
@@ -237,27 +239,10 @@ def is_valid_label(label):
         return False
 
 
-def run_query(query, commit=False):
+class Parameter(object):
+    """
 
-    try:
-        graph = get_connection()
-        tx = graph.cypher.begin()
-
-    except SocketError as err:
-        raise err
-    q = query.query
-    p = {param.key: param.value for param in query.params}
-
-    tx.append(q, p)
-    result = tx.process()[0]
-
-    if commit:
-        tx.commit()
-
-    return result
-
-
-class Parameter:
+    """
 
     def __init__(self, key, value):
 
@@ -284,15 +269,88 @@ class Parameter:
         return hash(self.__repr__())
 
 
-class Query:
+class Query(object):
+    """
+
+    """
 
     def __init__(self, query, params):
 
         self.query = query
         self.params = params
 
+    @property
+    def parameters(self):
+
+        params = dict()
+
+        for param in self.params:
+            params[param.key] = param.value
+
+        return params
+
+
+class CypherQuery(object):
+
+    def __init__(self, query, commit=False):
+
+        self.__query = query
+        self.__commit = commit
+
+    def __call__(self, f):
+
+        def wrapped_f(**kwargs):
+
+            params = []
+
+            for key, value in kwargs.iteritems():
+                params.append(Parameter(key, value))
+
+            query = Query(self.__query, params)
+
+            r = run_query(query, self.__commit)
+
+            return f(result=r, **kwargs)
+
+        return wrapped_f
+
+
+def run_query(query, commit=False):
+    """
+
+    :param query:
+    :param commit:
+    :return:
+    """
+
+    try:
+        graph = get_connection()
+        tx = graph.cypher.begin()
+
+    except SocketError as err:
+
+        Logger.error("Error in executing query:\n\t{0}".format(err))
+        raise err
+
+    q = query.query
+    p = {param.key: param.value for param in query.params}
+
+    tx.append(q, p)
+    result = tx.process()[0]
+
+    if commit:
+        tx.commit()
+
+    return result
+
 
 def run_batch_query(queries, commit):
+    """
+
+    :param queries:
+    :param commit:
+    :return:
+    """
 
     try:
         graph = get_connection()
