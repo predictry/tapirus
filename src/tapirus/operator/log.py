@@ -94,6 +94,7 @@ def process_log(file_name, batch_size, processor):
                     queries.clear()
 
         if queries:
+            #We're exiting before we process the remaining queries because their number if not a multiple of batch_size
 
             try:
 
@@ -105,13 +106,13 @@ def process_log(file_name, batch_size, processor):
 
             else:
                 print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-                    (count//batch_size + 1)*batch_size - count,
+                    count - (count//batch_size)*batch_size,
                     count,
                     len(queries))
                 )
 
                 Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-                    (count//batch_size + 1)*batch_size - count,
+                    count - (count//batch_size)*batch_size,
                     count,
                     len(queries))
                 )
