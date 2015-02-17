@@ -444,10 +444,10 @@ def generate_queries(date, time, ip, path, data):
     #actions
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_VIEW:
 
-        q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
+
+            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
             query = [q.format(
                 ITEM_LABEL=store.LABEL_ITEM,
@@ -534,10 +534,10 @@ def generate_queries(date, time, ip, path, data):
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_ADD_TO_CART:
 
-        q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
+
+            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
             query = [q.format(
                 ITEM_LABEL=store.LABEL_ITEM,
@@ -579,10 +579,10 @@ def generate_queries(date, time, ip, path, data):
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_BUY:
 
-        q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
+
+            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
             query = [q.format(
                 ITEM_LABEL=store.LABEL_ITEM,
@@ -628,10 +628,10 @@ def generate_queries(date, time, ip, path, data):
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_STARTED_CHECKOUT:
 
-        q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
+
+            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
             query = [q.format(
                 ITEM_LABEL=store.LABEL_ITEM,
