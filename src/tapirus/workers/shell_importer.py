@@ -35,7 +35,10 @@ def neo4j_shell_import(queries):
         for query in queries:
 
             for k, v in query.parameters.items():
-                s = u"export {0}={1}\n".format(k, v)
+                if type(v) is str:
+                    s = u"export {0}=\"{1}\"\n".format(k, v)
+                else:
+                    s = u"export {0}={1}\n".format(k, v)
                 f.write(s)
 
             s = u"{0};\n".format(query.query)
