@@ -40,12 +40,12 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string"},
+                    "name": {"type": "string", "minLength": 1},
                 },
                 "required": ["name"]
             }
@@ -58,22 +58,22 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
                     "name": {
                         "enum": ["search"]
                     },
-                    "keywords": {"type": "string"}
+                    "keywords": {"type": "string", "minLength": 1}
                 },
                 "required": ["name", "keywords"]
             },
             "user": {
                 "type": "object",
                 "properties": {
-                    "user_id": {"type": ["integer", "number", "string"]},
+                    "user_id": {"type": ["integer", "number", "string"], "minLength": 1},
                 },
                 "required": ["user_id"]
             }
@@ -86,8 +86,8 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
@@ -100,7 +100,7 @@ SCHEMAS = {
             "user": {
                 "type": "object",
                 "properties": {
-                    "user_id": {"type": ["integer", "number", "string"]},
+                    "user_id": {"type": ["integer", "number", "string"], "minLength": 1},
                 },
                 "required": ["user_id"]
             },
@@ -109,12 +109,12 @@ SCHEMAS = {
                 "items": {
                     "type": ["boolean", "integer", "null", "number", "object", "string", "array"],
                     "properties": {
-                        "item_id": {"type": ["integer", "number", "string"]},
+                        "item_id": {"type": ["integer", "number", "string"], "minLength": 1},
                         "locations": {
                             "type": "object",
                             "properties": {
-                                "country": {"type": "string"},
-                                "city": {"type": "string"}
+                                "country": {"type": "string", "minLength": 1},
+                                "city": {"type": "string", "minLength": 1}
                             }
                         }
                     },
@@ -130,8 +130,8 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
@@ -144,7 +144,7 @@ SCHEMAS = {
             "user": {
                 "type": "object",
                 "properties": {
-                    "user_id": {"type": ["integer", "number", "string"]},
+                    "user_id": {"type": ["integer", "number", "string"], "minLength": 1},
                 },
                 "required": ["user_id"]
             },
@@ -153,7 +153,7 @@ SCHEMAS = {
                 "items": {
                     "type": ["boolean", "integer", "null", "number", "object", "string", "array"],
                     "properties": {
-                        "item_id": {"type": ["integer", "number", "string"]},
+                        "item_id": {"type": ["integer", "number", "string"], "minLength": 1},
                         "qty": {
                             "type": ["integer", "number", "string"]
                         }
@@ -170,8 +170,8 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
@@ -184,7 +184,7 @@ SCHEMAS = {
             "user": {
                 "type": "object",
                 "properties": {
-                    "user_id": {"type": ["integer", "number", "string"]},
+                    "user_id": {"type": ["integer", "number", "string"], "minLength": 1},
                 },
                 "required": ["user_id"]
             },
@@ -193,12 +193,12 @@ SCHEMAS = {
                 "items": {
                     "type": ["boolean", "integer", "null", "number", "object", "string", "array"],
                     "properties": {
-                        "item_id": {"type": ["integer", "number", "string"]},
+                        "item_id": {"type": ["integer", "number", "string"], "minLength": 1},
                         "locations": {
                             "type": "object",
                             "properties": {
-                                "country": {"type": "string"},
-                                "city": {"type": "string"}
+                                "country": {"type": "string", "minLength": 1},
+                                "city": {"type": "string", "minLength": 1}
                             }
                         }
                     },
@@ -214,8 +214,8 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
@@ -228,7 +228,7 @@ SCHEMAS = {
             "user": {
                 "type": "object",
                 "properties": {
-                    "user_id": {"type": ["integer", "number", "string"]},
+                    "user_id": {"type": ["integer", "number", "string"], "minLength": 1},
                 },
                 "required": ["user_id"]
             },
@@ -237,7 +237,7 @@ SCHEMAS = {
                 "items": {
                     "type": ["boolean", "integer", "null", "number", "object", "string", "array"],
                     "properties": {
-                        "item_id": {"type": ["integer", "number", "string"]},
+                        "item_id": {"type": ["integer", "number", "string"], "minLength": 1},
                         "qty": {
                             "type": ["integer", "number", "string"]
                         },
@@ -257,8 +257,8 @@ SCHEMAS = {
         "description": "An item from a store/marketplace",
         "type": "object",
         "properties": {
-            "session_id": {"type": "string"},
-            "tenant_id": {"type": "string"},
+            "session_id": {"type": "string", "minLength": 1},
+            "tenant_id": {"type": "string", "minLength": 1},
             "action": {
                 "type": "object",
                 "properties": {
@@ -268,7 +268,7 @@ SCHEMAS = {
                 },
                 "required": ["name"]
             },
-            "item_id": {"type": ["integer", "number", "string"]}
+            "item_id": {"type": ["integer", "number", "string"], "minLength": 1}
         },
         "required": ["session_id", "tenant_id", "action", "item_id"]
     }
