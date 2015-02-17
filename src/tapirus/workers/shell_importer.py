@@ -36,7 +36,7 @@ def neo4j_shell_import(queries):
 
             for k, v in query.parameters.items():
                 if type(v) is str:
-                    s = u"export {0}=\"{1}\"\n".format(k, v)
+                    s = u"export {0}={1}\n".format(k, repr(v))
                 else:
                     s = u"export {0}={1}\n".format(k, v)
                 f.write(s)
@@ -51,6 +51,8 @@ def neo4j_shell_import(queries):
     if p.returncode == 1:
 
         Logger.error("Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, err))
+
+        raise ChildProcessError("There a problem executing the cypher queries.")
 
     elif p.returncode == 0:
 
