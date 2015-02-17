@@ -6,7 +6,7 @@ import traceback
 import codecs
 
 from tapirus.utils import jsonuri
-from tapirus.operator import schema
+from tapirus.processor import schema
 from tapirus.utils.logger import Logger
 
 

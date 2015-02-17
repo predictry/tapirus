@@ -11,8 +11,8 @@ import tempfile
 from tapirus.utils import config
 from tapirus.core.db import neo4j
 from tapirus.core import aws
-from tapirus.operator import log
-from tapirus.operator import log_keeper
+from tapirus.processor import log
+from tapirus.processor import log_keeper
 from tapirus.utils.logger import Logger
 from tapirus.utils import io
 

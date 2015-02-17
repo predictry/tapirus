@@ -11,8 +11,8 @@ from tapirus.core import aws
 from tapirus.utils import io
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
-from tapirus.operator import log
-from tapirus.operator import log_keeper
+from tapirus.processor import log
+from tapirus.processor import log_keeper
 
 NEO4J_SHELL = "neo4j-shell"
 PATHS = ["/usr/local/bin"]

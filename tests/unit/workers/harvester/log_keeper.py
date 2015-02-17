@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 
 import unittest
-from tapirus.operator import log_keeper
+from tapirus.processor import log_keeper
 
 
 class TestLogKeeper(unittest.TestCase):
