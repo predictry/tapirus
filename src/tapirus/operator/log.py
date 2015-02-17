@@ -3,6 +3,7 @@ __author__ = 'guilherme'
 
 import gzip
 import traceback
+import codecs
 
 from tapirus.utils import jsonuri
 from tapirus.operator import schema
@@ -21,7 +22,10 @@ def process_log(file_name, batch_size, processor):
 
     queries = []
 
-    with gzip.open(file_name, 'rb') as f:
+    gz_fh = gzip.open(file_name)
+    utf8_codec = codecs.getreader("UTF-8")
+
+    with utf8_codec(gz_fh) as f:
         """
             #indeces
             #0: date
@@ -40,7 +44,7 @@ def process_log(file_name, batch_size, processor):
 
         for line in f:
 
-            l = line.decode(encoding="utf-8").split(LOG_FILE_COLUMN_SEPARATOR)
+            l = line.split(LOG_FILE_COLUMN_SEPARATOR)
 
             if len(l) >= 12:
 
@@ -67,7 +71,7 @@ def process_log(file_name, batch_size, processor):
                 #upload
                 #run queries
                 try:
-                    #rs = neo4j.run_batch_query(queries, commit=True)
+
                     processor(queries)
 
                 except Exception as e:
@@ -93,7 +97,6 @@ def process_log(file_name, batch_size, processor):
 
             try:
 
-                #rs = neo4j.run_batch_query(queries, commit=True)
                 processor(queries)
 
             except Exception as e:

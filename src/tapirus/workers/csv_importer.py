@@ -30,14 +30,16 @@ def neo4j_shell_import(queries):
 
     file_path = "/tmp/{0}".format('__'.join([__name__, "cypher.query"]))
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="UTF-8") as f:
 
         for query in queries:
 
             for k, v in query.parameters.items():
-                f.write("export {0}={1};\n".format(k, v))
+                s = u"export {0}={1}\n".format(k, v)
+                f.write(s)
 
-            f.write("{0};\n".format(query.query))
+            s = u"{0};\n".format(query.query)
+            f.write(s)
 
     p = subprocess.Popen([neo4j_shell_path, "-file", file_path], stdout=subprocess.PIPE, shell=False)
 

@@ -70,7 +70,7 @@ def add_log_keeper_file(file_name):
 
     if file_name not in files_names:
 
-        with open(LOG_KEEPER_DB, "a+") as f:
+        with open(LOG_KEEPER_DB, "a+", encoding="UTF-8") as f:
             f.write(''.join([file_name, "\n"]))
 
 
@@ -88,7 +88,7 @@ def remove_log_keeper_file(file_name):
         files_names.remove(file_name)
 
         #update file (or just re-write it)
-        with open(LOG_KEEPER_DB, "w+") as f:
+        with open(LOG_KEEPER_DB, "w+", encoding="UTF-8") as f:
             for file_name in set(files_names):
                 f.write(''.join([file_name, "\n"]))
 
@@ -103,7 +103,7 @@ def get_log_keeper_files():
 
     if os.path.exists(LOG_KEEPER_DB):
 
-        with open(LOG_KEEPER_DB, "r") as f:
+        with open(LOG_KEEPER_DB, "r", encoding="UTF-8") as f:
 
             for line in f:
                 file_names.append(line.strip())
