@@ -299,12 +299,12 @@ def is_data_valid(data):
 
     except jsonschema.ValidationError as err:
 
-        Logger.error(err)
+        Logger.warning(err)
         return False
 
     except KeyError as err:
 
-        Logger.error("Unidentified payload action:\n\t{0}".format(err))
+        Logger.warning("Unidentified payload action:\n\t{0}".format(err))
         return False
 
     else:
