@@ -56,7 +56,7 @@ def neo4j_shell_import(queries):
 
     elif p.returncode == 0:
 
-        Logger.info(output)
+        Logger.info("Successfully executed [{0}] queries".format(len(queries)))
 
     io.delete_file(file_path)
 
