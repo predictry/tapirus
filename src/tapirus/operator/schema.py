@@ -250,6 +250,27 @@ SCHEMAS = {
             }
         },
         "required": ["session_id", "tenant_id", "action", "items"]
+    },
+    store.REL_ACTION_TYPE_CHECK_DELETE_ITEM: {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Item",
+        "description": "An item from a store/marketplace",
+        "type": "object",
+        "properties": {
+            "session_id": {"type": "string"},
+            "tenant_id": {"type": "string"},
+            "action": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "enum": ["check_delete_item"]
+                    }
+                },
+                "required": ["name"]
+            },
+            "item_id": {"type": ["integer", "number", "string"]}
+        },
+        "required": ["session_id", "tenant_id", "action", "item_id"]
     }
 }
 
@@ -421,7 +442,7 @@ def generate_queries(date, time, ip, path, data):
         queries.append(neo4j.Query(''.join(query), params))
 
     #actions
-    if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_VIEW.lower():
+    if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_VIEW:
 
         q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
@@ -511,7 +532,7 @@ def generate_queries(date, time, ip, path, data):
 
             queries.append(neo4j.Query(''.join(query), params))
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_ADD_TO_CART.lower():
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_ADD_TO_CART:
 
         q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
@@ -556,7 +577,7 @@ def generate_queries(date, time, ip, path, data):
 
             queries.append(neo4j.Query(''.join(query), params))
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_BUY.lower():
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_BUY:
 
         q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
@@ -605,7 +626,7 @@ def generate_queries(date, time, ip, path, data):
 
             queries.append(neo4j.Query(''.join(query), params))
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_STARTED_CHECKOUT.lower():
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_STARTED_CHECKOUT:
 
         q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
@@ -644,7 +665,7 @@ def generate_queries(date, time, ip, path, data):
 
             queries.append(neo4j.Query(''.join(query), params))
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_SEARCH.lower():
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_SEARCH:
 
         q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
             "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
@@ -676,6 +697,21 @@ def generate_queries(date, time, ip, path, data):
         query.append("\nSET r.{0} = {{ {0} }}".format(
             "datetime"
         ))
+
+        queries.append(neo4j.Query(''.join(query), params))
+
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_CHECK_DELETE_ITEM:
+
+        q = "MATCH (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
+            "\nOPTIONAL MATCH (n)-[r]-(x)" \
+            "\nDELETE r, n"
+
+        query = [q.format(
+            ITEM_LABEL=store.LABEL_ITEM,
+            STORE_ID=data[SCHEMA_KEY_TENANT_ID]
+        )]
+
+        params = [neo4j.Parameter("id", data[SCHEMA_KEY_ITEM_ID])]
 
         queries.append(neo4j.Query(''.join(query), params))
 
