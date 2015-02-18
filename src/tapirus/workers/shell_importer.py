@@ -6,6 +6,7 @@ import json
 import tempfile
 import subprocess
 import shutil
+import uuid
 
 from tapirus.core import aws
 from tapirus.utils import io
@@ -20,15 +21,21 @@ PATHS = ["/usr/local/bin"]
 
 def neo4j_shell_import(queries):
 
-    for path in PATHS:
-        os.environ["PATH"] = ''.join([os.environ["PATH"], os.pathsep, path])
+    if os.name == 'posix':
+        for path in PATHS:
+            os.environ["PATH"] = ''.join([os.environ["PATH"], os.pathsep, path])
 
     neo4j_shell_path = shutil.which(NEO4J_SHELL)
 
     if not neo4j_shell_path:
         raise ChildProcessError("Couldn't find {0} executable path".format(NEO4J_SHELL))
 
-    file_path = "/tmp/{0}".format('__'.join([__name__, "cypher.query"]))
+    #use random uuid for file name. avoid race conditions
+    file_name = str(uuid.uuid4())
+    tmp_folder = tempfile.gettempdir()
+    file_path = os.path.join(tmp_folder, file_name)
+
+    Logger.info("Writing queries to file `{0}`".format(file_path))
 
     with open(file_path, "w", encoding="UTF-8") as f:
 
@@ -36,9 +43,9 @@ def neo4j_shell_import(queries):
 
             for k, v in query.parameters.items():
                 if type(v) is str:
-                    s = u"export {0}={1}\n".format(k, repr(v))
+                    s = u"\nexport {0}={1}\n".format(k, repr(v))
                 else:
-                    s = u"export {0}={1}\n".format(k, v)
+                    s = u"\nexport {0}={1}\n".format(k, v)
                 f.write(s)
 
             s = u"{0};\n".format(query.query)
@@ -50,9 +57,10 @@ def neo4j_shell_import(queries):
 
     if p.returncode == 1:
 
-        Logger.error("Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, err))
+        msg = "Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, output)
+        Logger.error(msg)
 
-        raise ChildProcessError("There a problem executing the cypher queries.")
+        raise ChildProcessError(msg)
 
     elif p.returncode == 0:
 
