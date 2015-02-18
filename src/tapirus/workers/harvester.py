@@ -75,7 +75,11 @@ def run():
 
         if "delete" in conf["sqs"]:
             if conf["sqs"]["delete"] is True:
-                aws.delete_message_from_queue(region, queue_name, message)
+
+                if aws.delete_message_from_queue(region, queue_name, message):
+                    Logger.info("Delete file `{0}` from queue: `{1}`".format(file_name, queue_name))
+                else:
+                    Logger.info("Failed to delete file `{0}` from queue: `{1}`".format(file_name, queue_name))
 
     else:
 
