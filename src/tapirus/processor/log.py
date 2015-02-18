@@ -79,12 +79,6 @@ def process_log(file_name, batch_size, processor):
                     raise e
                 else:
 
-                    print("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
-                        (count//batch_size + 1)*batch_size - count,
-                        count,
-                        len(queries))
-                    )
-
                     Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
                         (count//batch_size + 1)*batch_size - count,
                         count,
@@ -105,12 +99,6 @@ def process_log(file_name, batch_size, processor):
                 raise e
 
             else:
-                print("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
-                    count - (count//batch_size)*batch_size,
-                    count,
-                    len(queries))
-                )
-
                 Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
                     count - (count//batch_size)*batch_size,
                     count,

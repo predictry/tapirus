@@ -71,7 +71,6 @@ def delete_message_from_queue(region, queue_name, msg):
         return rs
 
     else:
-        print("Couldn't delete message from queue '{0}'@'{1}'".format(queue_name, region))
         Logger.error("Couldn't read from queue '{0}'@'{1}'".format(queue_name, region))
 
         return False

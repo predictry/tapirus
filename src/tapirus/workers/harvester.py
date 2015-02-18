@@ -54,7 +54,7 @@ def run():
         file_name = s3_file_path.split("/")[-1]
         file_path = os.path.join(tempfile.gettempdir(), file_name)
 
-        #Download file from S3
+        #Download file from
         aws.download_log_from_s3(s3_file_path, file_path)
 
         #Process log
