@@ -55,6 +55,8 @@ def neo4j_shell_import(queries):
 
     output, err = p.communicate()
 
+    io.delete_file(file_path)
+
     if p.returncode == 1:
 
         msg = "Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, output)
@@ -65,8 +67,6 @@ def neo4j_shell_import(queries):
     elif p.returncode == 0:
 
         Logger.info("Successfully executed [{0}] queries".format(len(queries)))
-
-    io.delete_file(file_path)
 
 
 def run():
