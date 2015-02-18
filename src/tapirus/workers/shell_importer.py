@@ -43,7 +43,8 @@ def neo4j_shell_import(queries):
 
             for k, v in query.parameters.items():
                 if type(v) is str:
-                    s = u"\nexport {0}={1}\n".format(k, repr(v))
+                    value = repr(v).strip("'")
+                    s = u"\nexport {0}={1}\n".format(k, value)
                 else:
                     s = u"\nexport {0}={1}\n".format(k, v)
                 f.write(s)
@@ -124,9 +125,9 @@ def run():
             if conf["sqs"]["delete"] is True:
 
                 if aws.delete_message_from_queue(region, queue_name, message):
-                    Logger.info("Delete file `{0}` from queue: `{1}`".format(file_name, queue_name))
+                    Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
                 else:
-                    Logger.info("Failed to delete file `{0}` from queue: `{1}`".format(file_name, queue_name))
+                    Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
 
     else:
 
