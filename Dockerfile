@@ -47,7 +47,6 @@ ADD config.json logging.json ${APPDIR}/
 ADD scripts ${APPDIR}/scripts
 ADD src ${APPDIR}/src
 ADD tests ${APPDIR}/tests
-ADD boto.cfg /home/dispatch/.boto.cfg
 
 # Build app env
 WORKDIR ${APPDIR}
