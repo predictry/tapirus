@@ -360,20 +360,20 @@ def generate_queries(date, time, ip, path, data):
     queries = []
 
     #session
-    query = ["MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
+    statements = ["MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
         SESSION_LABEL=store.LABEL_SESSION,
         STORE_ID=data[SCHEMA_KEY_TENANT_ID]
     )]
 
     params = [neo4j.Parameter("id", data[SCHEMA_KEY_SESSION_ID])]
 
-    queries.append(neo4j.Query(''.join(query), params))
+    queries.append(neo4j.Query(''.join(statements), params))
 
     #user
     if SCHEMA_KEY_USER in data:
         #todo: if user is not given, use anonymous user id?
 
-        query = ["MERGE (n :`{USER_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
+        statements = ["MERGE (n :`{USER_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
             USER_LABEL=store.LABEL_USER,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID]
         )]
@@ -385,19 +385,19 @@ def generate_queries(date, time, ip, path, data):
             if k != SCHEMA_KEY_USER_ID and is_acceptable_data_type(v):
 
                 params.append(neo4j.Parameter(k, v))
-                query.append("\nSET n.{0} = {{ {0} }}".format(
+                statements.append("\nSET n.{0} = {{ {0} }}".format(
                     k
                 ))
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
         #(session)-[r]-(user)
 
-        q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+        template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
             "\nMERGE (i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
             "\nMERGE (s)-[r :`{REL}`]->(i)"
 
-        query = [q.format(
+        statements = [template.format(
             SESSION_LABEL=store.LABEL_SESSION,
             USER_LABEL=store.LABEL_USER,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -408,27 +408,27 @@ def generate_queries(date, time, ip, path, data):
                   neo4j.Parameter("user_id", data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]),
                   neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
     #agent
     if SCHEMA_KEY_AGENT_ID in data:
 
-        query = ["MERGE (n :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
+        statements = ["MERGE (n :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
             AGENT_LABEL=store.LABEL_AGENT,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID]
         )]
 
         params = [neo4j.Parameter("id", data[SCHEMA_KEY_AGENT_ID])]
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
         #(session)-[r]-(agent)
-        q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+        template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
             "\nMERGE (i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})" \
             "\nMERGE (s)-[r :`{REL}`]->(i)"
             #"(i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})"
 
-        query = [q.format(
+        statements = [template.format(
             SESSION_LABEL=store.LABEL_SESSION,
             AGENT_LABEL=store.LABEL_AGENT,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -439,7 +439,7 @@ def generate_queries(date, time, ip, path, data):
                   neo4j.Parameter("agent_id", data[SCHEMA_KEY_AGENT_ID]),
                   neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
     #actions
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_VIEW:
@@ -447,9 +447,9 @@ def generate_queries(date, time, ip, path, data):
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
 
-            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
+            template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            query = [q.format(
+            statements = [template.format(
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID]
             )]
@@ -461,11 +461,11 @@ def generate_queries(date, time, ip, path, data):
                 if k != SCHEMA_KEY_ITEM_ID and is_acceptable_data_type(v):
 
                     params.append(neo4j.Parameter(k, v))
-                    query.append("\nSET n.{0} = {{ {0} }}".format(
+                    statements.append("\nSET n.{0} = {{ {0} }}".format(
                         k
                     ))
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
             #(item)-[r]-(location)
 
@@ -473,11 +473,11 @@ def generate_queries(date, time, ip, path, data):
 
                 if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
 
-                    q = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_COUNTRY}` :`{STORE_ID}` {{name: {{name}} }})" \
+                    template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_COUNTRY}` :`{STORE_ID}` {{name: {{name}} }})" \
                         "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                         "\nMERGE (i)-[:`{REL}`]->(l)"
 
-                    query = [q.format(
+                    statements = [template.format(
                         LOCATION_LABEL=store.LABEL_LOCATION,
                         LOCATION_COUNTRY=store.LABEL_LOCATION_COUNTRY,
                         ITEM_LABEL=store.LABEL_ITEM,
@@ -488,15 +488,15 @@ def generate_queries(date, time, ip, path, data):
                     params = [neo4j.Parameter("name", item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]),
                               neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID])]
 
-                    queries.append(neo4j.Query(''.join(query), params))
+                    queries.append(neo4j.Query(''.join(statements), params))
 
                 if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
 
-                    q = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_CITY}` :`{STORE_ID}` {{name: {{name}} }})" \
+                    template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_CITY}` :`{STORE_ID}` {{name: {{name}} }})" \
                         "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                         "\nMERGE (i)-[:`{REL}`]->(l)"
 
-                    query = [q.format(
+                    statements = [template.format(
                         LOCATION_LABEL=store.LABEL_LOCATION,
                         LOCATION_CITY=store.LABEL_LOCATION_CITY,
                         ITEM_LABEL=store.LABEL_ITEM,
@@ -507,15 +507,15 @@ def generate_queries(date, time, ip, path, data):
                     params = [neo4j.Parameter("name", item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]),
                               neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID])]
 
-                    queries.append(neo4j.Query(''.join(query), params))
+                    queries.append(neo4j.Query(''.join(statements), params))
 
             #(item)-[r]-(session)
 
-            q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
 
-            query = [q.format(
+            statements = [template.format(
                 SESSION_LABEL=store.LABEL_SESSION,
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -526,36 +526,36 @@ def generate_queries(date, time, ip, path, data):
                       neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
                       neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "datetime"
             ))
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_ADD_TO_CART:
 
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
 
-            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
+            template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            query = [q.format(
+            statements = [template.format(
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID]
             )]
 
             params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
             #(item)-[r]-(session)
 
-            q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
                 #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
-            query = [q.format(
+            statements = [template.format(
                 SESSION_LABEL=store.LABEL_SESSION,
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -567,39 +567,39 @@ def generate_queries(date, time, ip, path, data):
                       neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
                       neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "datetime"
             ))
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "qty"
             ))
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_BUY:
 
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
 
-            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
+            template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            query = [q.format(
+            statements = [template.format(
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID]
             )]
 
             params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
             #(item)-[r]-(session)
 
-            q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
 
-            query = [q.format(
+            statements = [template.format(
                 SESSION_LABEL=store.LABEL_SESSION,
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -612,43 +612,43 @@ def generate_queries(date, time, ip, path, data):
                       neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
                       neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "datetime"
             ))
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "qty"
             ))
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "sub_total"
             ))
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_STARTED_CHECKOUT:
 
         #collect items
         for item in data[SCHEMA_KEY_ITEMS]:
 
-            q = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
+            template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            query = [q.format(
+            statements = [template.format(
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID]
             )]
 
             params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
             #(item)-[r]-(session)
 
-            q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
                 "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
                 "\nMERGE (s)-[r :`{REL}`]->(i)"
 
-            query = [q.format(
+            statements = [template.format(
                 SESSION_LABEL=store.LABEL_SESSION,
                 ITEM_LABEL=store.LABEL_ITEM,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -659,20 +659,20 @@ def generate_queries(date, time, ip, path, data):
                       neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
                       neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
 
-            query.append("\nSET r.{0} = {{ {0} }}".format(
+            statements.append("\nSET r.{0} = {{ {0} }}".format(
                 "datetime"
             ))
 
-            queries.append(neo4j.Query(''.join(query), params))
+            queries.append(neo4j.Query(''.join(statements), params))
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_SEARCH:
 
-        q = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
+        template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
             "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
             "\nMERGE (s)-[r :`{REL}`]->(n)"
 
         #collect items
-        query = [q.format(
+        statements = [template.format(
             SEARCH_LABEL=store.LABEL_SEARCH,
             SESSION_LABEL=store.LABEL_SESSION,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID],
@@ -683,36 +683,36 @@ def generate_queries(date, time, ip, path, data):
                   neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID]),
                   neo4j.Parameter("datetime", dt)]
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
         for k, v in data[SCHEMA_KEY_ACTION].items():
 
             if k != SCHEMA_KEY_KEYWORDS and is_acceptable_data_type(v):
 
                 params.append(neo4j.Parameter(k, v))
-                query.append("\nSET n.{0} = {{ {0} }}".format(
+                statements.append("\nSET n.{0} = {{ {0} }}".format(
                     k
                 ))
 
-        query.append("\nSET r.{0} = {{ {0} }}".format(
+        statements.append("\nSET r.{0} = {{ {0} }}".format(
             "datetime"
         ))
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == store.REL_ACTION_TYPE_CHECK_DELETE_ITEM:
 
-        q = "MATCH (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
+        template = "MATCH (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
             "\nOPTIONAL MATCH (n)-[r]-(x)" \
             "\nDELETE r, n"
 
-        query = [q.format(
+        statements = [template.format(
             ITEM_LABEL=store.LABEL_ITEM,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID]
         )]
 
         params = [neo4j.Parameter("id", data[SCHEMA_KEY_ITEM_ID])]
 
-        queries.append(neo4j.Query(''.join(query), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
     return queries

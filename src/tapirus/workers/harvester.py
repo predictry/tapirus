@@ -17,7 +17,7 @@ from tapirus.utils.logger import Logger
 from tapirus.utils import io
 
 
-def processor(queries):
+def execute_batch_transactions(queries):
 
     neo4j.run_batch_query(queries, commit=True)
 
@@ -58,7 +58,7 @@ def run():
         aws.download_log_from_s3(s3_file_path, file_path)
 
         #Process log
-        log.process_log(file_path, batch_size, processor)
+        log.process_log(file_path, batch_size, execute_batch_transactions)
 
         #Delete downloaded file
         io.delete_file(file_path)
