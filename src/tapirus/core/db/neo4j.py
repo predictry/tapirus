@@ -2,7 +2,7 @@ __author__ = 'guilherme'
 
 import re
 
-from py2neo import Graph, Node, Relationship
+from py2neo import Graph, Node, Relationship, rewrite
 from py2neo.packages.httpstream.http import SocketError
 
 from tapirus.core import errors
@@ -24,7 +24,18 @@ def get_connection():
     conf = config.load_configuration()
 
     try:
-        db_conn = Graph(conf["neo4j"]["endpoints"]["data"])
+
+        host = conf["neo4j"]["host"]
+        port = conf["neo4j"]["port"]
+        endpoint = conf["neo4j"]["endpoint"]
+        protocol = conf["neo4j"]["protocol"]
+        uri = "{0}://{1}:{2}/{3}".format(protocol, host, port, endpoint)
+
+        db_conn = Graph(uri)
+
+        #neo4j bug
+
+        rewrite(("http", "0.0.0.0", 7474), (protocol, host, port))
 
     except SocketError as err:
         raise err
@@ -251,7 +262,7 @@ class Parameter(object):
 
     def __repr__(self):
 
-        return "Parameter({0}, {1})".format(self.key, self.value)
+        return "Parameter({0}={1})".format(self.key, self.value)
 
     def __eq__(self, other):
 
@@ -274,43 +285,33 @@ class Query(object):
 
     """
 
-    def __init__(self, query, params):
+    def __init__(self, statement, params):
 
-        self.query = query
+        self.statement = statement
         self.params = params
-
-    @property
-    def parameters(self):
-
-        params = dict()
-
-        for param in self.params:
-            params[param.key] = param.value
-
-        return params
 
 
 class CypherQuery(object):
 
-    def __init__(self, query, commit=False):
+    def __init__(self, statement, commit=False):
 
-        self.__query = query
+        self.__statement = statement
         self.__commit = commit
 
     def __call__(self, f):
 
-        def wrapped_f(**kwargs):
+        def wrapped_f(*args, **kwargs):
 
             params = []
 
-            for key, value in kwargs.iteritems():
-                params.append(Parameter(key, value))
+            for key in kwargs:
+                params.append(Parameter(key, kwargs[key]))
 
-            query = Query(self.__query, params)
+            query = Query(self.__statement, params)
 
             r = run_query(query, self.__commit)
 
-            return f(result=r, **kwargs)
+            return f(result=r, *args, **kwargs)
 
         return wrapped_f
 
@@ -332,7 +333,9 @@ def run_query(query, commit=False):
         Logger.error("Error in executing query:\n\t{0}".format(err))
         raise err
 
-    q = query.query
+    #todo: catch other execptions (outofmemory, wrong syntax)
+
+    q = query.statement
     p = {param.key: param.value for param in query.params}
 
     tx.append(q, p)
@@ -360,10 +363,10 @@ def run_batch_query(queries, commit):
         raise err
 
     for query in queries:
-        q = query.query
+        statement = query.statement
         params = {param.key: param.value for param in query.params}
 
-        tx.append(q, params)
+        tx.append(statement, params)
 
     #notice that we don't take the first result only, but all of them
     result = tx.process()
