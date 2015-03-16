@@ -19,7 +19,7 @@ from tapirus.utils import io
 
 def execute_batch_transactions(queries):
 
-    neo4j.run_batch_query(queries, commit=True)
+    neo4j.run_batch_query(queries, commit=True, timeout=300)
 
 
 def run():

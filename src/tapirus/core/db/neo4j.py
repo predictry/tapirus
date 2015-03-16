@@ -3,7 +3,9 @@ __author__ = 'guilherme'
 import re
 
 from py2neo import Graph, Node, Relationship, rewrite
-from py2neo.packages.httpstream.http import SocketError
+from py2neo.packages.httpstream import http
+import py2neo
+
 
 from tapirus.core import errors
 from tapirus.utils import config
@@ -25,10 +27,15 @@ def get_connection():
 
     try:
 
+        username = conf["neo4j"]["username"]
+        password = conf["neo4j"]["password"]
         host = conf["neo4j"]["host"]
         port = conf["neo4j"]["port"]
         endpoint = conf["neo4j"]["endpoint"]
         protocol = conf["neo4j"]["protocol"]
+
+        py2neo.authenticate("{host}:{port}".format(host=host, port=port), username, password)
+
         uri = "{0}://{1}:{2}/{3}".format(protocol, host, port, endpoint)
 
         db_conn = Graph(uri)
@@ -37,7 +44,7 @@ def get_connection():
 
         rewrite(("http", "0.0.0.0", 7474), (protocol, host, port))
 
-    except SocketError as err:
+    except http.SocketError as err:
         raise err
     else:
         return db_conn
@@ -316,19 +323,24 @@ class CypherQuery(object):
         return wrapped_f
 
 
-def run_query(query, commit=False):
+#todo: add timeout parameter,for py2neo
+def run_query(query, commit=False, timeout=None):
     """
 
     :param query:
     :param commit:
+    :param timeout:
     :return:
     """
+
+    if timeout:
+        http.socket_timeout = timeout
 
     try:
         graph = get_connection()
         tx = graph.cypher.begin()
 
-    except SocketError as err:
+    except http.SocketError as err:
 
         Logger.error("Error in executing query:\n\t{0}".format(err))
         raise err
@@ -347,19 +359,24 @@ def run_query(query, commit=False):
     return result
 
 
-def run_batch_query(queries, commit):
+#todo: add timeout parameter,for py2neo
+def run_batch_query(queries, commit, timeout=None):
     """
 
     :param queries:
     :param commit:
+    :param timeout:
     :return:
     """
+
+    if timeout:
+        http.socket_timeout = timeout
 
     try:
         graph = get_connection()
         tx = graph.cypher.begin()
 
-    except SocketError as err:
+    except http.SocketError as err:
         raise err
 
     for query in queries:
