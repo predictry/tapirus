@@ -386,19 +386,18 @@ def run_batch_query(queries, commit, timeout=None):
         tx.append(statement, params)
 
     #notice that we don't take the first result only, but all of them
-    result = tx.process()
+    results = tx.process()
 
     if commit:
         tx.commit()
 
     collection = []
-    for r in result:
-        records = []
-        for row in r:
-            record = {}
+    for result in results:
 
-            for i in range(0, len(row.columns)):
-                record[row.columns[i]] = row.values[i]
+        records = []
+
+        for record in result:
+
             records.append(record)
 
         collection.append(records)
