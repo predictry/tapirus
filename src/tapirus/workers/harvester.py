@@ -63,6 +63,11 @@ def run():
         #Delete downloaded file
         io.delete_file(file_path)
 
+        if os.path.exists(file_path) is False:
+            Logger.info("Deleted file `{0}`".format(file_path))
+        else:
+            Logger.warning("Failed to delete file `{0}`".format(file_path))
+
         if "log_keeper" in conf:
             log_keeper_conf = conf["log_keeper"]
 
