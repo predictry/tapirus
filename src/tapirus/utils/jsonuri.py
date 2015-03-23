@@ -31,8 +31,7 @@ def _decode_uri_param(param):
     :return Dictionary with `key` and `value` pair
 
     """
-
-    values = param.split("=")
+    values = param.split("=", 1)
 
     try:
         pair = dict(key=values[0], value=values[1])
@@ -164,15 +163,15 @@ def __deserialize(string, object, call):
 
     if call == 0:
 
-        #data = urllib.parse.quote_plus(data)
         strings = urllib.parse.unquote_plus(string).split("&")
 
         for i in range(0, len(strings)):
             strings[i] = urllib.parse.unquote_plus(strings[i])
+
+        for i in range(0, len(strings)):
             __deserialize(strings[i], object, call + 1)
 
     else:
-
         pair = _decode_uri_param(string)
 
         __map_object_key(pair["key"], pair["value"], object)
