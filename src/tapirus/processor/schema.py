@@ -283,6 +283,190 @@ def __validate_data_schema(data, schema_name):
             raise err
 
 
+def __is_data_valid(data):
+    """
+    :param data:
+    :return:
+    """
+
+    #todo: log any missing data
+
+    if SCHEMA_KEY_SESSION_ID not in data:
+        return False
+    if len(data[SCHEMA_KEY_SESSION_ID]) < 1:
+        return False
+
+    if SCHEMA_KEY_TENANT_ID not in data:
+        return False
+    if len(data[SCHEMA_KEY_TENANT_ID]) < 1:
+        return False
+
+    if SCHEMA_KEY_ACTION not in data:
+        return False
+
+    if SCHEMA_KEY_NAME not in data[SCHEMA_KEY_ACTION]:
+        return False
+    if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]) < 1:
+        return False
+
+    if SCHEMA_KEY_USER in data:
+
+        if SCHEMA_KEY_USER_ID not in data[SCHEMA_KEY_USER]:
+            return False
+        if len(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]) < 1:
+            return False
+
+    if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_SEARCH.lower():
+
+        if SCHEMA_KEY_KEYWORDS not in data[SCHEMA_KEY_ACTION]:
+            return False
+        if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
+            return False
+
+    #todo
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_VIEW.lower():
+
+        if SCHEMA_KEY_ITEMS not in data:
+            return False
+
+        if type(data[SCHEMA_KEY_ITEMS]) is not list:
+            return False
+
+        for item in data[SCHEMA_KEY_ITEMS]:
+
+            if type(item) is not dict:
+                return False
+
+            if SCHEMA_KEY_ITEM_ID not in item:
+                return False
+            if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
+                return False
+
+            if SCHEMA_KEY_LOCATION in item:
+
+                if type(item[SCHEMA_KEY_LOCATION]) is not dict:
+                    return False
+
+                if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
+                        return False
+
+                if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
+                        return False
+
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_ADD_TO_CART.lower():
+
+        if SCHEMA_KEY_ITEMS not in data:
+            return False
+
+        if type(data[SCHEMA_KEY_ITEMS]) is not list:
+            return False
+
+        for item in data[SCHEMA_KEY_ITEMS]:
+
+            if type(item) is not dict:
+                return False
+
+            if SCHEMA_KEY_ITEM_ID not in item:
+                return False
+            if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
+                return False
+
+            if SCHEMA_KEY_QUANTITY not in item:
+                return False
+
+            if SCHEMA_KEY_LOCATION in item:
+
+                if type(item[SCHEMA_KEY_LOCATION]) is not dict:
+                    return False
+
+                if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
+                        return False
+
+                if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
+                        return False
+
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_STARTED_CHECKOUT.lower():
+
+        if SCHEMA_KEY_ITEMS not in data:
+            return False
+
+        if type(data[SCHEMA_KEY_ITEMS]) is not list:
+            return False
+
+        for item in data[SCHEMA_KEY_ITEMS]:
+
+            if type(item) is not dict:
+                return False
+
+            if SCHEMA_KEY_ITEM_ID not in item:
+                return False
+            if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
+                return False
+
+            if SCHEMA_KEY_LOCATION in item:
+
+                if type(item[SCHEMA_KEY_LOCATION]) is not dict:
+                    return False
+
+                if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
+                        return False
+
+                if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
+                        return False
+
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_BUY.lower():
+
+        if SCHEMA_KEY_ITEMS not in data:
+            return False
+
+        if type(data[SCHEMA_KEY_ITEMS]) is not list:
+            return False
+
+        for item in data[SCHEMA_KEY_ITEMS]:
+
+            if type(item) is not dict:
+                return False
+
+            if SCHEMA_KEY_ITEM_ID not in item:
+                return False
+            if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
+                return False
+
+            if SCHEMA_KEY_QUANTITY not in item:
+                return False
+
+            if SCHEMA_KEY_SUBTOTAL not in item:
+                return False
+
+            if SCHEMA_KEY_LOCATION in item:
+
+                if type(item[SCHEMA_KEY_LOCATION]) is not dict:
+                    return False
+
+                if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
+                        return False
+
+                if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
+                        return False
+
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == store.REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower():
+
+        if SCHEMA_KEY_ITEM_ID not in data:
+            return False
+        if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
+            return False
+
+    return True
+
+
 def is_data_valid(data):
     """
 
@@ -354,7 +538,7 @@ def generate_queries(date, time, ip, path, data):
 
     dt = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
 
-    if is_data_valid(data) is False:
+    if __is_data_valid(data) is False:
         return []
 
     queries = []

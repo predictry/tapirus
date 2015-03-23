@@ -4,6 +4,7 @@ __author__ = 'guilherme'
 import gzip
 import traceback
 import codecs
+import time
 
 from tapirus.utils import jsonuri
 from tapirus.processor import schema
@@ -48,7 +49,7 @@ def process_log(file_name, batch_size, processor):
 
             if len(l) >= 12:
 
-                date, time, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
+                date, timestamp, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
 
                 if ".gif" not in path or status not in [0, 200, 304]:
                     continue
@@ -59,11 +60,11 @@ def process_log(file_name, batch_size, processor):
 
                 except ValueError as e:
 
-                    Logger.error("Error in deserialization of payload: [{0}]\n\t{1}".format(l[11], e))
+                    Logger.warning("A problem occurred in deserialization of payload: [{0}]\n\t{1}".format(l[11], e))
 
                     continue
 
-                queries.extend(schema.generate_queries(date, time, ip, path, payload))
+                queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
                 count += 1
 
             if count % batch_size == 0 and count > 0:
@@ -72,39 +73,45 @@ def process_log(file_name, batch_size, processor):
                 #run queries
                 try:
 
+                    start = time.time()
                     processor(queries)
+                    end = time.time()
 
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     raise e
                 else:
 
-                    Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries]".format(
+                    Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries] in {3}s.".format(
                         (count//batch_size + 1)*batch_size - count,
                         count,
-                        len(queries))
+                        len(queries),
+                        end-start)
                     )
 
-                    queries.clear()
+                    del queries[:]
 
         if queries:
             #We're exiting before we process the remaining queries because their number if not a multiple of batch_size
 
             try:
-
+                start = time.time()
                 processor(queries)
+                end = time.time()
+                #pass
 
             except Exception as e:
                 Logger.error(traceback.format_exc())
                 raise e
 
             else:
-                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries.".format(
+                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries in {3}s.".format(
                     count - (count//batch_size)*batch_size,
                     count,
-                    len(queries))
+                    len(queries),
+                    end-start)
                 )
 
-                queries.clear()
+                del queries[:]
 
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
