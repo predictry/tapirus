@@ -4,29 +4,38 @@ import boto.sqs
 from boto.sqs.message import Message
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from boto.exception import S3ResponseError
 
 from tapirus.utils.logger import Logger
 
 
-def download_log_from_s3(s3_log, file_path):
+def download_file_from_s3(s3_key, file_path):
     """
 
-    :param s3_log:
+    :param s3_key:
     :param file_path:
     :return:
     """
 
     conn = S3Connection()
 
-    bucket = conn.get_bucket(s3_log.split("/")[0])
+    bucket = conn.get_bucket(s3_key.split("/")[0])
 
     key = Key(bucket)
-    key.key = '/'.join(s3_log.split("/")[1:])
+    key.key = '/'.join(s3_key.split("/")[1:])
 
-    Logger.info("Getting log file from S3: {0}".format(s3_log))
-    key.get_contents_to_filename(file_path)
+    Logger.info("Downloading file from S3: {0}".format(s3_key))
 
-    return file_path
+    try:
+        key.get_contents_to_filename(file_path)
+    except boto.exception.S3ResponseError as exc:
+
+        Logger.error(exc)
+
+        return file_path, exc.status
+    else:
+
+        return file_path, 200
 
 
 def read_queue(region, queue_name, visibility_timeout, count=1):

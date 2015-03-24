@@ -55,7 +55,21 @@ def run():
         file_path = os.path.join(tempfile.gettempdir(), file_name)
 
         #Download file from
-        aws.download_log_from_s3(s3_file_path, file_path)
+        _, status = aws.download_file_from_s3(s3_file_path, file_path)
+
+        if os.path.exists(file_path) is False or os.path.isfile(file_path) is False:
+
+            Logger.warning("File {0} wasn't downloaded")
+
+            if "delete" in conf["sqs"] and status == 404:
+                if conf["sqs"]["delete"] is True:
+
+                    if aws.delete_message_from_queue(region, queue_name, message):
+                        Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
+                    else:
+                        Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
+
+            return
 
         #Process log
         log.process_log(file_path, batch_size, execute_batch_transactions)
