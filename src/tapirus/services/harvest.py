@@ -8,9 +8,7 @@ from tapirus.utils import config
 
 if __name__ == "__main__":
 
-    conf = config.load_configuration()
+    harv = config.get("harvester")
 
-    if conf:
-
-        interval = conf["app"]["intervals"]["harvester"]
-        multitasking.repeat(interval, harvester.run, wait=True)
+    interval = int(harv["interval"])
+    multitasking.repeat(interval, harvester.run, wait=True)

@@ -22,17 +22,16 @@ def get_connection():
     :return: py2neo GraphDatabaseService object
     """
 
-    #todo: use classes; if endpoint is not defined, try localhost; if there is no response, thrown an except
-    conf = config.load_configuration()
+    neo4j = config.get("neo4j")
 
     try:
 
-        username = conf["neo4j"]["username"]
-        password = conf["neo4j"]["password"]
-        host = conf["neo4j"]["host"]
-        port = conf["neo4j"]["port"]
-        endpoint = conf["neo4j"]["endpoint"]
-        protocol = conf["neo4j"]["protocol"]
+        username = neo4j["username"]
+        password = neo4j["password"]
+        host = neo4j["host"]
+        port = int(neo4j["port"])
+        endpoint = neo4j["endpoint"]
+        protocol = neo4j["protocol"]
 
         py2neo.authenticate("{host}:{port}".format(host=host, port=port), username, password)
 

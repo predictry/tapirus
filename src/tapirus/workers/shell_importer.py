@@ -14,6 +14,7 @@ from tapirus.utils import config
 from tapirus.utils.logger import Logger
 from tapirus.processor import log
 from tapirus.processor import log_keeper
+from tapirus.core import errors
 
 NEO4J_SHELL = "neo4j-shell"
 PATHS = ["/usr/local/bin"]
@@ -77,17 +78,20 @@ def run():
     """
 
     #Read configuration
-    conf = config.load_configuration()
-
-    if not conf:
+    try:
+        sqs = config.get("sqs")
+        queue_manager = config.get("queue-manager")
+        harv = config.get("harvester")
+    except errors.ConfigurationError as exc:
+        Logger.error(exc)
         Logger.critical("Aborting `Queue Read` operation. Couldn't read app configuration `")
         return
 
-    region = conf["sqs"]["region"]
-    queue_name = conf["sqs"]["queue"]
-    visibility_timeout = conf["sqs"]["visibility_timeout"]
+    region = sqs["region"]
+    queue_name = sqs["queue"]
+    visibility_timeout = int(sqs["visibility-timeout"])
     count = 1
-    batch_size = conf["app"]["batch"]["write"]["size"]
+    batch_size = int(harv["batch-size"])
 
     #Get name of file to download from SQS
     messages = aws.read_queue(region, queue_name, visibility_timeout, count)
@@ -109,8 +113,8 @@ def run():
 
             Logger.warning("File {0} wasn't downloaded")
 
-            if "delete" in conf["sqs"] and status == 404:
-                if conf["sqs"]["delete"] is True:
+            if "delete" in sqs and status == 404:
+                if sqs["delete"] is True:
 
                     if aws.delete_message_from_queue(region, queue_name, message):
                         Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
@@ -125,18 +129,20 @@ def run():
         #Delete downloaded file
         io.delete_file(file_path)
 
-        if "log_keeper" in conf:
-            log_keeper_conf = conf["log_keeper"]
+        if os.path.exists(file_path) is False:
+            Logger.info("Deleted file `{0}`".format(file_path))
+        else:
+            Logger.warning("Failed to delete file `{0}`".format(file_path))
 
-            url = '/'.join([log_keeper_conf["url"], log_keeper_conf["endpoint"]])
+        url = '/'.join([queue_manager["url"], queue_manager["endpoint"]])
 
-            if not log_keeper.notify_log_keeper(url, file_name, status="processed"):
-                log_keeper.add_log_keeper_file(file_name)
-            else:
-                log_keeper.notify_log_keeper_of_backlogs(url)
+        if not log_keeper.notify_log_keeper(url, file_name, status="processed"):
+            log_keeper.add_log_keeper_file(file_name)
+        else:
+            log_keeper.notify_log_keeper_of_backlogs(url)
 
-        if "delete" in conf["sqs"]:
-            if conf["sqs"]["delete"] is True:
+        if "delete" in sqs:
+            if sqs["delete"] is True:
 
                 if aws.delete_message_from_queue(region, queue_name, message):
                     Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))

@@ -13,3 +13,8 @@ class InvalidLabelError(Exception):
     Label is not a valid Neo4j label
     """
     pass
+
+
+class ConfigurationError(Exception):
+
+    pass
