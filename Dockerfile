@@ -52,6 +52,10 @@ ADD tests ${APPDIR}/tests
 WORKDIR ${APPDIR}
 RUN bash scripts/build-env.sh
 
+# Boto config
+ADD boto.cfg ${APPDIR}/boto.cfg
+ENV BOTO_CONFIG ${APPDIR}/boto.cfg
+
 USER root
 
 #supervisor
