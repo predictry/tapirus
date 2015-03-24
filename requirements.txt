@@ -5,3 +5,4 @@ boto==2.34.0
 python-dateutil==2.4.0
 requests==2.5.1
 jsonschema==2.4.0
+jsonuri==0.1.21
