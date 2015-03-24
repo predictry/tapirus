@@ -22,16 +22,20 @@ def get_connection():
     :return: py2neo GraphDatabaseService object
     """
 
-    neo4j = config.get("neo4j")
-
     try:
 
-        username = neo4j["username"]
-        password = neo4j["password"]
-        host = neo4j["host"]
-        port = int(neo4j["port"])
-        endpoint = neo4j["endpoint"]
-        protocol = neo4j["protocol"]
+        neo4j = config.get("neo4j")
+    except errors.ConfigurationError:
+        raise
+
+    username = neo4j["username"]
+    password = neo4j["password"]
+    host = neo4j["host"]
+    port = int(neo4j["port"])
+    endpoint = neo4j["endpoint"]
+    protocol = neo4j["protocol"]
+
+    try:
 
         py2neo.authenticate("{host}:{port}".format(host=host, port=port), username, password)
 
