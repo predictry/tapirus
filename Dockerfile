@@ -43,7 +43,7 @@ USER dispatch
 # get code from github
 ADD README.md requirements.txt ${APPDIR}/
 ADD nginx-app.conf supervisor-app.conf uwsgi.ini uwsgi_params ${APPDIR}/
-ADD config.json logging.json ${APPDIR}/
+ADD config.ini logging.json ${APPDIR}/
 ADD scripts ${APPDIR}/scripts
 ADD src ${APPDIR}/src
 ADD tests ${APPDIR}/tests
