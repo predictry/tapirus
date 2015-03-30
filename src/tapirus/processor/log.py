@@ -56,11 +56,19 @@ def process_log(file_name, batch_size, processor):
 
                 try:
 
-                    payload = jsonuri.deserialize(l[11])
+                    payload = jsonuri.deserialize(l[11], False)
 
                 except ValueError as e:
 
-                    Logger.warning("A problem occurred in deserialization of payload: [{0}]\n\t{1}".format(l[11], e))
+                    Logger.warning("Error deserializing payload, single decoding: [{0}]\n\t{1}".format(l[11], e))
+
+                    try:
+                        payload = jsonuri.deserialize(l[11], True)
+                    except ValueError as e:
+
+                        Logger.warning("Error deserializing payload, single twice: [{0}]\n\t{1}".format(l[11], e))
+
+                        continue
 
                     continue
 
