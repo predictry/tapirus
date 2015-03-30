@@ -70,8 +70,6 @@ def process_log(file_name, batch_size, processor):
 
                         continue
 
-                    continue
-
                 queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
                 count += 1
 
