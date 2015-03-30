@@ -43,59 +43,64 @@ def process_log(file_name, batch_size, processor):
 
         count = 0
 
-        for line in f:
+        try:
+            for line in f:
 
-            l = line.split(LOG_FILE_COLUMN_SEPARATOR)
+                l = line.split(LOG_FILE_COLUMN_SEPARATOR)
 
-            if len(l) >= 12:
+                if len(l) >= 12:
 
-                date, timestamp, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
+                    date, timestamp, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
 
-                if ".gif" not in path or status not in [0, 200, 304]:
-                    continue
-
-                try:
-
-                    payload = jsonuri.deserialize(l[11], False)
-
-                except ValueError as e:
-
-                    Logger.warning("Error deserializing payload, single decoding: [{0}]\n\t{1}".format(l[11], e))
-
-                    try:
-                        payload = jsonuri.deserialize(l[11], True)
-                    except ValueError as e:
-
-                        Logger.warning("Error deserializing payload, single twice: [{0}]\n\t{1}".format(l[11], e))
-
+                    if ".gif" not in path or status not in [0, 200, 304]:
                         continue
 
-                queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
-                count += 1
+                    try:
 
-            if count % batch_size == 0 and count > 0:
+                        payload = jsonuri.deserialize(l[11], False)
 
-                #upload
-                #run queries
-                try:
+                    except ValueError as e:
 
-                    start = time.time()
-                    processor(queries)
-                    end = time.time()
+                        Logger.warning("Error deserializing payload, single decoding: [{0}]\n\t{1}".format(l[11], e))
 
-                except Exception as e:
-                    Logger.error(traceback.format_exc())
-                    raise e
-                else:
+                        try:
+                            payload = jsonuri.deserialize(l[11], True)
+                        except ValueError as e:
 
-                    Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries] in {3}s.".format(
-                        (count//batch_size + 1)*batch_size - count,
-                        count,
-                        len(queries),
-                        end-start)
-                    )
+                            Logger.warning("Error deserializing payload, single twice: [{0}]\n\t{1}".format(l[11], e))
 
-                    del queries[:]
+                            continue
+
+                    queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
+                    count += 1
+
+                if count % batch_size == 0 and count > 0:
+
+                    #upload
+                    #run queries
+                    try:
+
+                        start = time.time()
+                        processor(queries)
+                        end = time.time()
+
+                    except Exception as e:
+                        Logger.error(traceback.format_exc())
+                        raise e
+                    else:
+
+                        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries] in {3}s.".format(
+                            (count//batch_size + 1)*batch_size - count,
+                            count,
+                            len(queries),
+                            end-start)
+                        )
+
+                        del queries[:]
+
+        except EOFError as exc:
+
+            Logger.error(exc)
 
         if queries:
             #We're exiting before we process the remaining queries because their number if not a multiple of batch_size
