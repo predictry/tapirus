@@ -42,6 +42,7 @@ def process_log(file_name, batch_size, processor):
         """
 
         count = 0
+        line_index = 0
 
         try:
             for line in f:
@@ -61,18 +62,23 @@ def process_log(file_name, batch_size, processor):
 
                     except ValueError as e:
 
-                        Logger.warning("Error deserializing payload, single decoding: [{0}]\n\t{1}".format(l[11], e))
+                        Logger.warning("Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
+                                       line_index, e))
 
                         try:
                             payload = jsonuri.deserialize(l[11], True)
                         except ValueError as e:
 
-                            Logger.warning("Error deserializing payload, single twice: [{0}]\n\t{1}".format(l[11], e))
+                            Logger.warning("Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
+                                line_index, e))
+
+                            line_index += 1
 
                             continue
 
                     queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
                     count += 1
+                    line_index += 1
 
                 if count % batch_size == 0 and count > 0:
 
