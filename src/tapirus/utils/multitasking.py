@@ -4,7 +4,7 @@ import threading
 import multiprocessing.context
 
 
-def repeat(interval, worker_function, args=(), wait=False, iterations=0):
+def repeat(interval, worker_function, args=(), wait=True, iterations=0):
 
     job = multiprocessing.context.Process(target=worker_function, args=args)
     job.start()
