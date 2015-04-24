@@ -4,7 +4,7 @@ import os
 import os.path
 import json
 import tempfile
-
+import time
 
 import py2neo.cypher.error.transaction
 from py2neo.packages.httpstream import http
@@ -29,10 +29,19 @@ def execute_batch_transactions(queries):
 
         Logger.error(exc)
 
+        nap_time = 10
+
+        Logger.info("Sleeping for {0}s".format(nap_time))
+        time.sleep(10)
+
+        raise errors.ProcessFailure("Neo4j deadlock")
+
     except http.SocketError as exc:
 
         Logger.error(exc)
-        
+
+        raise errors.ProcessFailure("Socket timeout")
+
 
 def run():
     """
@@ -87,30 +96,39 @@ def run():
             return
 
         #Process log
-        log.process_log(file_path, batch_size, execute_batch_transactions)
+        try:
+            log.process_log(file_path, batch_size, execute_batch_transactions)
 
-        #Delete downloaded file
-        io.delete_file(file_path)
+        except errors.ProcessFailure:
 
-        if os.path.exists(file_path) is False:
-            Logger.info("Deleted file `{0}`".format(file_path))
+            io.delete_file(file_path)
+
+            if os.path.exists(file_path) is False:
+                Logger.info("Deleted file `{0}`".format(file_path))
         else:
-            Logger.warning("Failed to delete file `{0}`".format(file_path))
 
-        url = '/'.join([queue_manager["url"], queue_manager["endpoint"]])
+            #Delete downloaded file
+            io.delete_file(file_path)
 
-        if not log_keeper.notify_log_keeper(url, file_name, status="processed"):
-            log_keeper.add_log_keeper_file(file_name)
-        else:
-            log_keeper.notify_log_keeper_of_backlogs(url)
+            if os.path.exists(file_path) is False:
+                Logger.info("Deleted file `{0}`".format(file_path))
+            else:
+                Logger.warning("Failed to delete file `{0}`".format(file_path))
 
-        if "delete" in sqs:
-            if sqs["delete"] is True:
+            url = '/'.join([queue_manager["url"], queue_manager["endpoint"]])
 
-                if aws.delete_message_from_queue(region, queue_name, message):
-                    Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
-                else:
-                    Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
+            if not log_keeper.notify_log_keeper(url, file_name, status="processed"):
+                log_keeper.add_log_keeper_file(file_name)
+            else:
+                log_keeper.notify_log_keeper_of_backlogs(url)
+
+            if "delete" in sqs:
+                if sqs["delete"] is True:
+
+                    if aws.delete_message_from_queue(region, queue_name, message):
+                        Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
+                    else:
+                        Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
 
     else:
 

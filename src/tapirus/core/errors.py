@@ -18,3 +18,8 @@ class InvalidLabelError(Exception):
 class ConfigurationError(Exception):
 
     pass
+
+
+class ProcessFailure(Exception):
+
+    pass
