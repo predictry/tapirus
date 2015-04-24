@@ -111,7 +111,7 @@ def run():
 
         if os.path.exists(file_path) is False or os.path.isfile(file_path) is False:
 
-            Logger.warning("File {0} wasn't downloaded")
+            Logger.warning("File {0} wasn't downloaded".format(file_path))
 
             if "delete" in sqs and status == 404:
                 if sqs["delete"] is True:
