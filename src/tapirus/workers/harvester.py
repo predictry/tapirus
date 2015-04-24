@@ -5,6 +5,10 @@ import os.path
 import json
 import tempfile
 
+
+import py2neo.cypher.error.transaction
+from py2neo.packages.httpstream import http
+
 from tapirus.utils import config
 from tapirus.core.db import neo4j
 from tapirus.core import aws
@@ -14,10 +18,21 @@ from tapirus.utils.logger import Logger
 from tapirus.utils import io
 from tapirus.core import errors
 
+
 def execute_batch_transactions(queries):
 
-    neo4j.run_batch_query(queries, commit=True, timeout=300)
+    try:
 
+        neo4j.run_batch_query(queries, commit=True, timeout=60)
+
+    except py2neo.cypher.error.transaction.DeadlockDetected as exc:
+
+        Logger.error(exc)
+
+    except http.SocketError as exc:
+
+        Logger.error(exc)
+        
 
 def run():
     """

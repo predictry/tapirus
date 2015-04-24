@@ -4,7 +4,9 @@ import re
 
 from py2neo import Graph, Node, Relationship, rewrite
 from py2neo.packages.httpstream import http
-import py2neo
+import py2neo.error
+import py2neo.cypher
+import py2neo.cypher.error.transaction
 
 
 from tapirus.core import errors
@@ -375,34 +377,40 @@ def run_batch_query(queries, commit, timeout=None):
     if timeout:
         http.socket_timeout = timeout
 
+
+    graph = get_connection()
+    tx = graph.cypher.begin()
+
     try:
-        graph = get_connection()
-        tx = graph.cypher.begin()
 
-    except http.SocketError as err:
-        raise err
+        results = None
 
-    for query in queries:
-        statement = query.statement
-        params = {param.key: param.value for param in query.params}
+        for query in queries:
+            statement = query.statement
+            params = {param.key: param.value for param in query.params}
 
-        tx.append(statement, params)
+            tx.append(statement, params)
 
-    #notice that we don't take the first result only, but all of them
-    results = tx.process()
+            results = tx.process()
+            tx.commit()
 
-    if commit:
-        tx.commit()
+    except http.SocketError:
+        tx.rollback()
+        raise
+    except py2neo.cypher.error.transaction.DeadlockDetected:
+        tx.rollback()
+        raise
+    else:
 
-    collection = []
-    for result in results:
+        collection = []
+        for result in results:
 
-        records = []
+            records = []
 
-        for record in result:
+            for record in result:
 
-            records.append(record)
+                records.append(record)
 
-        collection.append(records)
+            collection.append(records)
 
-    return collection
+        return collection
