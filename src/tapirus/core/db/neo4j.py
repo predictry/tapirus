@@ -377,13 +377,10 @@ def run_batch_query(queries, commit, timeout=None):
     if timeout:
         http.socket_timeout = timeout
 
-
     graph = get_connection()
     tx = graph.cypher.begin()
 
     try:
-
-        results = None
 
         for query in queries:
             statement = query.statement
@@ -391,8 +388,8 @@ def run_batch_query(queries, commit, timeout=None):
 
             tx.append(statement, params)
 
-            results = tx.process()
-            tx.commit()
+        results = tx.process()
+        tx.commit()
 
     except http.SocketError:
         tx.rollback()
