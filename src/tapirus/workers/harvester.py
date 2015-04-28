@@ -93,6 +93,10 @@ def run():
                     else:
                         Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
 
+            else:
+
+                Logger.info("Delete option was not found in queue configuration. No action taken")
+
             return
 
         #Process log
