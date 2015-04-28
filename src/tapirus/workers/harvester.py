@@ -32,7 +32,7 @@ def execute_batch_transactions(queries):
         nap_time = 10
 
         Logger.info("Sleeping for {0}s".format(nap_time))
-        time.sleep(10)
+        time.sleep(nap_time)
 
         raise errors.ProcessFailure("Neo4j deadlock")
 
@@ -129,6 +129,10 @@ def run():
                         Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
                     else:
                         Logger.info("Failed to delete file `{0}` from queue `{1}`".format(file_name, queue_name))
+
+            else:
+
+                Logger.info("Delete option was not found in queue configuration. No action taken")
 
     else:
 
