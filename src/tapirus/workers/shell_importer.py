@@ -114,7 +114,7 @@ def run():
             Logger.warning("File {0} wasn't downloaded".format(file_path))
 
             if "delete" in sqs and status == 404:
-                if sqs["delete"] is True:
+                if sqs["delete"].lower() == "true":
 
                     if aws.delete_message_from_queue(region, queue_name, message):
                         Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
@@ -143,7 +143,7 @@ def run():
             log_keeper.notify_log_keeper_of_backlogs(url)
 
         if "delete" in sqs:
-            if sqs["delete"] is True:
+            if sqs["delete"].lower() == "true":
 
                 if aws.delete_message_from_queue(region, queue_name, message):
                     Logger.info("Deleted file `{0}` from queue `{1}`".format(file_name, queue_name))
