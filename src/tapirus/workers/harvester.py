@@ -109,6 +109,9 @@ def run():
 
             if os.path.exists(file_path) is False:
                 Logger.info("Deleted file `{0}`".format(file_path))
+            else:
+                Logger.info("Failed to delete file `{0}`".format(file_path))
+
         else:
 
             #Delete downloaded file
@@ -125,7 +128,7 @@ def run():
                 log_keeper.add_log_keeper_file(file_name)
             else:
                 log_keeper.notify_log_keeper_of_backlogs(url)
-
+            
             if "delete" in sqs:
                 if sqs["delete"] is True:
 
