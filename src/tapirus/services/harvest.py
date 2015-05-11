@@ -45,15 +45,16 @@ def prediction_io_service(entries):
 
     for k, v in tenants.items():
 
-        cfg = config.get("predictionio")
         access_key = get_tenant_prediction_access_key(k)
+
+        if not access_key:
+            Logger.info("No key was found for tenant `{0}`. Skipping data entry".format(k))
+            return
+
+        cfg = config.get("predictionio")
         url = cfg["url"]
         threads = int(cfg["threads"])
         qsize = int(cfg["qsize"])
-
-        if not access_key:
-            Logger.info("No key was found for tenant `{0}`. Skipping data entry")
-            return
 
         service = PredictionIOEventHandler(access_key=access_key, url=url, threads=threads, qsize=qsize)
 
