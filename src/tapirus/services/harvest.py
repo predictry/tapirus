@@ -60,6 +60,8 @@ def prediction_io_service(entries):
 
         service.handle_events(v)
 
+        Logger.info("Processed {0} items for {k}".format(len(v), k))
+
 
 def run(service):
     """
