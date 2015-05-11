@@ -16,14 +16,12 @@ from tapirus.utils.logger import Logger
 LOG_FILE_COLUMN_SEPARATOR = "\t"
 
 
-def process_log(file_name, batch_size, processor, transformer=None):
+def process_log(file_name):
     """
 
     :param file_name:
     :return:
     """
-
-    entries = []
 
     gz_fh = gzip.open(file_name)
     utf8_codec = codecs.getreader("UTF-8")
@@ -87,67 +85,17 @@ def process_log(file_name, batch_size, processor, transformer=None):
                     if "date" not in payload:
                         payload["date"] = date
                     if "time" not in payload:
-                        payload["time"] = time
+                        payload["time"] = timestamp
                     if "datetime" not in payload:
-                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
+                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
 
-                    if transformer and hasattr(transformer, '__call__'):
-                        entries.extend(transformer(payload))
-                    else:
-                        entries.append(payload)
+                    yield payload
 
                     count += 1
                     line_index += 1
-
-                if count % batch_size == 0 and count > 0:
-
-                    #upload
-                    #run entries
-                    try:
-
-                        start = time.time()
-                        processor(entries)
-                        end = time.time()
-
-                    except Exception as e:
-                        Logger.error(traceback.format_exc())
-                        raise e
-                    else:
-
-                        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} entries] in {3}s.".format(
-                            (count//batch_size + 1)*batch_size - count,
-                            count,
-                            len(entries),
-                            end-start)
-                        )
-
-                        del entries[:]
 
         except EOFError as exc:
 
             Logger.error(exc)
 
-        if entries:
-            #We're exiting before we process the remaining entries because their number if not a multiple of batch_size
-
-            try:
-                start = time.time()
-                processor(entries)
-                end = time.time()
-                #pass
-
-            except Exception as e:
-                Logger.error(traceback.format_exc())
-                raise e
-
-            else:
-                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} entries in {3}s.".format(
-                    count - (count//batch_size)*batch_size,
-                    count,
-                    len(entries),
-                    end-start)
-                )
-
-                del entries[:]
-
-    Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
+    Logger.info("Read [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
