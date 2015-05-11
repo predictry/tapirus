@@ -91,7 +91,7 @@ def process_log(file_name, batch_size, processor, transformer=None):
                     if "datetime" not in payload:
                         payload["datetime"] = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
 
-                    if transformer:
+                    if transformer and hasattr(transformer, '__call__'):
                         entries.extend(transformer(payload))
                     else:
                         entries.append(payload)
