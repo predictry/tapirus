@@ -108,7 +108,7 @@ def is_valid_schema(data):
         return False
     if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]) < 1:
         return False
-    if not _is_valid_data(data[SCHEMA_KEY_NAME]):
+    if not _is_valid_data(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]):
         return False
 
     if SCHEMA_KEY_USER in data:
