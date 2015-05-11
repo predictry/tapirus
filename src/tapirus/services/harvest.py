@@ -48,10 +48,10 @@ def prediction_io_service(entries):
         cfg = config.get("predictionio")
         access_key = get_tenant_prediction_access_key(k)
         url = cfg["url"]
-        threads = cfg["threads"]
-        qsize = cfg["qsize"]
+        threads = int(cfg["threads"])
+        qsize = int(cfg["qsize"])
 
-        if access_key is None:
+        if not access_key:
             Logger.info("No key was found for tenant `{0}`. Skipping data entry")
             return
 
