@@ -87,7 +87,7 @@ def process_log(file_name):
                     if "time" not in payload:
                         payload["time"] = timestamp
                     if "datetime" not in payload:
-                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                        payload["datetime"] = str(dateutil.parser.parse(''.join([date, "T", timestamp, "Z"])))
 
                     yield payload
 
