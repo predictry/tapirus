@@ -22,6 +22,8 @@ TRANSFORMERS = lambda x: {
     PREDICTION_IO_SERVICE: PredictionIOEventHandler
 }[x]
 
+#TODO: VALIDATION. WHAT's WRONG WITH JSONURI?
+
 
 def neo4j_service(entries):
 

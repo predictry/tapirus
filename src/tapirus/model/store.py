@@ -1,10 +1,7 @@
 __author__ = 'guilherme'
 
-import re
 
 from tapirus.model.constants import *
-
-regex = re.compile("^\w+$")
 
 
 class Session(object):
@@ -69,7 +66,19 @@ def is_acceptable_data_type(e):
     return True
 
 
-def is_valid_data(data):
+def _is_valid_data(key):
+
+    chars = ["[", "]", "."]
+
+    for char in chars:
+
+        if char in key:
+            return False
+
+    return True
+
+
+def is_valid_schema(data):
     """
     :param data:
     :return:
@@ -81,14 +90,15 @@ def is_valid_data(data):
         return False
     if len(data[SCHEMA_KEY_SESSION_ID]) < 1:
         return False
-    if not regex.match(data[SCHEMA_KEY_SESSION_ID]):
+
+    if not _is_valid_data(data[SCHEMA_KEY_SESSION_ID]):
         return False
 
     if SCHEMA_KEY_TENANT_ID not in data:
         return False
     if len(data[SCHEMA_KEY_TENANT_ID]) < 1:
         return False
-    if not regex.match(data[SCHEMA_KEY_TENANT_ID]):
+    if not _is_valid_data(data[SCHEMA_KEY_TENANT_ID]):
         return False
 
     if SCHEMA_KEY_ACTION not in data:
@@ -98,6 +108,8 @@ def is_valid_data(data):
         return False
     if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]) < 1:
         return False
+    if not _is_valid_data(data[SCHEMA_KEY_NAME]):
+        return False
 
     if SCHEMA_KEY_USER in data:
 
@@ -105,7 +117,7 @@ def is_valid_data(data):
             return False
         if len(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]) < 1:
             return False
-        if not regex.match(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]):
+        if not _is_valid_data(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]):
             return False
 
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_SEARCH.lower():
@@ -133,7 +145,7 @@ def is_valid_data(data):
                 return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
-            if not regex.match(item[SCHEMA_KEY_ITEM_ID]):
+            if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
                 return False
 
             if SCHEMA_KEY_LOCATION in item:
@@ -166,7 +178,7 @@ def is_valid_data(data):
                 return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
-            if not regex.match(item[SCHEMA_KEY_ITEM_ID]):
+            if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
                 return False
 
             if SCHEMA_KEY_QUANTITY not in item:
@@ -202,7 +214,7 @@ def is_valid_data(data):
                 return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
-            if not regex.match(item[SCHEMA_KEY_ITEM_ID]):
+            if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
                 return False
 
             if SCHEMA_KEY_LOCATION in item:
@@ -235,7 +247,7 @@ def is_valid_data(data):
                 return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
-            if not regex.match(item[SCHEMA_KEY_ITEM_ID]):
+            if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
                 return False
 
             if SCHEMA_KEY_QUANTITY not in item:
@@ -263,7 +275,7 @@ def is_valid_data(data):
             return False
         if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
             return False
-        if not regex.match(data[SCHEMA_KEY_ITEM_ID]):
+        if not _is_valid_data(data[SCHEMA_KEY_ITEM_ID]):
             return False
 
     return True

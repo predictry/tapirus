@@ -13,7 +13,7 @@ from py2neo.packages.httpstream import http
 from tapirus.core import errors
 from tapirus.core.db import neo4j
 from tapirus.model.constants import *
-from tapirus.model.store import is_valid_data, is_acceptable_data_type
+from tapirus.model.store import is_valid_schema, is_acceptable_data_type
 from tapirus.utils import io
 from tapirus.utils.logger import Logger
 
@@ -49,8 +49,8 @@ class Neo4jEventHandler(object):
 
         dt = data["datetime"]
 
-        # if is_valid_data(data) is False:
-        #     return []
+        if is_valid_schema(data) is False:
+            return []
 
         queries = []
 

@@ -3,7 +3,7 @@ __author__ = 'guilherme'
 import predictionio
 
 from tapirus.model.constants import *
-from tapirus.model.store import is_valid_data
+from tapirus.model.store import is_valid_schema
 
 
 class PredictionIOEventHandler(object):
@@ -35,8 +35,8 @@ class PredictionIOEventHandler(object):
 
         event_time = data["datetime"]
 
-        # if is_valid_data(data) is False:
-        #     return []
+        if is_valid_schema(data) is False:
+            return []
 
         events = []
 
