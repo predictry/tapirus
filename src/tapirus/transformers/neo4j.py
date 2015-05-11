@@ -49,8 +49,8 @@ class Neo4jEventHandler(object):
 
         dt = data["datetime"]
 
-        if is_valid_data(data) is False:
-            return []
+        # if is_valid_data(data) is False:
+        #     return []
 
         queries = []
 

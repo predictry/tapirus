@@ -11,6 +11,7 @@ import dateutil.tz
 from jsonuri import jsonuri
 
 from tapirus.utils.logger import Logger
+from tapirus.model.store import is_valid_data
 
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
@@ -60,6 +61,9 @@ def process_log(file_name):
 
                         payload = jsonuri.deserialize(l[11], False)
 
+                        if is_valid_data(payload) is False:
+                            raise ValueError(payload)
+
                     except ValueError as e:
 
                         Logger.warning(
@@ -70,6 +74,10 @@ def process_log(file_name):
 
                         try:
                             payload = jsonuri.deserialize(l[11], True)
+
+                            if is_valid_data(payload) is False:
+                                raise ValueError(payload)
+
                         except ValueError as e:
 
                             Logger.warning(

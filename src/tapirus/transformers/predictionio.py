@@ -35,8 +35,8 @@ class PredictionIOEventHandler(object):
 
         event_time = data["datetime"]
 
-        if is_valid_data(data) is False:
-            return []
+        # if is_valid_data(data) is False:
+        #     return []
 
         events = []
 
