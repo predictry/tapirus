@@ -6,7 +6,10 @@ import traceback
 import codecs
 import time
 
+import dateutil.parser
+import dateutil.tz
 from jsonuri import jsonuri
+
 from tapirus.processor import schema
 from tapirus.utils.logger import Logger
 
@@ -14,14 +17,14 @@ from tapirus.utils.logger import Logger
 LOG_FILE_COLUMN_SEPARATOR = "\t"
 
 
-def process_log(file_name, batch_size, processor):
+def process_log(file_name, batch_size, processor, transformer=None):
     """
 
     :param file_name:
     :return:
     """
 
-    queries = []
+    entries = []
 
     gz_fh = gzip.open(file_name)
     utf8_codec = codecs.getreader("UTF-8")
@@ -62,32 +65,49 @@ def process_log(file_name, batch_size, processor):
 
                     except ValueError as e:
 
-                        Logger.warning("Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
-                                       line_index, e))
+                        Logger.warning(
+                            "Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
+                                line_index, e
+                            )
+                        )
 
                         try:
                             payload = jsonuri.deserialize(l[11], True)
                         except ValueError as e:
 
-                            Logger.warning("Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
-                                line_index, e))
+                            Logger.warning(
+                                "Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
+                                    line_index, e
+                                )
+                            )
 
                             line_index += 1
 
                             continue
 
-                    queries.extend(schema.generate_queries(date, timestamp, ip, path, payload))
+                    if "date" not in payload:
+                        payload["date"] = date
+                    if "time" not in payload:
+                        payload["time"] = time
+                    if "datetime" not in payload:
+                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
+
+                    if transformer:
+                        entries.extend(transformer(payload))
+                    else:
+                        entries.append(payload)
+
                     count += 1
                     line_index += 1
 
                 if count % batch_size == 0 and count > 0:
 
                     #upload
-                    #run queries
+                    #run entries
                     try:
 
                         start = time.time()
-                        processor(queries)
+                        processor(entries)
                         end = time.time()
 
                     except Exception as e:
@@ -95,25 +115,25 @@ def process_log(file_name, batch_size, processor):
                         raise e
                     else:
 
-                        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries] in {3}s.".format(
+                        Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} entries] in {3}s.".format(
                             (count//batch_size + 1)*batch_size - count,
                             count,
-                            len(queries),
+                            len(entries),
                             end-start)
                         )
 
-                        del queries[:]
+                        del entries[:]
 
         except EOFError as exc:
 
             Logger.error(exc)
 
-        if queries:
-            #We're exiting before we process the remaining queries because their number if not a multiple of batch_size
+        if entries:
+            #We're exiting before we process the remaining entries because their number if not a multiple of batch_size
 
             try:
                 start = time.time()
-                processor(queries)
+                processor(entries)
                 end = time.time()
                 #pass
 
@@ -122,13 +142,13 @@ def process_log(file_name, batch_size, processor):
                 raise e
 
             else:
-                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} queries in {3}s.".format(
+                Logger.info("[Processed {0} actions {{Total: {1}}}, with {2} entries in {3}s.".format(
                     count - (count//batch_size)*batch_size,
                     count,
-                    len(queries),
+                    len(entries),
                     end-start)
                 )
 
-                del queries[:]
+                del entries[:]
 
     Logger.info("Processed [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))

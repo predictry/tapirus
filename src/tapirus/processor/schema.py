@@ -520,13 +520,13 @@ def is_acceptable_data_type(e):
 
 
 #todo: parse data
-def generate_queries(date, time, ip, path, data):
+def generate_queries(date, time, ip, url_path, data):
     """
 
     :param date:
     :param time:
     :param ip:
-    :param path:
+    :param url_path:
     :param data:
     :return:
     """
@@ -536,7 +536,8 @@ def generate_queries(date, time, ip, path, data):
     #session -> user
     #session -> agent
 
-    dt = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
+    #dt = dateutil.parser.parse(''.join([date, "T", time, "Z"]))
+    dt = data["datetime"]
 
     if __is_data_valid(data) is False:
         return []
