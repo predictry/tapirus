@@ -10,7 +10,6 @@ import dateutil.parser
 import dateutil.tz
 from jsonuri import jsonuri
 
-from tapirus.processor import schema
 from tapirus.utils.logger import Logger
 
 

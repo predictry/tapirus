@@ -14,6 +14,7 @@ from tapirus.core.db import neo4j
 from tapirus.core import aws
 from tapirus.processor import log
 from tapirus.processor import log_keeper
+from tapirus.processor import schema
 from tapirus.utils.logger import Logger
 from tapirus.utils import io
 from tapirus.core import errors
@@ -103,7 +104,8 @@ def run():
 
         #Process log
         try:
-            log.process_log(file_path, batch_size, execute_batch_transactions)
+            log.process_log(file_path, batch_size, processor=execute_batch_transactions,
+                            transformer=schema.generate_queries)
 
         except errors.ProcessFailure:
 

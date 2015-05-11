@@ -520,7 +520,7 @@ def is_acceptable_data_type(e):
 
 
 #todo: parse data
-def generate_queries(date, time, ip, url_path, data):
+def generate_queries(data):
     """
 
     :param date:

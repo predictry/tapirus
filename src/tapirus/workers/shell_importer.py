@@ -9,12 +9,14 @@ import shutil
 import uuid
 
 from tapirus.core import aws
+from tapirus.core import errors
 from tapirus.utils import io
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
 from tapirus.processor import log
 from tapirus.processor import log_keeper
-from tapirus.core import errors
+from tapirus.processor import schema
+
 
 NEO4J_SHELL = "neo4j-shell"
 PATHS = ["/usr/local/bin"]
@@ -125,7 +127,8 @@ def run():
             return
 
         #Process log
-        log.process_log(file_path, batch_size, neo4j_shell_import)
+        log.process_log(file_path, batch_size, neo4j_shell_import,
+                        transformer=schema.generate_queries)
 
         #Delete downloaded file
         io.delete_file(file_path)
