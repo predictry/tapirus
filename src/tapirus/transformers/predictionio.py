@@ -27,6 +27,7 @@ class PredictionIOEventHandler(object):
                 self.client.create_event(**event)
             except predictionio.NotCreatedError as exc:
                 Logger.error(exc)
+                raise
 
     def handle_events(self, entries):
 
