@@ -22,8 +22,6 @@ TRANSFORMERS = lambda x: {
     PREDICTION_IO_SERVICE: PredictionIOEventHandler
 }[x]
 
-#TODO: VALIDATION. WHAT's WRONG WITH JSONURI?
-
 
 def neo4j_service(entries):
 
@@ -45,12 +43,12 @@ def prediction_io_service(entries):
 
         tenants[tenant_id].append(entry)
 
-    for k, v in tenants.items():
+    for tenant, entries in tenants.items():
 
-        access_key = get_tenant_prediction_access_key(k)
+        access_key = get_tenant_prediction_access_key(tenant)
 
         if not access_key:
-            Logger.info("No key was found for tenant `{0}`. Skipping data entry".format(k))
+            Logger.info("No key was found for tenant `{0}`. Skipping data entry".format(tenant))
             return
 
         cfg = config.get("predictionio")
@@ -60,9 +58,13 @@ def prediction_io_service(entries):
 
         service = PredictionIOEventHandler(access_key=access_key, url=url, threads=threads, qsize=qsize)
 
-        service.handle_events(v)
+        service.handle_events(entries)
 
-        Logger.info("Processed {0} items for {1}".format(len(v), k))
+        Logger.info(
+            "Processed {0} entries for {1}".format(
+                len(entries), tenant
+            )
+        )
 
 
 def run(service):
@@ -71,7 +73,7 @@ def run(service):
     :return:
     """
 
-    #Read configuration
+    # Read configuration
     try:
         sqs = config.get("sqs")
         queue_manager = config.get("queue-manager")
@@ -87,7 +89,7 @@ def run(service):
     count = 1
     batch_size = int(harv["batch-size"])
 
-    #Get name of file to download from SQS
+    # Get name of file to download from SQS
     messages = aws.read_queue(region, queue_name, visibility_timeout, count)
 
     if messages and len(messages) > 0:
@@ -100,7 +102,7 @@ def run(service):
         file_name = s3_file_path.split("/")[-1]
         file_path = os.path.join(tempfile.gettempdir(), file_name)
 
-        #Download file from
+        # Download file from
         _, status = aws.download_file_from_s3(s3_file_path, file_path)
 
         if os.path.exists(file_path) is False or os.path.isfile(file_path) is False:
@@ -123,7 +125,7 @@ def run(service):
 
             return
 
-        #Process log
+        # Process log
         try:
 
             entries = log.process_log(file_path)
@@ -144,7 +146,7 @@ def run(service):
 
         else:
 
-            #Delete downloaded file
+            # Delete downloaded file
             io.delete_file(file_path)
 
             if os.path.exists(file_path) is False:

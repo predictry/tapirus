@@ -2,18 +2,19 @@ __author__ = 'guilherme'
 
 
 import gzip
-import traceback
 import codecs
-import time
 
 import dateutil.parser
 import dateutil.tz
 from jsonuri import jsonuri
 
+from tapirus.model.store import is_valid_schema
 from tapirus.utils.logger import Logger
 
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
+
+UNSENT, HTTP_OK, HTTP_NOT_MODIFIED = 0, 200, 304
 
 
 def process_log(file_name):
@@ -26,7 +27,7 @@ def process_log(file_name):
     gz_fh = gzip.open(file_name)
     utf8_codec = codecs.getreader("UTF-8")
 
-    with utf8_codec(gz_fh) as f:
+    with utf8_codec(gz_fh) as fp:
         """
             #indeces
             #0: date
@@ -42,42 +43,53 @@ def process_log(file_name):
         """
 
         count = 0
+        failed_count = 0
         line_index = 0
 
         try:
-            for line in f:
+            for line in fp:
 
-                l = line.split(LOG_FILE_COLUMN_SEPARATOR)
+                columns = line.split(LOG_FILE_COLUMN_SEPARATOR)
 
-                if len(l) >= 12:
+                if len(columns) >= 12:
 
-                    date, timestamp, ip, path, status = l[0], l[1], l[4], l[7], int(l[8])
+                    date, timestamp, ip, path, status = columns[0], columns[1], columns[4], columns[7], int(columns[8])
 
-                    if ".gif" not in path or status not in [0, 200, 304]:
+                    if ".gif" not in path or status not in (UNSENT, HTTP_OK, HTTP_NOT_MODIFIED):
                         continue
 
                     try:
 
-                        payload = jsonuri.deserialize(l[11], True)
+                        payload = jsonuri.deserialize(columns[11], decode_twice=True)
+
+                        if not is_valid_schema(payload):
+                            raise ValueError("Invalid data schema, double decoding-pass")
 
                     except ValueError as e:
 
-                        Logger.warning(
-                            "Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
+                        Logger.info(
+                            "Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
                                 line_index, e
                             )
                         )
 
                         try:
-                            payload = jsonuri.deserialize(l[11], False)
+
+                            payload = jsonuri.deserialize(columns[11], decode_twice=False)
+
+                            if not is_valid_schema(payload):
+
+                                raise ValueError("Invalid data schema, single decoding-pass")
+
                         except ValueError as e:
 
-                            Logger.warning(
-                                "Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
+                            Logger.info(
+                                "Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
                                     line_index, e
                                 )
                             )
 
+                            failed_count += 1
                             line_index += 1
 
                             continue
@@ -87,7 +99,7 @@ def process_log(file_name):
                     if "time" not in payload:
                         payload["time"] = timestamp
                     if "datetime" not in payload:
-                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", timestamp, "Z"])).timestamp()
+                        payload["datetime"] = dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
 
                     yield payload
 
@@ -98,4 +110,8 @@ def process_log(file_name):
 
             Logger.error(exc)
 
-    Logger.info("Read [`{0}`] records in log file [`{1}`]".format(count, file_name.split("/")[-1]))
+    Logger.info(
+        "Successfully parsed [`{0}`] records, [`{1}`] failed, from log file [`{1}`]".format(
+            count, failed_count, file_name.split("/")[-1]
+        )
+    )

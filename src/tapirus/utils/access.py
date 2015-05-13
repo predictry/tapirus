@@ -7,7 +7,7 @@ import csv
 
 
 SRC_ROOT = os.path.dirname(os.path.abspath(__file__))
-KEYS_FILE = os.path.join(SRC_ROOT, "../../../keys.csv")
+KEYS_FILE = os.path.join(SRC_ROOT, "../../../secret/pio_access_keys.csv")
 
 
 def get_tenant_prediction_access_key(tenant_name):

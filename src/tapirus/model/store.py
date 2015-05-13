@@ -4,6 +4,8 @@ __author__ = 'guilherme'
 from tapirus.model.constants import *
 
 
+# TODO: Model events. Parse logs into entities and events. Feed these to data importers
+
 class Session(object):
 
     def __init__(self, id, domain, uuid):
@@ -66,14 +68,12 @@ def is_acceptable_data_type(e):
     return True
 
 
-def _is_valid_data(key):
+def _is_valid_data(value):
 
-    chars = ["[", "]", "."]
+    chars = ("[", "]", ".")
 
-    for char in chars:
-
-        if char in key:
-            return False
+    if any([c in value for c in chars]):
+        return False
 
     return True
 
@@ -84,13 +84,12 @@ def is_valid_schema(data):
     :return:
     """
 
-    #todo: log any missing data
+    # todo: log any missing data
 
     if SCHEMA_KEY_SESSION_ID not in data:
         return False
     if len(data[SCHEMA_KEY_SESSION_ID]) < 1:
         return False
-
     if not _is_valid_data(data[SCHEMA_KEY_SESSION_ID]):
         return False
 
@@ -127,7 +126,6 @@ def is_valid_schema(data):
         if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
             return False
 
-    #todo
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_VIEW.lower():
 
         if SCHEMA_KEY_ITEMS not in data:

@@ -36,7 +36,6 @@ class Neo4jEventHandler(object):
     def handle_events(self, entries):
 
         for entity in entries:
-
             self.handle(entity)
 
     @classmethod
@@ -54,7 +53,7 @@ class Neo4jEventHandler(object):
 
         queries = []
 
-        #session
+        # session
         statements = ["MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
             SESSION_LABEL=LABEL_SESSION,
             STORE_ID=data[SCHEMA_KEY_TENANT_ID]
@@ -78,7 +77,6 @@ class Neo4jEventHandler(object):
             for k, v in data[SCHEMA_KEY_USER].items():
 
                 if k != SCHEMA_KEY_USER_ID and is_acceptable_data_type(v):
-
                     params.append(neo4j.Parameter(k, v))
                     statements.append("\nSET n.{0} = {{ {0} }}".format(
                         k
@@ -89,8 +87,8 @@ class Neo4jEventHandler(object):
             #(session)-[r]-(user)
 
             template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                "\nMERGE (i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)"
+                       "\nMERGE (i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
+                       "\nMERGE (s)-[r :`{REL}`]->(i)"
 
             statements = [template.format(
                 SESSION_LABEL=LABEL_SESSION,
@@ -107,7 +105,6 @@ class Neo4jEventHandler(object):
 
         #agent
         if SCHEMA_KEY_AGENT_ID in data:
-
             statements = ["MERGE (n :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
                 AGENT_LABEL=LABEL_AGENT,
                 STORE_ID=data[SCHEMA_KEY_TENANT_ID]
@@ -119,9 +116,9 @@ class Neo4jEventHandler(object):
 
             #(session)-[r]-(agent)
             template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                "\nMERGE (i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(i)"
-                #"(i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})"
+                       "\nMERGE (i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})" \
+                       "\nMERGE (s)-[r :`{REL}`]->(i)"
+            #"(i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})"
 
             statements = [template.format(
                 SESSION_LABEL=LABEL_SESSION,
@@ -136,10 +133,10 @@ class Neo4jEventHandler(object):
 
             queries.append(neo4j.Query(''.join(statements), params))
 
-        #actions
+        # actions
         if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_VIEW:
 
-            #collect items
+            # collect items
             for item in data[SCHEMA_KEY_ITEMS]:
 
                 template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
@@ -154,7 +151,6 @@ class Neo4jEventHandler(object):
                 for k, v in item.items():
 
                     if k != SCHEMA_KEY_ITEM_ID and is_acceptable_data_type(v):
-
                         params.append(neo4j.Parameter(k, v))
                         statements.append("\nSET n.{0} = {{ {0} }}".format(
                             k
@@ -162,15 +158,14 @@ class Neo4jEventHandler(object):
 
                 queries.append(neo4j.Query(''.join(statements), params))
 
-                #(item)-[r]-(location)
+                # (item)-[r]-(location)
 
                 if SCHEMA_KEY_LOCATION in item:
 
                     if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
-
                         template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_COUNTRY}` :`{STORE_ID}` {{name: {{name}} }})" \
-                            "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                            "\nMERGE (i)-[:`{REL}`]->(l)"
+                                   "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                                   "\nMERGE (i)-[:`{REL}`]->(l)"
 
                         statements = [template.format(
                             LOCATION_LABEL=LABEL_LOCATION,
@@ -186,10 +181,9 @@ class Neo4jEventHandler(object):
                         queries.append(neo4j.Query(''.join(statements), params))
 
                     if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
-
                         template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_CITY}` :`{STORE_ID}` {{name: {{name}} }})" \
-                            "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                            "\nMERGE (i)-[:`{REL}`]->(l)"
+                                   "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                                   "\nMERGE (i)-[:`{REL}`]->(l)"
 
                         statements = [template.format(
                             LOCATION_LABEL=LABEL_LOCATION,
@@ -204,11 +198,11 @@ class Neo4jEventHandler(object):
 
                         queries.append(neo4j.Query(''.join(statements), params))
 
-                #(item)-[r]-(session)
+                # (item)-[r]-(session)
 
                 template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                    "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                    "\nMERGE (s)-[r :`{REL}`]->(i)"
+                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (s)-[r :`{REL}`]->(i)"
 
                 statements = [template.format(
                     SESSION_LABEL=LABEL_SESSION,
@@ -229,9 +223,8 @@ class Neo4jEventHandler(object):
 
         elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_ADD_TO_CART:
 
-            #collect items
+            # collect items
             for item in data[SCHEMA_KEY_ITEMS]:
-
                 template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
                 statements = [template.format(
@@ -243,12 +236,12 @@ class Neo4jEventHandler(object):
 
                 queries.append(neo4j.Query(''.join(statements), params))
 
-                #(item)-[r]-(session)
+                # (item)-[r]-(session)
 
                 template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                    "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                    "\nMERGE (s)-[r :`{REL}`]->(i)"
-                    #"(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
+                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (s)-[r :`{REL}`]->(i)"
+                # "(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
 
                 statements = [template.format(
                     SESSION_LABEL=LABEL_SESSION,
@@ -274,9 +267,8 @@ class Neo4jEventHandler(object):
 
         elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_BUY:
 
-            #collect items
+            # collect items
             for item in data[SCHEMA_KEY_ITEMS]:
-
                 template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
                 statements = [template.format(
@@ -288,11 +280,11 @@ class Neo4jEventHandler(object):
 
                 queries.append(neo4j.Query(''.join(statements), params))
 
-                #(item)-[r]-(session)
+                # (item)-[r]-(session)
 
                 template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                    "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                    "\nMERGE (s)-[r :`{REL}`]->(i)"
+                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (s)-[r :`{REL}`]->(i)"
 
                 statements = [template.format(
                     SESSION_LABEL=LABEL_SESSION,
@@ -323,9 +315,8 @@ class Neo4jEventHandler(object):
 
         elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_STARTED_CHECKOUT:
 
-            #collect items
+            # collect items
             for item in data[SCHEMA_KEY_ITEMS]:
-
                 template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
                 statements = [template.format(
@@ -337,11 +328,11 @@ class Neo4jEventHandler(object):
 
                 queries.append(neo4j.Query(''.join(statements), params))
 
-                #(item)-[r]-(session)
+                # (item)-[r]-(session)
 
                 template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                    "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                    "\nMERGE (s)-[r :`{REL}`]->(i)"
+                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (s)-[r :`{REL}`]->(i)"
 
                 statements = [template.format(
                     SESSION_LABEL=LABEL_SESSION,
@@ -363,8 +354,8 @@ class Neo4jEventHandler(object):
         elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_SEARCH:
 
             template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
-                "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
-                "\nMERGE (s)-[r :`{REL}`]->(n)"
+                       "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
+                       "\nMERGE (s)-[r :`{REL}`]->(n)"
 
             #collect items
             statements = [template.format(
@@ -383,7 +374,6 @@ class Neo4jEventHandler(object):
             for k, v in data[SCHEMA_KEY_ACTION].items():
 
                 if k != SCHEMA_KEY_KEYWORDS and is_acceptable_data_type(v):
-
                     params.append(neo4j.Parameter(k, v))
                     statements.append("\nSET n.{0} = {{ {0} }}".format(
                         k
@@ -398,8 +388,8 @@ class Neo4jEventHandler(object):
         elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_CHECK_DELETE_ITEM:
 
             template = "MATCH (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
-                "\nOPTIONAL MATCH (n)-[r]-(x)" \
-                "\nDELETE r, n"
+                       "\nOPTIONAL MATCH (n)-[r]-(x)" \
+                       "\nDELETE r, n"
 
             statements = [template.format(
                 ITEM_LABEL=LABEL_ITEM,
@@ -448,7 +438,7 @@ class Neo4jEventHandler(object):
         if not neo4j_shell_path:
             raise ChildProcessError("Couldn't find {0} executable path".format(NEO4J_SHELL))
 
-        #use random uuid for file name. avoid race conditions
+        # use random uuid for file name. avoid race conditions
         file_name = str(uuid.uuid4())
         tmp_folder = tempfile.gettempdir()
         file_path = os.path.join(tmp_folder, file_name)
