@@ -110,6 +110,10 @@ def process_log(file_name):
 
             Logger.error(exc)
 
+        except OSError as exc:
+
+            Logger.error(exc)
+
     Logger.info(
         "Successfully parsed [`{0}`] records, [`{1}`] failed, from log file [`{1}`]".format(
             count, failed_count, file_name.split("/")[-1]
