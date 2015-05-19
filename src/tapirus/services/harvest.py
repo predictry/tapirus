@@ -11,7 +11,7 @@ from tapirus.processor import log, log_keeper
 from tapirus.utils import config, multitasking, io
 from tapirus.transformers.neo4j import Neo4jEventHandler
 from tapirus.utils.access import get_tenant_prediction_access_key
-from tapirus.transformers.predictionio import PredictionIOEventHandler
+from tapirus.transformers.pio import PredictionIOEventHandler
 
 
 NEO4_SERVICE = "neo4j"

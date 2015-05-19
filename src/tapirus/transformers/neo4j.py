@@ -31,12 +31,40 @@ class Neo4jEventHandler(object):
 
         events = self.transform(entry)
 
-        self.execute_batch_transactions(events)
+        return events
 
     def handle_events(self, entries):
 
+        size = 500
+        c = 0
+
+        events = []
+
         for entity in entries:
-            self.handle(entity)
+
+            events.extend(self.handle(entity))
+
+            if c % size == 0 and c > 0 and events:
+
+                start = time.time()*1000
+                self.execute_batch_transactions(events)
+                end = time.time()*1000
+
+                Logger.info("\tImport to Neo4j: {0:0.00f}ms, for {1} queries".format(end-start, len(events)))
+                del events[:]
+
+            c += 1
+
+        if events:
+
+            start = time.time()*1000
+            self.execute_batch_transactions(events)
+            end = time.time()*1000
+
+            Logger.info("\tImport to Neo4j: {0:0.00f}ms, for {1} queries".format(end-start, len(events)))
+
+            del events[:]
+
 
     @classmethod
     def instance(cls):
@@ -52,6 +80,9 @@ class Neo4jEventHandler(object):
             return []
 
         queries = []
+
+        if data[SCHEMA_KEY_TENANT_ID] in ("bukalapak",):
+            return []
 
         # session
         statements = ["MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
