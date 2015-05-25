@@ -3,11 +3,11 @@ __author__ = 'guilherme'
 import predictionio
 
 from tapirus.model import constants
-from tapirus.model.store import Session, Agent, User, Item, Action, is_valid_schema
+from tapirus.model.store import Session, Agent, User, Item, Action
 from tapirus.utils.logger import Logger
 
 
-class PredictionIOEventHandler(object):
+class PredictionIODataHandler(object):
 
     def __init__(self, access_key, url, threads, qsize):
         self.client = predictionio.EventClient(
@@ -20,13 +20,13 @@ class PredictionIOEventHandler(object):
     @classmethod
     def transform(cls, session, agent, user, items, actions):
 
-        events = []
-
         assert isinstance(session, Session)
         assert isinstance(agent, Agent)
         assert isinstance(user, User)
         assert type(items) is set
         assert type(actions) is list
+
+        events = []
 
         event = dict(event="$set", entityType="user", entityId=user.id, eventTime=user.timestamp)
 

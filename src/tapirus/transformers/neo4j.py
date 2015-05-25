@@ -1,440 +1,316 @@
 __author__ = 'guilherme'
 
-import os
-import os.path
-import tempfile
 import time
-import shutil
-import subprocess
-import uuid
 
-import py2neo.cypher.error.transaction
 from py2neo.packages.httpstream import http
-from tapirus.core import errors
+import py2neo.error
+import py2neo.cypher
+import py2neo.cypher.error.transaction
+
 from tapirus.core.db import neo4j
 from tapirus.model.constants import *
-from tapirus.model.store import is_valid_schema, is_acceptable_data_type
-from tapirus.utils import io
+from tapirus.model.store import Session, Agent, User, Item, Action, is_acceptable_data_type
 from tapirus.utils.logger import Logger
+from tapirus.core import errors
 
 
 NEO4J_SHELL = "neo4j-shell"
 PATHS = ["/usr/local/bin"]
 
 
-class Neo4jEventHandler(object):
+class Neo4jDataHandler(object):
 
     def __init__(self):
         pass
 
-    def handle(self, entry):
-
-        events = self.transform(entry)
-
-        return events
-
-    def handle_events(self, entries):
-
-        size = 500
-        c = 0
-
-        events = []
-
-        for entity in entries:
-
-            events.extend(self.handle(entity))
-
-            if c % size == 0 and c > 0 and events:
-
-                start = time.time()*1000
-                self.execute_batch_transactions(events)
-                end = time.time()*1000
-
-                Logger.info("\tImport to Neo4j: {0:0.00f}ms, for {1} queries".format(end-start, len(events)))
-                del events[:]
-
-            c += 1
-
-        if events:
-
-            start = time.time()*1000
-            self.execute_batch_transactions(events)
-            end = time.time()*1000
-
-            Logger.info("\tImport to Neo4j: {0:0.00f}ms, for {1} queries".format(end-start, len(events)))
-
-            del events[:]
-
-
     @classmethod
-    def instance(cls):
+    def transform(cls, session, agent, user, items, actions):
 
-        return cls()
-
-    @classmethod
-    def transform(cls, data):
-
-        dt = data["datetime"]
-
-        if is_valid_schema(data) is False:
-            return []
+        assert isinstance(session, Session)
+        assert isinstance(agent, Agent)
+        assert isinstance(user, User)
+        assert type(items) is set
+        assert type(actions) is list
 
         queries = []
 
-        if data[SCHEMA_KEY_TENANT_ID] in ("bukalapak",):
-            return []
+        # TODO: follow a signature: template, statements
+        # TODO: ID as label
+        # Session
+        template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-        # session
-        statements = ["MERGE (n :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
+        statements = [template.format(
             SESSION_LABEL=LABEL_SESSION,
-            STORE_ID=data[SCHEMA_KEY_TENANT_ID]
+            STORE_ID=session.tenant
         )]
 
-        params = [neo4j.Parameter("id", data[SCHEMA_KEY_SESSION_ID])]
+        params = [neo4j.Parameter("id", session.id)]
 
         queries.append(neo4j.Query(''.join(statements), params))
 
-        #user
-        if SCHEMA_KEY_USER in data:
-            #todo: if user is not given, use anonymous user id?
+        # User
+        template = "MERGE (user :`{USER_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            statements = ["MERGE (n :`{USER_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
-                USER_LABEL=LABEL_USER,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-            )]
+        statements = [template.format(
+            USER_LABEL=LABEL_USER,
+            STORE_ID=session.tenant
+        )]
 
-            params = [neo4j.Parameter("id", data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID])]
+        params = [neo4j.Parameter("id", user.id)]
 
-            for k, v in data[SCHEMA_KEY_USER].items():
+        for k, v in user.fields.items():
 
-                if k != SCHEMA_KEY_USER_ID and is_acceptable_data_type(v):
-                    params.append(neo4j.Parameter(k, v))
-                    statements.append("\nSET n.{0} = {{ {0} }}".format(
+            if is_acceptable_data_type(v):
+                params.append(neo4j.Parameter(k, v))
+                statements.append(
+                    "\nSET user.{0} = {{ {0} }}".format(
                         k
-                    ))
+                    )
+                )
 
-            queries.append(neo4j.Query(''.join(statements), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
-            #(session)-[r]-(user)
+        # (session)-[r]-(user)
 
-            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                       "\nMERGE (i :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
-                       "\nMERGE (s)-[r :`{REL}`]->(i)"
+        template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                   "\nMERGE (user :`{USER_LABEL}` :`{STORE_ID}` {{id: {{user_id}} }})" \
+                   "\nMERGE (session)-[r :`{REL}`]->(user)"
 
-            statements = [template.format(
-                SESSION_LABEL=LABEL_SESSION,
-                USER_LABEL=LABEL_USER,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                REL=REL_SESSION_TO_USER
-            )]
+        statements = [template.format(
+            SESSION_LABEL=LABEL_SESSION,
+            USER_LABEL=LABEL_USER,
+            STORE_ID=session.tenant,
+            REL=REL_SESSION_TO_USER
+        )]
 
-            params = [neo4j.Parameter("datetime", dt),
-                      neo4j.Parameter("user_id", data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]),
-                      neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
+        params = [neo4j.Parameter("user_id", user.id),
+                  neo4j.Parameter("session_id", session.id)]
 
-            queries.append(neo4j.Query(''.join(statements), params))
+        queries.append(neo4j.Query(''.join(statements), params))
 
-        #agent
-        if SCHEMA_KEY_AGENT_ID in data:
-            statements = ["MERGE (n :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{id}} }})".format(
-                AGENT_LABEL=LABEL_AGENT,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-            )]
+        # Agent
+        template = "MERGE (agent :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
-            params = [neo4j.Parameter("id", data[SCHEMA_KEY_AGENT_ID])]
+        statements = [template.format(
+            AGENT_LABEL=LABEL_AGENT,
+            STORE_ID=agent.tenant
+        )]
 
-            queries.append(neo4j.Query(''.join(statements), params))
+        params = [neo4j.Parameter("id", agent.id)]
 
-            #(session)-[r]-(agent)
-            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                       "\nMERGE (i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})" \
-                       "\nMERGE (s)-[r :`{REL}`]->(i)"
-            #"(i :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})"
+        queries.append(neo4j.Query(''.join(statements), params))
 
-            statements = [template.format(
-                SESSION_LABEL=LABEL_SESSION,
-                AGENT_LABEL=LABEL_AGENT,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                REL=REL_SESSION_TO_AGENT
-            )]
+        # (session)-[r]-(agent)
+        template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                   "\nMERGE (agent :`{AGENT_LABEL}` :`{STORE_ID}` {{id: {{agent_id}} }})" \
+                   "\nMERGE (session)-[r :`{REL}`]->(agent)"
 
-            params = [neo4j.Parameter("datetime", dt),
-                      neo4j.Parameter("agent_id", data[SCHEMA_KEY_AGENT_ID]),
-                      neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
+        statements = [template.format(
+            SESSION_LABEL=LABEL_SESSION,
+            AGENT_LABEL=LABEL_AGENT,
+            STORE_ID=agent.tenant,
+            REL=REL_SESSION_TO_AGENT
+        )]
 
-            queries.append(neo4j.Query(''.join(statements), params))
+        params = [neo4j.Parameter("agent_id", agent.id),
+                  neo4j.Parameter("session_id", session.id)]
 
-        # actions
-        if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_VIEW:
+        queries.append(neo4j.Query(''.join(statements), params))
 
-            # collect items
-            for item in data[SCHEMA_KEY_ITEMS]:
+        # Items
 
-                template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
+        for item in items:
 
-                statements = [template.format(
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-                )]
+            assert isinstance(item, Item)
 
-                params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
-
-                for k, v in item.items():
-
-                    if k != SCHEMA_KEY_ITEM_ID and is_acceptable_data_type(v):
-                        params.append(neo4j.Parameter(k, v))
-                        statements.append("\nSET n.{0} = {{ {0} }}".format(
-                            k
-                        ))
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-                # (item)-[r]-(location)
-
-                if SCHEMA_KEY_LOCATION in item:
-
-                    if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
-                        template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_COUNTRY}` :`{STORE_ID}` {{name: {{name}} }})" \
-                                   "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                                   "\nMERGE (i)-[:`{REL}`]->(l)"
-
-                        statements = [template.format(
-                            LOCATION_LABEL=LABEL_LOCATION,
-                            LOCATION_COUNTRY=LABEL_LOCATION_COUNTRY,
-                            ITEM_LABEL=LABEL_ITEM,
-                            STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                            REL=REL_ITEM_LOCATION
-                        )]
-
-                        params = [neo4j.Parameter("name", item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]),
-                                  neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID])]
-
-                        queries.append(neo4j.Query(''.join(statements), params))
-
-                    if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
-                        template = "MERGE (l:`{LOCATION_LABEL}` :`{LOCATION_CITY}` :`{STORE_ID}` {{name: {{name}} }})" \
-                                   "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                                   "\nMERGE (i)-[:`{REL}`]->(l)"
-
-                        statements = [template.format(
-                            LOCATION_LABEL=LABEL_LOCATION,
-                            LOCATION_CITY=LABEL_LOCATION_CITY,
-                            ITEM_LABEL=LABEL_ITEM,
-                            STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                            REL=REL_ITEM_LOCATION
-                        )]
-
-                        params = [neo4j.Parameter("name", item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]),
-                                  neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID])]
-
-                        queries.append(neo4j.Query(''.join(statements), params))
-
-                # (item)-[r]-(session)
-
-                template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                           "\nMERGE (s)-[r :`{REL}`]->(i)"
-
-                statements = [template.format(
-                    SESSION_LABEL=LABEL_SESSION,
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                    REL=REL_ACTION_TYPE_VIEW
-                )]
-
-                params = [neo4j.Parameter("datetime", dt),
-                          neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
-                          neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "datetime"
-                ))
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_ADD_TO_CART:
-
-            # collect items
-            for item in data[SCHEMA_KEY_ITEMS]:
-                template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
-                statements = [template.format(
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-                )]
-
-                params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-                # (item)-[r]-(session)
-
-                template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                           "\nMERGE (s)-[r :`{REL}`]->(i)"
-                # "(i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})"
-
-                statements = [template.format(
-                    SESSION_LABEL=LABEL_SESSION,
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                    REL=REL_ACTION_TYPE_ADD_TO_CART
-                )]
-
-                params = [neo4j.Parameter("datetime", dt),
-                          neo4j.Parameter("qty", item[SCHEMA_KEY_QUANTITY]),
-                          neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
-                          neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "datetime"
-                ))
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "qty"
-                ))
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_BUY:
-
-            # collect items
-            for item in data[SCHEMA_KEY_ITEMS]:
-                template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
-                statements = [template.format(
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-                )]
-
-                params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-                # (item)-[r]-(session)
-
-                template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                           "\nMERGE (s)-[r :`{REL}`]->(i)"
-
-                statements = [template.format(
-                    SESSION_LABEL=LABEL_SESSION,
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                    REL=REL_ACTION_TYPE_BUY
-                )]
-
-                params = [neo4j.Parameter("datetime", dt),
-                          neo4j.Parameter("qty", item[SCHEMA_KEY_QUANTITY]),
-                          neo4j.Parameter("sub_total", item[SCHEMA_KEY_SUBTOTAL]),
-                          neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
-                          neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "datetime"
-                ))
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "qty"
-                ))
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "sub_total"
-                ))
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_STARTED_CHECKOUT:
-
-            # collect items
-            for item in data[SCHEMA_KEY_ITEMS]:
-                template = "MERGE (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
-
-                statements = [template.format(
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID]
-                )]
-
-                params = [neo4j.Parameter("id", item[SCHEMA_KEY_ITEM_ID])]
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-                # (item)-[r]-(session)
-
-                template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
-                           "\nMERGE (i :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
-                           "\nMERGE (s)-[r :`{REL}`]->(i)"
-
-                statements = [template.format(
-                    SESSION_LABEL=LABEL_SESSION,
-                    ITEM_LABEL=LABEL_ITEM,
-                    STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                    REL=REL_ACTION_TYPE_STARTED_CHECKOUT
-                )]
-
-                params = [neo4j.Parameter("datetime", dt),
-                          neo4j.Parameter("item_id", item[SCHEMA_KEY_ITEM_ID]),
-                          neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID])]
-
-                statements.append("\nSET r.{0} = {{ {0} }}".format(
-                    "datetime"
-                ))
-
-                queries.append(neo4j.Query(''.join(statements), params))
-
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_SEARCH:
-
-            template = "MERGE (s :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
-                       "\nMERGE (n :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
-                       "\nMERGE (s)-[r :`{REL}`]->(n)"
-
-            #collect items
-            statements = [template.format(
-                SEARCH_LABEL=LABEL_SEARCH,
-                SESSION_LABEL=LABEL_SESSION,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID],
-                REL=REL_ACTION_TYPE_SEARCH
-            )]
-
-            params = [neo4j.Parameter("keywords", data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]),
-                      neo4j.Parameter("session_id", data[SCHEMA_KEY_SESSION_ID]),
-                      neo4j.Parameter("datetime", dt)]
-
-            queries.append(neo4j.Query(''.join(statements), params))
-
-            for k, v in data[SCHEMA_KEY_ACTION].items():
-
-                if k != SCHEMA_KEY_KEYWORDS and is_acceptable_data_type(v):
-                    params.append(neo4j.Parameter(k, v))
-                    statements.append("\nSET n.{0} = {{ {0} }}".format(
-                        k
-                    ))
-
-            statements.append("\nSET r.{0} = {{ {0} }}".format(
-                "datetime"
-            ))
-
-            queries.append(neo4j.Query(''.join(statements), params))
-
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_CHECK_DELETE_ITEM:
-
-            template = "MATCH (n :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
-                       "\nOPTIONAL MATCH (n)-[r]-(x)" \
-                       "\nDELETE r, n"
+            template = "MERGE (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})"
 
             statements = [template.format(
                 ITEM_LABEL=LABEL_ITEM,
-                STORE_ID=data[SCHEMA_KEY_TENANT_ID]
+                STORE_ID=item.tenant
             )]
 
-            params = [neo4j.Parameter("id", data[SCHEMA_KEY_ITEM_ID])]
+            params = [neo4j.Parameter("id", item.id)]
+
+            for k, v in item.fields.items():
+
+                if is_acceptable_data_type(v):
+                    params.append(neo4j.Parameter(k, v))
+                    statements.append(
+                        "\nSET item.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
 
             queries.append(neo4j.Query(''.join(statements), params))
+
+        # Actions
+
+        for action in actions:
+
+            assert isinstance(action, Action)
+
+            if action.name == REL_ACTION_TYPE_VIEW:
+
+                template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                           "\nMERGE (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (session)-[r :`{REL}`]->(item)"
+
+                statements = [template.format(
+                    SESSION_LABEL=LABEL_SESSION,
+                    ITEM_LABEL=LABEL_ITEM,
+                    STORE_ID=action.tenant,
+                    REL=REL_ACTION_TYPE_VIEW
+                )]
+
+                for k in ("datetime",):
+
+                    statements.append(
+                        "\nSET r.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
+
+                params = [neo4j.Parameter("datetime", action.timestamp),
+                          neo4j.Parameter("item_id", action.item),
+                          neo4j.Parameter("session_id", action.session)]
+
+                queries.append(neo4j.Query(''.join(statements), params))
+
+            elif action.name == REL_ACTION_TYPE_ADD_TO_CART:
+
+                # (item)-[r]-(session)
+
+                template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                           "\nMERGE (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (session)-[r :`{REL}`]->(item)"
+
+                statements = [template.format(
+                    SESSION_LABEL=LABEL_SESSION,
+                    ITEM_LABEL=LABEL_ITEM,
+                    STORE_ID=action.tenant,
+                    REL=REL_ACTION_TYPE_ADD_TO_CART
+                )]
+
+                for k in ("datetime", "qty"):
+
+                    statements.append(
+                        "\nSET r.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
+
+                params = [neo4j.Parameter("datetime", action.timestamp),
+                          neo4j.Parameter("item_id", action.item),
+                          neo4j.Parameter("session_id", action.session),
+                          neo4j.Parameter("qty", action.fields["qty"])]
+
+                queries.append(neo4j.Query(''.join(statements), params))
+
+            elif action.name == REL_ACTION_TYPE_BUY:
+
+                # (item)-[r]-(session)
+
+                template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                           "\nMERGE (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (session)-[r :`{REL}`]->(item)"
+
+                statements = [template.format(
+                    SESSION_LABEL=LABEL_SESSION,
+                    ITEM_LABEL=LABEL_ITEM,
+                    STORE_ID=action.tenant,
+                    REL=REL_ACTION_TYPE_BUY
+                )]
+
+                for k in ("datetime", "qty", "sub_total"):
+
+                    statements.append(
+                        "\nSET r.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
+
+                params = [neo4j.Parameter("item_id", action.item),
+                          neo4j.Parameter("session_id", action.session),
+                          neo4j.Parameter("datetime", action.timestamp),
+                          neo4j.Parameter("qty", action.fields["qty"]),
+                          neo4j.Parameter("sub_total", action.fields["sub_total"])]
+
+                queries.append(neo4j.Query(''.join(statements), params))
+
+            elif action.name == REL_ACTION_TYPE_STARTED_CHECKOUT:
+
+                template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{id: {{session_id}} }})" \
+                           "\nMERGE (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{item_id}} }})" \
+                           "\nMERGE (session)-[r :`{REL}`]->(item)"
+
+                statements = [template.format(
+                    SESSION_LABEL=LABEL_SESSION,
+                    ITEM_LABEL=LABEL_ITEM,
+                    STORE_ID=action.tenant,
+                    REL=REL_ACTION_TYPE_STARTED_CHECKOUT
+                )]
+
+                for k in ("datetime",):
+
+                    statements.append(
+                        "\nSET r.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
+
+                params = [neo4j.Parameter("item_id", action.item),
+                          neo4j.Parameter("session_id", action.session),
+                          neo4j.Parameter("datetime", action.timestamp)]
+
+                queries.append(neo4j.Query(''.join(statements), params))
+
+            elif action.name == REL_ACTION_TYPE_SEARCH:
+
+                template = "MERGE (session :`{SESSION_LABEL}` :`{STORE_ID}` {{ id: {{session_id}} }})" \
+                           "\nMERGE (search :`{SEARCH_LABEL}` :`{STORE_ID}` {{ keywords: {{keywords}} }})" \
+                           "\nMERGE (session)-[r :`{REL}`]->(search)"
+
+                statements = [template.format(
+                    SEARCH_LABEL=LABEL_SEARCH,
+                    SESSION_LABEL=LABEL_SESSION,
+                    STORE_ID=action.tenant,
+                    REL=REL_ACTION_TYPE_SEARCH
+                )]
+
+                for k in ("datetime",):
+
+                    statements.append(
+                        "\nSET r.{0} = {{ {0} }}".format(
+                            k
+                        )
+                    )
+
+                params = [neo4j.Parameter("session_id", action.session),
+                          neo4j.Parameter("datetime", action.timestamp),
+                          neo4j.Parameter("keywords", action.fields["keywords"])]
+
+                queries.append(neo4j.Query(''.join(statements), params))
+
+            elif action.name in (REL_ACTION_TYPE_CHECK_DELETE_ITEM, REL_ACTION_TYPE_DELETE_ITEM):
+
+                template = "MATCH (item :`{ITEM_LABEL}` :`{STORE_ID}` {{id: {{id}} }})" \
+                           "\nOPTIONAL MATCH (item)-[r]-(x)" \
+                           "\nDELETE r, item"
+
+                statements = [template.format(
+                    ITEM_LABEL=LABEL_ITEM,
+                    STORE_ID=action.tenant
+                )]
+
+                params = [neo4j.Parameter("id", action.item)]
+
+                queries.append(neo4j.Query(''.join(statements), params))
 
         return queries
 
     @classmethod
-    def execute_batch_transactions(cls, queries):
+    def batch_import(cls, queries):
 
         try:
 
@@ -456,54 +332,54 @@ class Neo4jEventHandler(object):
             Logger.error(exc)
 
             raise errors.ProcessFailure("Socket timeout")
-
-    @classmethod
-    def neo4j_shell_import(cls, queries):
-
-        if os.name == 'posix':
-            for path in PATHS:
-                os.environ["PATH"] = ''.join([os.environ["PATH"], os.pathsep, path])
-
-        neo4j_shell_path = shutil.which(NEO4J_SHELL)
-
-        if not neo4j_shell_path:
-            raise ChildProcessError("Couldn't find {0} executable path".format(NEO4J_SHELL))
-
-        # use random uuid for file name. avoid race conditions
-        file_name = str(uuid.uuid4())
-        tmp_folder = tempfile.gettempdir()
-        file_path = os.path.join(tmp_folder, file_name)
-
-        Logger.info("Writing queries to file `{0}`".format(file_path))
-
-        with open(file_path, "w", encoding="UTF-8") as f:
-
-            for query in queries:
-
-                for k, v in query.parameters.items():
-                    if type(v) is str:
-                        value = repr(v).strip("'")
-                        s = u"\nexport {0}={1}\n".format(k, value)
-                    else:
-                        s = u"\nexport {0}={1}\n".format(k, v)
-                    f.write(s)
-
-                s = u"{0};\n".format(query.query)
-                f.write(s)
-
-        p = subprocess.Popen([neo4j_shell_path, "-file", file_path], stdout=subprocess.PIPE, shell=False)
-
-        output, err = p.communicate()
-
-        io.delete_file(file_path)
-
-        if p.returncode == 1:
-
-            msg = "Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, output)
-            Logger.error(msg)
-
-            raise ChildProcessError(msg)
-
-        elif p.returncode == 0:
-
-            Logger.info("Successfully executed [{0}] queries".format(len(queries)))
+    #
+    # @classmethod
+    # def neo4j_shell_import(cls, queries):
+    #
+    #     if os.name == 'posix':
+    #         for path in PATHS:
+    #             os.environ["PATH"] = ''.join([os.environ["PATH"], os.pathsep, path])
+    #
+    #     neo4j_shell_path = shutil.which(NEO4J_SHELL)
+    #
+    #     if not neo4j_shell_path:
+    #         raise ChildProcessError("Couldn't find {0} executable path".format(NEO4J_SHELL))
+    #
+    #     # use random uuid for file name. avoid race conditions
+    #     file_name = str(uuid.uuid4())
+    #     tmp_folder = tempfile.gettempdir()
+    #     file_path = os.path.join(tmp_folder, file_name)
+    #
+    #     Logger.info("Writing queries to file `{0}`".format(file_path))
+    #
+    #     with open(file_path, "w", encoding="UTF-8") as f:
+    #
+    #         for query in queries:
+    #
+    #             for k, v in query.parameters.items():
+    #                 if type(v) is str:
+    #                     value = repr(v).strip("'")
+    #                     s = u"\nexport {0}={1}\n".format(k, value)
+    #                 else:
+    #                     s = u"\nexport {0}={1}\n".format(k, v)
+    #                 f.write(s)
+    #
+    #             s = u"{0};\n".format(query.query)
+    #             f.write(s)
+    #
+    #     p = subprocess.Popen([neo4j_shell_path, "-file", file_path], stdout=subprocess.PIPE, shell=False)
+    #
+    #     output, err = p.communicate()
+    #
+    #     io.delete_file(file_path)
+    #
+    #     if p.returncode == 1:
+    #
+    #         msg = "Error importing data via {0}:\n\t{1}".format(NEO4J_SHELL, output)
+    #         Logger.error(msg)
+    #
+    #         raise ChildProcessError(msg)
+    #
+    #     elif p.returncode == 0:
+    #
+    #         Logger.info("Successfully executed [{0}] queries".format(len(queries)))

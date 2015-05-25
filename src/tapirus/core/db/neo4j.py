@@ -13,7 +13,7 @@ from tapirus.core import errors
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
 
-#note: do not reuse connections: timeout, re-connection slows down everything for some reason
+# note: do not reuse connections: timeout, re-connection slows down everything for some reason
 NEO_VAR_NAME_LABEL_REGEX = "^[a-zA-Z_][a-zA-Z0-9_]*$"
 re.compile(NEO_VAR_NAME_LABEL_REGEX)
 
@@ -290,6 +290,10 @@ class Parameter(object):
     def __hash__(self):
 
         return hash(self.__repr__())
+
+    def __str__(self):
+
+        return self.__repr__()
 
 
 class Query(object):

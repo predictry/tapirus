@@ -8,11 +8,12 @@ from tapirus.model.constants import *
 
 class Session(object):
 
-    def __init__(self, id, tenant, timestamp):
+    def __init__(self, id, tenant, timestamp, fields):
 
         self.id = id
         self.tenant = tenant
         self.timestamp = timestamp
+        self.fields = fields
 
     def __key(self):
 
@@ -46,11 +47,12 @@ class Session(object):
 
 class User(object):
 
-    def __init__(self, id, tenant, timestamp):
+    def __init__(self, id, tenant, timestamp, fields):
 
         self.id = id
         self.tenant = tenant
         self.timestamp = timestamp
+        self.fields = fields
 
     def __key(self):
 
@@ -85,11 +87,12 @@ class User(object):
 
 class Agent(object):
 
-    def __init__(self, id, tenant, timestamp):
+    def __init__(self, id, tenant, timestamp, fields):
 
         self.id = id
         self.tenant = tenant
         self.timestamp = timestamp
+        self.fields = fields
 
     def __key(self):
 
@@ -124,7 +127,7 @@ class Agent(object):
 
 class Item(object):
 
-    def __init__(self, id, tenant, timestamp, fields={}):
+    def __init__(self, id, tenant, timestamp, fields):
 
         self.id = id
         self.tenant = tenant
@@ -209,9 +212,10 @@ class Action(object):
 
 class Tenant(object):
 
-    def __init__(self, name, api_key):
+    def __init__(self, name, api_key, fields):
         self.name = name
         self.api_key = api_key
+        self.fields = fields
 
     def __key(self):
 
@@ -271,9 +275,11 @@ def is_valid_schema(data):
     :return:
     """
 
-    # todo: log any missing data
+    # TODO: log any missing data
 
     if SCHEMA_KEY_SESSION_ID not in data:
+        return False
+    if type(data[SCHEMA_KEY_SESSION_ID]) is not str:
         return False
     if len(data[SCHEMA_KEY_SESSION_ID]) < 1:
         return False
@@ -281,6 +287,8 @@ def is_valid_schema(data):
         return False
 
     if SCHEMA_KEY_TENANT_ID not in data:
+        return False
+    if type(data[SCHEMA_KEY_TENANT_ID]) is not str:
         return False
     if len(data[SCHEMA_KEY_TENANT_ID]) < 1:
         return False
@@ -292,6 +300,8 @@ def is_valid_schema(data):
 
     if SCHEMA_KEY_NAME not in data[SCHEMA_KEY_ACTION]:
         return False
+    if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]) is not str:
+        return False
     if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]) < 1:
         return False
     if not _is_valid_data(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME]):
@@ -301,6 +311,8 @@ def is_valid_schema(data):
 
         if SCHEMA_KEY_USER_ID not in data[SCHEMA_KEY_USER]:
             return False
+        if type(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]) is not str:
+            return False
         if len(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]) < 1:
             return False
         if not _is_valid_data(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]):
@@ -309,6 +321,8 @@ def is_valid_schema(data):
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_SEARCH.lower():
 
         if SCHEMA_KEY_KEYWORDS not in data[SCHEMA_KEY_ACTION]:
+            return False
+        if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) is not str:
             return False
         if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
             return False
@@ -328,6 +342,8 @@ def is_valid_schema(data):
 
             if SCHEMA_KEY_ITEM_ID not in item:
                 return False
+            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
+                return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
             if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
@@ -339,10 +355,14 @@ def is_valid_schema(data):
                     return False
 
                 if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
                         return False
 
                 if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
@@ -361,6 +381,8 @@ def is_valid_schema(data):
 
             if SCHEMA_KEY_ITEM_ID not in item:
                 return False
+            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
+                return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
             if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
@@ -375,10 +397,14 @@ def is_valid_schema(data):
                     return False
 
                 if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
                         return False
 
                 if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
@@ -397,6 +423,8 @@ def is_valid_schema(data):
 
             if SCHEMA_KEY_ITEM_ID not in item:
                 return False
+            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
+                return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
             if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
@@ -408,10 +436,14 @@ def is_valid_schema(data):
                     return False
 
                 if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
                         return False
 
                 if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
@@ -430,6 +462,8 @@ def is_valid_schema(data):
 
             if SCHEMA_KEY_ITEM_ID not in item:
                 return False
+            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
+                return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
             if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
@@ -447,16 +481,22 @@ def is_valid_schema(data):
                     return False
 
                 if SCHEMA_KEY_COUNTRY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_COUNTRY]) < 1:
                         return False
 
                 if SCHEMA_KEY_CITY in item[SCHEMA_KEY_LOCATION]:
+                    if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) is not str:
+                        return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower():
 
         if SCHEMA_KEY_ITEM_ID not in data:
+            return False
+        if type(data[SCHEMA_KEY_ITEM_ID]) is not str:
             return False
         if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
             return False
@@ -477,6 +517,8 @@ def is_valid_schema(data):
                 return False
 
             if SCHEMA_KEY_ITEM_ID not in item:
+                return False
+            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
                 return False
             if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
                 return False
@@ -501,17 +543,17 @@ def parse_entities_from_data(data):
     actions = []
 
     # Session
-    session = Session(id=data[SCHEMA_KEY_SESSION_ID], tenant=tenant, timestamp=dt)
+    session = Session(id=data[SCHEMA_KEY_SESSION_ID], tenant=tenant, timestamp=dt, fields={})
 
     # User
     if SCHEMA_KEY_USER in data:
-        user = User(id=data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID], tenant=tenant, timestamp=dt)
+        user = User(id=data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID], tenant=tenant, timestamp=dt, fields={})
     else:
-        user = User(id=data[SCHEMA_KEY_SESSION_ID], tenant=tenant, timestamp=dt)
+        user = User(id=data[SCHEMA_KEY_SESSION_ID], tenant=tenant, timestamp=dt, fields={})
 
     # Agent
     if SCHEMA_KEY_AGENT_ID in data:
-        agent = Agent(id=data[SCHEMA_KEY_AGENT_ID], tenant=tenant, timestamp=dt)
+        agent = Agent(id=data[SCHEMA_KEY_AGENT_ID], tenant=tenant, timestamp=dt, fields={})
 
     # Actions
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_VIEW:
@@ -519,7 +561,7 @@ def parse_entities_from_data(data):
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
-            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt)
+            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt, fields={})
 
             fields = {}
             for k, v in item_data.items():
@@ -543,7 +585,7 @@ def parse_entities_from_data(data):
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
-            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt)
+            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt, fields={})
 
             items.add(item)
 
@@ -558,7 +600,7 @@ def parse_entities_from_data(data):
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
-            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt)
+            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt, fields={})
 
             items.add(item)
 
@@ -574,7 +616,7 @@ def parse_entities_from_data(data):
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
-            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt)
+            item = Item(id=item_data[SCHEMA_KEY_ITEM_ID], tenant=tenant, timestamp=dt, fields={})
 
             items.add(item)
 
