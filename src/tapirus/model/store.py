@@ -1,5 +1,3 @@
-
-
 from tapirus.model.constants import *
 
 

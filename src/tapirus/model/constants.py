@@ -1,5 +1,3 @@
-
-
 SCHEMA_BASE = "Base"
 
 SCHEMA_KEY_SESSION_ID = "session_id"

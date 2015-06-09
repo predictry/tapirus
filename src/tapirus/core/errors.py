@@ -1,5 +1,3 @@
-
-
 class InvalidRelationshipTypeError(Exception):
     """
     Relationship type is not valid in Neo4j

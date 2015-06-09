@@ -1,4 +1,3 @@
-
 import boto.sqs
 from boto.sqs.message import Message
 from boto.s3.connection import S3Connection

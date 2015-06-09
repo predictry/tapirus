@@ -1,4 +1,3 @@
-
 import predictionio
 
 from tapirus.model import constants

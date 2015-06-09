@@ -1,5 +1,3 @@
-
-
 def minify(payload):
 
     if type(payload) is list:
