@@ -1,4 +1,3 @@
-__author__ = 'guilherme'
 
 
 from tapirus.model.constants import *

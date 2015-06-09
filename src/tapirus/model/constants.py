@@ -1,4 +1,3 @@
-__author__ = 'guilherme'
 
 
 SCHEMA_BASE = "Base"

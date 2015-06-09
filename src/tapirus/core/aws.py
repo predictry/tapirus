@@ -1,4 +1,3 @@
-__author__ = 'guilherme'
 
 import boto.sqs
 from boto.sqs.message import Message

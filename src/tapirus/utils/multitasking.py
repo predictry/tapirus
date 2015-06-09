@@ -1,4 +1,3 @@
-__author__ = 'guilherme'
 
 import threading
 import multiprocessing.context
