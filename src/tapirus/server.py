@@ -1,5 +1,4 @@
 import urllib.parse
-import datetime
 
 from flask import Flask, Response
 from flask import jsonify
@@ -7,26 +6,10 @@ import flask
 from webargs import Arg
 from webargs.flaskparser import use_args
 
-from tapirus.entities import Record
+from tapirus.utils.io import parse_date, validate_hour, validate_date
 from tapirus.dao import RecordDAO
 
-
 app = Flask(__name__)
-
-
-def validate_date(d):
-    try:
-        datetime.datetime.strptime(d, "%Y-%m-%d")
-        return True
-    except ValueError:
-        return False
-
-def validate_hour(h):
-    try:
-        datetime.datetime.strptime(h, "%H")
-        return True
-    except ValueError:
-        return False
 
 
 def list_endpoints():
@@ -95,9 +78,9 @@ def records(args):
 
         return jsonify(dict(message=message)), 400
 
-    data = Record(-1, date=date, hour=hour, last_updated=str(datetime.datetime.now()), status=None, uri=None).properties
+    record = RecordDAO.read(parse_date(date), hour)
 
-    return jsonify(data), 404
+    return jsonify(record), 404
 
 
 @app.route("/records/interval", methods=["GET"])
@@ -130,7 +113,12 @@ def interval_records(args):
 
         return jsonify(dict(message="Invalid end hour. Format: HH, [0-23]")), 400
 
-    records = [x.properties for x in RecordDAO.get_records(start_date, start_hour, end_date, end_hour)]
+    records = [x.properties for x in RecordDAO.get_records(
+        parse_date(start_date),
+        start_hour,
+        parse_date(end_date),
+        end_hour
+    )]
 
     data = dict(records=records, count=len(records))
 

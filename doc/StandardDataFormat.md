@@ -5,40 +5,40 @@ This doc defines a standard data format for events, entities in Predictry's comp
 ###Session
 ```JSON
 {
-	id: string,
-	tenant: string,
-	timestamp: string [ISO8601],
-	fields: <k: string, v: string>
+	"id: "string",
+	"tenant": "string",
+	"timestamp": "string [ISO8601]",
+	"fields": "<k: string, v: string>"
 }
 ```
 
 ###User
 ```JSON
 {
-	id: string,
-	tenant: string,
-	timestamp: string [ISO8601],
-	fields: <k: string, v: string>
+	"id": "string",
+	"tenant": "string",
+	"timestamp": "string [ISO8601]",
+	"fields": "<k: string, v: string>"
 }
 ```
 
 ###Agent
 ```JSON
 {
-	id: string,
-	tenant: string,
-	timestamp: string [ISO8601],
-	fields: <k: string, v: string>
+	"id": "string",
+	"tenant": "string",
+	"timestamp": "string [ISO8601]",
+	"fields": "<k: string, v: string>"
 }
 ```
 
 ###Item
 ```JSON
 {
-	id: string,
-	tenant: string,
-	timestamp: string [ISO8601],
-	fields: <k: string, v: string>
+	"id": "string",
+	"tenant": "string",
+	"timestamp": "string [ISO8601]",
+	"fields": "<k: string, v: string>"
 }
 ```
 
@@ -46,14 +46,14 @@ This doc defines a standard data format for events, entities in Predictry's comp
 ###Action
 ```JSON
 {
-	name: string,
-	tenant: string,
-	user: string,
-	agent: string,
-	session: string,
-	item: string,
-	timestamp: string [ISO8601],
-	fields: <k: string, v: string>
+	"name": "string",
+	"tenant": "string",
+	"user": "string",
+	"agent": "string",
+	"session": "string",
+	"item": "string",
+	"timestamp": "string [ISO8601]",
+	"fields": "<k: string, v: string>"
 }
 ```
 
@@ -92,7 +92,7 @@ None
 **Fields**:
 ```JSON
 {
-	quantity: int
+	"quantity": "int"
 }
 ```
 
@@ -108,8 +108,8 @@ None
 **Fields**:
 ```JSON
 {
-	quantity: int,
-	sub_total: float
+	"quantity": "int",
+	"sub_total": "float"
 }
 ```
 
@@ -120,7 +120,7 @@ None
 **Fields**:
 ```JSON
 {
-	keywords: string
+	"keywords": "string"
 }
 ```
 

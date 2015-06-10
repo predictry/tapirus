@@ -1,6 +1,7 @@
 import unittest
 
-from tapirus.server import validate_date, validate_hour
+from tapirus.server import validate_date
+from tapirus.utils.io import validate_hour, validate_date
 
 
 class ValidationTestCases(unittest.TestCase):
