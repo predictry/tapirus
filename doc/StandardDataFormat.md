@@ -5,7 +5,7 @@ This doc defines a standard data format for events, entities in Predictry's comp
 ###Session
 ```JSON
 {
-	"id: "string",
+	"id": "string",
 	"tenant": "string",
 	"timestamp": "string [ISO8601]",
 	"fields": "<k: string, v: string>"

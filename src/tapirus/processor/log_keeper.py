@@ -4,7 +4,7 @@ import requests
 import requests.exceptions
 from tapirus.utils.logger import Logger
 
-LOG_KEEPER_FILE_NAME = "log.keeper.list.db"
+LOG_KEEPER_FILE_NAME = "data/log.keeper.list.db"
 LOG_KEEPER_DB = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../{0}".format(LOG_KEEPER_FILE_NAME))
 
 

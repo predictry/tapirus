@@ -1,83 +1,148 @@
 import boto.sqs
 from boto.sqs.message import Message
-from boto.s3.connection import S3Connection
+from boto.s3.connection import S3Connection, Bucket
 from boto.s3.key import Key
 from boto.exception import S3ResponseError
 
+from tapirus.core import errors
 from tapirus.utils.logger import Logger
 
 
-def download_file_from_s3(s3_key, file_path):
-    """
+class S3(object):
 
-    :param s3_key:
-    :param file_path:
-    :return:
-    """
+    @classmethod
+    def list_bucket_keys(cls, bucketname, pattern=""):
 
-    conn = S3Connection()
+        conn = S3Connection()
 
-    bucket = conn.get_bucket(s3_key.split("/")[0])
+        bucket = conn.get_bucket(bucketname)
 
-    key = Key(bucket)
-    key.key = '/'.join(s3_key.split("/")[1:])
+        rs = bucket.list(prefix=pattern)
 
-    Logger.info("Downloading file from S3: {0}".format(s3_key))
+        return [key.name for key in rs]
 
-    try:
-        key.get_contents_to_filename(file_path)
-    except boto.exception.S3ResponseError as exc:
+    @classmethod
+    def list_buckets(cls):
 
-        Logger.error(exc)
+        conn = S3Connection()
 
-        return file_path, exc.status
-    else:
+        buckets = conn.get_all_buckets()
 
-        return file_path, 200
+        return [b.name for b in buckets]
+
+    @classmethod
+    def download_file(cls, s3_key, file_path):
+        """
+
+        :param s3_key:
+        :param file_path:
+        :return:
+        """
+
+        conn = S3Connection()
+
+        bucket = conn.get_bucket(s3_key.split('/')[0])
+
+        key = Key(bucket)
+        key.key = '/'.join(s3_key.split('/')[1:])
+
+        Logger.info("Downloading file from S3: {0}".format(s3_key))
+
+        try:
+            key.get_contents_to_filename(file_path)
+        except boto.exception.S3ResponseError as exc:
+
+            Logger.error(exc)
+
+            return file_path, exc.status
+        else:
+
+            return file_path, 200
+
+    @classmethod
+    def upload_file(cls, s3_key, file_path):
+
+        conn = S3Connection()
+
+        bucket = conn.get_bucket(s3_key.split('/')[0])
+
+        key = Key(bucket)
+        key.key = '/'.join(s3_key.split('/')[1:])
+
+        try:
+            key.set_contents_from_filename(file_path)
+        except boto.exception.S3ResponseError as exc:
+
+            Logger.error(exc)
+
+            return file_path, exc.status
+
+        else:
+
+            return file_path, 200
+
+    @classmethod
+    def exists(cls, s3_key):
+
+        conn = S3Connection()
+        bucket = conn.get_bucket(s3_key.split('/')[0])
+
+        key = Key(bucket)
+        key.key = '/'.join(s3_key.split('/')[1:])
+
+        try:
+            return key.exists()
+        except boto.exception.S3ResponseError as exc:
+
+            Logger.error(exc)
+            raise errors.ProcessFailure
 
 
-def read_queue(region, queue_name, visibility_timeout, count=1):
-    """
+class SQS(object):
 
-    :return:
-    """
+    @classmethod
+    def read(cls, region, queue_name, visibility_timeout, count=1):
+        """
 
-    conn = boto.sqs.connect_to_region(region)
+        :return:
+        """
 
-    queue = conn.get_queue(queue_name)
-    vs_timeout = int(visibility_timeout)
+        conn = boto.sqs.connect_to_region(region)
 
-    messages = []
+        queue = conn.get_queue(queue_name)
+        vs_timeout = int(visibility_timeout)
 
-    if queue:
-        rs = queue.get_messages(count, visibility_timeout=vs_timeout)
+        messages = []
 
-        for msg in rs:
-            messages.append(msg)
+        if queue:
+            rs = queue.get_messages(count, visibility_timeout=vs_timeout)
 
-    else:
-        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(queue_name, region))
+            for msg in rs:
+                messages.append(msg)
 
-    return messages
+        else:
+            Logger.error("Couldn't read from queue '{0}'@'{1}'".format(queue_name, region))
 
+        return messages
 
-def delete_message_from_queue(region, queue_name, msg):
-    """
+    @classmethod
+    def delete_message(cls, region, queue_name, msg):
+        """
 
-    :param msg:
-    :return:
-    """
+        :param msg:
+        :return:
+        """
 
-    conn = boto.sqs.connect_to_region(region)
+        conn = boto.sqs.connect_to_region(region)
 
-    queue = conn.get_queue(queue_name)
+        queue = conn.get_queue(queue_name)
 
-    if queue:
-        rs = queue.delete_message(msg)
+        if queue:
+            rs = queue.delete_message(msg)
 
-        return rs
+            return rs
 
-    else:
-        Logger.error("Couldn't read from queue '{0}'@'{1}'".format(queue_name, region))
+        else:
+            Logger.error("Couldn't read from queue '{0}'@'{1}'".format(queue_name, region))
 
-        return False
+            return False
