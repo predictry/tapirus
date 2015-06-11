@@ -7,20 +7,24 @@ from tapirus.dao import RecordDAO
 
 class RecordDAOTestCases(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        # def setUp(self):
 
         start = datetime.datetime(year=2012, month=1, day=1, hour=0)
 
-        for i in range(1, 24*30):
+        for i in range(1, 24):
 
-            date = start + datetime.timedelta(hours=i)
+            timestamp = start + datetime.timedelta(hours=1)
 
-            record = Record(None, date=date.date(), hour=date.hour, last_updated=None,
+            record = Record(None, timestamp=timestamp, last_updated=None,
                             status="PENDING", uri=None)
 
             RecordDAO.create(record)
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
+        # def tearDown(self):
 
         while RecordDAO.count() > 0:
 
@@ -34,17 +38,17 @@ class RecordDAOTestCases(unittest.TestCase):
         start = datetime.datetime(year=2012, month=1, day=1, hour=0)
         end = start + datetime.timedelta(hours=12)
 
-        records = RecordDAO.get_records(start.date(), start.hour, end.date(), end.hour)
+        records = RecordDAO.get_records(start_timestamp=start, end_timestamp=end)
 
-        self.assertEqual(len(records), 12)
+        self.assertEqual(len([x for x in records]), 12)
 
     def test_should_read_record_for_specific_date_hour(self):
 
-        date = datetime.datetime(year=2012, month=1, day=14, hour=7)
+        timestamp = datetime.datetime(year=2012, month=1, day=1, hour=7)
 
-        record = RecordDAO.read(date.date(), date.hour)
+        record = RecordDAO.read(timestamp=timestamp)
 
         self.assertIsInstance(record, Record)
-        self.assertEqual(record.date, date.date())
-        self.assertEqual(record.hour, date.hour)
+        self.assertEqual(record.timestamp.date(), timestamp.date())
+        self.assertEqual(record.timestamp.hour, timestamp.hour)
         self.assertEqual(record.status, "PENDING")

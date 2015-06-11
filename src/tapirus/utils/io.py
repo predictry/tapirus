@@ -30,6 +30,17 @@ def parse_hour(h):
         raise
 
 
+def parse_timestamp(date, hour):
+
+    string = '-'.join([date, hour])
+
+    try:
+
+        return datetime.datetime.strptime(string, "%Y-%m-%d-%H")
+    except ValueError:
+        raise
+
+
 def validate_hour(h):
     try:
         datetime.datetime.strptime(h, "%H")

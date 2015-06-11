@@ -116,7 +116,13 @@ class DownloadLogsTask(luigi.Task):
         record.status = constants.STATUS_DOWNLOADED
 
         assert isinstance(record, Record)
-        RecordDAO.update(record)
+        r = RecordDAO.update(record)
+
+
+class ParseLogs(luigi.Task):
+
+    date = luigi.DateParameter()
+    hour = luigi.IntParameter()
 
 
 # class HarvestLogsTask(luigi.Task):

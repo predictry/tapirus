@@ -1,10 +1,9 @@
 class Record(object):
 
-    def __init__(self, id, date, hour, last_updated, status, uri):
+    def __init__(self, id, timestamp, last_updated, status, uri):
 
         self.id = id
-        self.date = date
-        self.hour = hour
+        self.timestamp = timestamp
         self.last_updated = last_updated
         self.status = status
         self.uri = uri
@@ -16,8 +15,8 @@ class Record(object):
 
     def __str__(self):
 
-        return "Record(id={0}, date={1}, hour={2}, last_updated={3}, status={4}, uri={5})".format(
-            self.id, self.date, self.hour, self.last_updated, self.status, self.uri
+        return "Record(id={0}, timestamp={1}, last_updated={2}, status={3}, uri={4})".format(
+            self.id, self.timestamp, self.last_updated, self.status, self.uri
         )
 
 
