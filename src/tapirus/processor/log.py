@@ -14,7 +14,7 @@ LOG_FILE_COLUMN_SEPARATOR = "\t"
 UNSENT, HTTP_OK, HTTP_NOT_MODIFIED = 0, 200, 304
 
 
-def process_log(file_name):
+def process_log(file_name, errors):
     """
 
     :param file_name:
@@ -23,6 +23,8 @@ def process_log(file_name):
 
     gz_fh = gzip.open(file_name)
     utf8_codec = codecs.getreader("UTF-8")
+
+    assert isinstance(errors, list)
 
     with utf8_codec(gz_fh) as fp:
         """
@@ -88,6 +90,8 @@ def process_log(file_name):
 
                             failed_count += 1
                             line_index += 1
+
+                            errors.append(e)
 
                             continue
 

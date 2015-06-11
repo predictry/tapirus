@@ -241,7 +241,7 @@ class LogFileDAO(object):
             raise
         else:
 
-            return LogFile(instance.id, instance.record, instance.filepath)
+            return LogFile(id=instance.id, record=instance.record, filepath=instance.filepath)
         finally:
             session.close()
 
@@ -250,11 +250,18 @@ class LogFileDAO(object):
 
         session = _start_session()
 
-        logfiles = session.query(_LogFileORM).filter(
-            _LogFileORM.record == record_id
-        )
+        try:
 
-        return [LogFile(id=x.id, record=x.record, filepath=x.filepath) for x in logfiles]
+            logfiles = session.query(_LogFileORM).filter(
+                _LogFileORM.record == record_id
+            ).all()
+
+            for logfile in logfiles:
+
+                yield LogFile(id=logfile.id, record=logfile.record, filepath=logfile.filepath)
+
+        finally:
+            session.close()
 
     @classmethod
     def list(cls, skip, limit):
