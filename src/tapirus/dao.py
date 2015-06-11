@@ -52,7 +52,8 @@ class _LogFileORM(_Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     record = Column(Integer, ForeignKey("records.id"), nullable=False)
-    filepath = Column(String, nullable=False)
+    log = Column(String, unique=True)
+    filepath = Column(String, nullable=True)
 
 
 class RecordDAO(object):
@@ -217,12 +218,14 @@ class LogFileDAO(object):
         session = _start_session()
 
         try:
-            new_logfile_orm = _LogFileORM(id=logfile.id, record=logfile.record, filepath=logfile.filepath)
+            new_logfile_orm = _LogFileORM(id=logfile.id, record=logfile.record,
+                                          log=logfile.log, filepath=logfile.filepath)
 
             session.add(new_logfile_orm)
             session.commit()
 
-            return LogFile(id=new_logfile_orm.id, record=new_logfile_orm.record, filepath=new_logfile_orm.filepath)
+            return LogFile(id=new_logfile_orm.id, record=new_logfile_orm.record,
+                           log=new_logfile_orm.log, filepath=new_logfile_orm.filepath)
 
         finally:
             session.close()
@@ -241,7 +244,8 @@ class LogFileDAO(object):
             raise
         else:
 
-            return LogFile(id=instance.id, record=instance.record, filepath=instance.filepath)
+            return LogFile(id=instance.id, record=instance.record,
+                           log=instance.log, filepath=instance.filepath)
         finally:
             session.close()
 
@@ -258,7 +262,8 @@ class LogFileDAO(object):
 
             for logfile in logfiles:
 
-                yield LogFile(id=logfile.id, record=logfile.record, filepath=logfile.filepath)
+                yield LogFile(id=logfile.id, record=logfile.record,
+                              log=logfile.log, filepath=logfile.filepath)
 
         finally:
             session.close()
@@ -271,7 +276,8 @@ class LogFileDAO(object):
         try:
             logfiles = session.query(_LogFileORM).limit(limit).offset(skip)
 
-            return [LogFile(id=x.id, record=x.record, filepath=x.filepath) for x in logfiles]
+            return [LogFile(id=x.id, record=x.record,
+                            log=x.log, filepath=x.filepath) for x in logfiles]
 
         finally:
             session.close()
@@ -288,7 +294,7 @@ class LogFileDAO(object):
             session.commit()
 
             return LogFile(id=transient_instance.id, record=transient_instance.record,
-                           filepath=transient_instance.filepath)
+                           log=transient_instance.log, filepath=transient_instance.filepath)
         finally:
             session.close()
 

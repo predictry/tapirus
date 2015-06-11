@@ -22,8 +22,9 @@ class Record(object):
 
 class LogFile(object):
 
-    def __init__(self, id, record, filepath):
+    def __init__(self, id, record, log, filepath):
 
         self.id = id
         self.record = record
+        self.log = log
         self.filepath = filepath

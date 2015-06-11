@@ -92,7 +92,7 @@ class _ProcessedRecordTarget(luigi.Target):
             hour=hour
         )
 
-        uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}.json'.format(
+        uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
             bucket=bucket,
             folder=folder,
             year=year,
@@ -133,26 +133,42 @@ class DownloadRecordLogsTask(luigi.Task):
 
         record = RecordDAO.read(timestamp=timestamp)
 
+        # delete log files
+
+        logfiles = [x for x in LogFileDAO.get_logfiles(record.id)]
+
         for key in keys:
 
             s3_key = '/'.join([bucket, key])
-            filename = os.path.join(tempfile.gettempdir(), key)
+            filename = key.split('/')[-1]
+            filepath = os.path.join(tempfile.gettempdir(), filename)
 
-            if not os.path.exists(os.path.dirname(filename)):
+            if not os.path.exists(os.path.dirname(filepath)):
 
-                Logger.debug('Creating directory {0}'.format(os.path.dirname(filename)))
+                Logger.debug('Creating directory {0}'.format(os.path.dirname(filepath)))
 
-                os.makedirs(os.path.dirname(filename))
+                os.makedirs(os.path.dirname(filepath))
 
-            files.append(filename)
+            files.append(filepath)
 
             Logger.info('Downloading {0} from bucket {1}'.format(key, bucket))
 
-            aws.S3.download_file(s3_key, filename)
+            aws.S3.download_file(s3_key, filepath)
 
-            logfile = LogFile(id=None, record=record.id, filepath=filename)
+            if filename not in [x.log for x in logfiles]:
 
-            _ = LogFileDAO.create(logfile)
+                logfile = LogFile(id=None, record=record.id, log=filename, filepath=filepath)
+                _ = LogFileDAO.create(logfile)
+
+            else:
+
+                for logfile in logfiles:
+
+                    if logfile.log == filename:
+
+                        logfile.filepath = filepath
+                        _ = LogFileDAO.update(logfile)
+                        break
 
         if not files or not keys:
             record.status = constants.STATUS_NOT_FOUND
@@ -199,7 +215,7 @@ class ProcessRecordTask(luigi.Task):
         record.status = constants.STATUS_PENDING
         _ = RecordDAO.update(record)
 
-        logfiles = LogFileDAO.get_logfiles(record_id=record.id)
+        logfiles = [x for x in LogFileDAO.get_logfiles(record_id=record.id)]
 
         errors = []
 
@@ -280,36 +296,41 @@ class ProcessRecordTask(luigi.Task):
                 'processed': str(datetime.datetime.now())
             }
 
-            with open(sessionfp, 'r') as inp:
+            if os.path.exists(sessionfp):
+                with open(sessionfp, 'r') as inp:
 
-                for line in inp:
-                    session = json.loads(line, encoding='UTF-8')
+                    for line in inp:
+                        session = json.loads(line, encoding='UTF-8')
 
-                    sessions.append(session)
+                        sessions.append(session)
 
-            with open(agentfp, 'r') as inp:
+            if os.path.exists(agentfp):
+                with open(agentfp, 'r') as inp:
 
-                for line in inp:
-                    agent = json.loads(line, encoding='UTF-8')
-                    agents.append(agent)
+                    for line in inp:
+                        agent = json.loads(line, encoding='UTF-8')
+                        agents.append(agent)
 
-            with open(userfp, 'r') as inp:
+            if os.path.exists(userfp):
+                with open(userfp, 'r') as inp:
 
-                for line in inp:
-                    user = json.loads(line, encoding='UTF-8')
-                    users.append(user)
+                    for line in inp:
+                        user = json.loads(line, encoding='UTF-8')
+                        users.append(user)
 
-            with open(itemfp, 'r') as inp:
+            if os.path.exists(itemfp):
+                with open(itemfp, 'r') as inp:
 
-                for line in inp:
-                    item = json.loads(line, encoding='UTF-8')
-                    items.append(item)
+                    for line in inp:
+                        item = json.loads(line, encoding='UTF-8')
+                        items.append(item)
 
-            with open(itemfp, 'r') as inp:
+            if os.path.exists(actionfp):
+                with open(actionfp, 'r') as inp:
 
-                for line in inp:
-                    action = json.loads(line, encoding='UTF-8')
-                    actions.append(action)
+                    for line in inp:
+                        action = json.loads(line, encoding='UTF-8')
+                        actions.append(action)
 
             data = dict(
                 metadata=metadata,
@@ -340,7 +361,7 @@ class ProcessRecordTask(luigi.Task):
                 hour=hour
             )
 
-            uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}.json'.format(
+            uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
                 bucket=bucket,
                 folder=folder,
                 year=year,
@@ -367,6 +388,13 @@ class ProcessRecordTask(luigi.Task):
                 Logger.error('Error uploading file to S3: \n{0}'.format(status))
 
         upload(timestamp=timestamp, filepath=filename, record=record)
+
+        for logfile in logfiles:
+            assert isinstance(logfile, LogFile)
+            os.remove(logfile.filepath)
+
+            logfile.filepath = None
+            _ = LogFileDAO.update(logfile)
 
         for file in (sessionfp, agentfp, userfp, itemfp, actionfp, filename):
             if os.path.exists(file):
