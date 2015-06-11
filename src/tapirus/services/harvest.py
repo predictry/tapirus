@@ -42,7 +42,7 @@ class _DownloadedRecordTarget(luigi.Target):
 
             record = RecordDAO.read(timestamp=timestamp)
 
-            if record.status in (constants.STATUS_PENDING, constants.STATUS_NOT_FOUND):
+            if record.status in (constants.STATUS_PENDING,):
                 return False
 
         else:
@@ -76,32 +76,48 @@ class _ProcessedRecordTarget(luigi.Target):
             hour=self.hour
         )
 
-        s3 = config.get('s3')
-        bucket = s3['bucket']
-        folder = s3['records']
+        if RecordDAO.exists(timestamp=timestamp):
 
-        year = timestamp.date().year
-        month = '{:02d}'.format(timestamp.date().month)
-        day = '{:02d}'.format(timestamp.date().day)
-        hour = '{:02d}'.format(timestamp.hour)
+            record = RecordDAO.read(timestamp=timestamp)
 
-        filename = "{year}-{month}-{day}-{hour}.json".format(
-            year=year,
-            month=month,
-            day=day,
-            hour=hour
-        )
+            if record.uri:
 
-        uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
-            bucket=bucket,
-            folder=folder,
-            year=year,
-            month=month,
-            day=day,
-            file=filename
-        )
+                if aws.S3.exists(s3_key=record.uri):
 
-        return aws.S3.exists(s3_key=uri)
+                    return True
+                else:
+
+                    record.uri = None
+                    _ = RecordDAO.update(record)
+
+        return False
+        #
+        # s3 = config.get('s3')
+        # bucket = s3['bucket']
+        # folder = s3['records']
+        #
+        # year = timestamp.date().year
+        # month = '{:02d}'.format(timestamp.date().month)
+        # day = '{:02d}'.format(timestamp.date().day)
+        # hour = '{:02d}'.format(timestamp.hour)
+        #
+        # filename = "{year}-{month}-{day}-{hour}.json".format(
+        #     year=year,
+        #     month=month,
+        #     day=day,
+        #     hour=hour
+        # )
+        #
+        # uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
+        #     bucket=bucket,
+        #     folder=folder,
+        #     year=year,
+        #     month=month,
+        #     day=day,
+        #     file=filename
+        # )
+        #
+        # aws.S3.exists(s3_key=uri)
 
 
 class DownloadRecordLogsTask(luigi.Task):
@@ -131,6 +147,9 @@ class DownloadRecordLogsTask(luigi.Task):
         keys = aws.S3.list_bucket_keys(bucket, pattern)
         files = []
 
+        print(bucket)
+        print(pattern)
+
         record = RecordDAO.read(timestamp=timestamp)
 
         # delete log files
@@ -142,6 +161,9 @@ class DownloadRecordLogsTask(luigi.Task):
             s3_key = '/'.join([bucket, key])
             filename = key.split('/')[-1]
             filepath = os.path.join(tempfile.gettempdir(), filename)
+
+            print(filename)
+            print(filepath)
 
             if not os.path.exists(os.path.dirname(filepath)):
 
@@ -216,6 +238,13 @@ class ProcessRecordTask(luigi.Task):
         _ = RecordDAO.update(record)
 
         logfiles = [x for x in LogFileDAO.get_logfiles(record_id=record.id)]
+
+        if not logfiles:
+
+            record.status = constants.STATUS_NOT_FOUND
+            _ = RecordDAO.update(record)
+
+            return
 
         errors = []
 
