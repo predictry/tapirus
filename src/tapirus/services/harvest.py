@@ -196,12 +196,12 @@ class ProcessRecordTask(luigi.Task):
 
     def run(self):
 
-        # TODO: read log list
-        # TODO: for each file
-        # TODO: parse and append log entries (users, items, sessions, agents, events) into separate files
-        # TODO: combine output from files into a single file, and delete separate files
-        # TODO: upload file to S3
-        # TODO: delete separate files
+        # read log list
+        # for each file
+        # parse and append log entries (users, items, sessions, agents, events) into separate files
+        # combine output from files into a single file, and delete separate files
+        # upload file to S3
+        # delete separate files
 
         timestamp = datetime.datetime(
             year=self.date.year,
