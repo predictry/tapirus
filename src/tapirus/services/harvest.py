@@ -3,6 +3,7 @@ import os.path
 import tempfile
 import datetime
 import json
+import gzip
 
 import luigi
 import luigi.file
@@ -91,33 +92,6 @@ class _ProcessedRecordTarget(luigi.Target):
                     _ = RecordDAO.update(record)
 
         return False
-        #
-        # s3 = config.get('s3')
-        # bucket = s3['bucket']
-        # folder = s3['records']
-        #
-        # year = timestamp.date().year
-        # month = '{:02d}'.format(timestamp.date().month)
-        # day = '{:02d}'.format(timestamp.date().day)
-        # hour = '{:02d}'.format(timestamp.hour)
-        #
-        # filename = "{year}-{month}-{day}-{hour}.json".format(
-        #     year=year,
-        #     month=month,
-        #     day=day,
-        #     hour=hour
-        # )
-        #
-        # uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
-        #     bucket=bucket,
-        #     folder=folder,
-        #     year=year,
-        #     month=month,
-        #     day=day,
-        #     file=filename
-        # )
-        #
-        # aws.S3.exists(s3_key=uri)
 
 
 class DownloadRecordLogsTask(luigi.Task):
@@ -147,9 +121,6 @@ class DownloadRecordLogsTask(luigi.Task):
         keys = aws.S3.list_bucket_keys(bucket, pattern)
         files = []
 
-        print(bucket)
-        print(pattern)
-
         record = RecordDAO.read(timestamp=timestamp)
 
         # delete log files
@@ -161,9 +132,6 @@ class DownloadRecordLogsTask(luigi.Task):
             s3_key = '/'.join([bucket, key])
             filename = key.split('/')[-1]
             filepath = os.path.join(tempfile.gettempdir(), filename)
-
-            print(filename)
-            print(filepath)
 
             if not os.path.exists(os.path.dirname(filepath)):
 
@@ -222,6 +190,7 @@ class ProcessRecordTask(luigi.Task):
         # for each file
         # parse and append log entries (users, items, sessions, agents, events) into separate files
         # combine output from files into a single file, and delete separate files
+        # compress file
         # upload file to S3
         # delete separate files
 
@@ -383,12 +352,20 @@ class ProcessRecordTask(luigi.Task):
             day = '{:02d}'.format(timestamp.date().day)
             hour = '{:02d}'.format(timestamp.hour)
 
-            filename = "{year}-{month}-{day}-{hour}.json".format(
+            filename = "{year}-{month}-{day}-{hour}.gz".format(
                 year=year,
                 month=month,
                 day=day,
                 hour=hour
             )
+
+            dirname = os.path.dirname(filepath)
+
+            gzfile = os.path.join(dirname, filename)
+
+            with open(filepath, 'rb') as fp, gzip.open(gzfile, 'wb') as gz:
+
+                gz.writelines(fp)
 
             uri = '{bucket}/{folder}/{year}/{month}/{day}/{file}'.format(
                 bucket=bucket,
@@ -399,7 +376,9 @@ class ProcessRecordTask(luigi.Task):
                 file=filename
             )
 
-            r, status = aws.S3.upload_file(uri, filepath)
+            r, status = aws.S3.upload_file(uri, gzfile)
+
+            os.remove(gzfile)
 
             if status == 200:
                 record.status = constants.STATUS_PROCESSED
@@ -408,7 +387,7 @@ class ProcessRecordTask(luigi.Task):
 
                 Logger.info(
                     'Uploaded file {0} to {1}'.format(
-                        filepath, uri
+                        gzfile, uri
                     )
                 )
 
