@@ -160,6 +160,8 @@ class DownloadRecordLogsTask(luigi.Task):
                         _ = LogFileDAO.update(logfile)
                         break
 
+        record.last_updated = datetime.datetime.utcnow()
+
         if not files or not keys:
             record.status = constants.STATUS_NOT_FOUND
             Logger.info('No logs found for timestamp {0}-{1}'.format(self.date, self.hour))
@@ -203,7 +205,7 @@ class ProcessRecordTask(luigi.Task):
 
         record = RecordDAO.read(timestamp=timestamp)
 
-        record.status = constants.STATUS_PENDING
+        record.status = constants.STATUS_BUILDING
         _ = RecordDAO.update(record)
 
         logfiles = [x for x in LogFileDAO.get_logfiles(record_id=record.id)]

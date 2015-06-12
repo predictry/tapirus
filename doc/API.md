@@ -15,4 +15,12 @@ Legend:
 |/timeline|Information about available records|None|
 
 
+##Record Status
 
+|Flag|Description|Meaning|
+|-----|--------------|----------|
+|**NOT_FOUND**|Not Found|There are no archives for the Record.|
+|**PENDING**|Pending|Archives are being downloaded.|
+|**DOWNLOADED**|Downloaded|Archives have been downloaded.|
+|**BUILDING**|Building|Archives are being parsed, and compressed into one file.|
+|**PROCESSED**|Processed|Compressed file has been uploaded to repository, and a valid URI is available.|
