@@ -323,13 +323,13 @@ class Neo4jDataHandler(object):
             Logger.info("Sleeping for {0}s".format(nap_time))
             time.sleep(nap_time)
 
-            raise errors.ProcessFailure("Neo4j deadlock")
+            raise errors.ProcessFailureError("Neo4j deadlock")
 
         except http.SocketError as exc:
 
             Logger.error(exc)
 
-            raise errors.ProcessFailure("Socket timeout")
+            raise errors.ProcessFailureError("Socket timeout")
     #
     # @classmethod
     # def neo4j_shell_import(cls, queries):

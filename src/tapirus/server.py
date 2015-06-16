@@ -9,6 +9,9 @@ from webargs.flaskparser import use_args
 
 from tapirus.utils import io
 from tapirus.dao import RecordDAO
+from tapirus.usecases import RecordUseCases
+from tapirus import constants
+
 
 app = Flask(__name__)
 
@@ -34,7 +37,7 @@ def list_endpoints():
     return output
 
 
-@app.route('/help', methods=['GET'])
+@app.route('/help/', methods=['GET'])
 def endpoints():
     """List available endpoints."""
 
@@ -57,7 +60,7 @@ def endpoints():
     return Response(response=options, status=200, mimetype='text/plain')
 
 
-@app.route('/records', methods=['GET'])
+@app.route('/records/', methods=['GET'])
 @use_args({
     'date': Arg(str, required=True, location='query'),
     'hour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query')
@@ -81,7 +84,10 @@ def records(args):
 
     timestamp = io.parse_timestamp(date=date, hour=str(hour))
 
-    record = RecordDAO.read(timestamp=timestamp)
+    # TODO: run update record first
+    record = RecordUseCases.update_record_status(timestamp=timestamp)
+
+    # record = RecordDAO.read(timestamp=timestamp)
 
     data = {
         'date': str(record.timestamp.date()),
@@ -90,10 +96,12 @@ def records(args):
         'uri': record.uri
     }
 
-    return jsonify(data), 200
+    status = 404 if record.status == constants.STATUS_NOT_FOUND else 200
+
+    return jsonify(data), status
 
 
-@app.route('/records/interval', methods=['GET'])
+@app.route('/records/interval/', methods=['GET'])
 @use_args({
     'startDate': Arg(str, required=True, location='query'),
     'startHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
@@ -142,6 +150,18 @@ def interval_records(args):
 
         end_timestamp = start_timestamp + datetime.timedelta(seconds=60*60*(48-1))
 
+    # TODO: update record status first, for each hour
+
+    delta = datetime.timedelta(hours=1)
+
+    timestamp = start_timestamp
+
+    while timestamp <= end_timestamp:
+
+        _ = RecordUseCases.update_record_status(timestamp)
+
+        timestamp = timestamp + delta
+
     records = RecordDAO.get_records(start_timestamp=start_timestamp,
                                     end_timestamp=end_timestamp)
 
@@ -164,7 +184,7 @@ def interval_records(args):
     return jsonify(data), 200
 
 
-@app.route('/records/timeline', methods=['GET'])
+@app.route('/records/timeline/', methods=['GET'])
 @use_args({
     'limit': Arg(int, required=False, default=24, validate=lambda x: 24 > x >= 1,
                  error='Limit must be between 1 and 24', location='query'),
@@ -219,11 +239,7 @@ def timeline(args):
 @app.route('/', methods=['GET'])
 def index():
 
-    data = {
-        'message': 'Go!'
-    }
-
-    return jsonify(data), 200
+    return Response('Go!', status=200, mimetype='text/plain')
 
 
 @app.errorhandler(400)

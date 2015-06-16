@@ -95,7 +95,7 @@ class S3(object):
         except boto.exception.S3ResponseError as exc:
 
             Logger.error(exc)
-            raise errors.ProcessFailure
+            raise errors.ProcessFailureError
 
 
 class SQS(object):

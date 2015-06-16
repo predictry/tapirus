@@ -17,6 +17,11 @@ class ConfigurationError(Exception):
     pass
 
 
-class ProcessFailure(Exception):
+class ProcessFailureError(Exception):
+
+    pass
+
+
+class EntityNotFoundError(Exception):
 
     pass

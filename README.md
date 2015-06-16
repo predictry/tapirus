@@ -1,5 +1,5 @@
 #Tapirus 
-##Predictry's data collection & storage service
+##Predictry: Data Collection & Storage Service
 
-This application collects transaction data from logs and stores them on the graph data store.
-It solves provides an endpoint for data reads/writes.
+This application collects transaction data from logs and stores them on S3.
+It provides an [API](doc/API.md) for data retrieval.

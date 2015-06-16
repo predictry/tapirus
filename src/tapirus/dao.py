@@ -28,7 +28,10 @@ def _session():
 
     dbfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../{0}".format(db["filename"]))
 
-    _Engine = create_engine('sqlite:///{0}'.format(dbfile), echo=False)
+    # TODO: ?
+    _Engine = create_engine('sqlite:///{0}'.format(dbfile),
+                            connect_args={'check_same_thread': False},
+                            echo=False)
 
     _Base.metadata.create_all(_Engine)
 
