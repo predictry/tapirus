@@ -28,3 +28,13 @@ class LogFile(object):
         self.record = record
         self.log = log
         self.filepath = filepath
+
+
+class Error(object):
+
+    def __init__(self, id, code, data, timestamp):
+
+        self.id = id
+        self.code = code
+        self.data = data
+        self.timestamp = timestamp

@@ -84,7 +84,6 @@ def records(args):
 
     timestamp = io.parse_timestamp(date=date, hour=str(hour))
 
-    # TODO: run update record first
     record = RecordUseCases.update_record_status(timestamp=timestamp)
 
     # record = RecordDAO.read(timestamp=timestamp)
@@ -149,8 +148,6 @@ def interval_records(args):
     if time_delta.total_seconds() > 60*60*(48-1):
 
         end_timestamp = start_timestamp + datetime.timedelta(seconds=60*60*(48-1))
-
-    # TODO: update record status first, for each hour
 
     delta = datetime.timedelta(hours=1)
 

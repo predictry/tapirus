@@ -9,21 +9,6 @@ from tapirus import tasks
 
 class RecordUseCases(object):
 
-        # try and read record from db
-        #
-        # if no record found:
-        #     run workflow
-        #     return "wait"
-        # else:
-        #     if status is "not found":
-        #          return 404
-        #     elif status is one of ("pending", "building", "downloaded"):
-        #          if status was last updated more than `threshold period` ago:
-        #              run workflow
-        #          return "wait"
-        #     elif status is "processed":
-        #          return "Record file location"
-
     @staticmethod
     def update_record_status(timestamp):
 
@@ -34,7 +19,6 @@ class RecordUseCases(object):
 
             new_record = dao.RecordDAO.create(record)
 
-            # print('calling workflow...')
             tasks.run_workflow_for_record.delay(timestamp)
 
             return new_record
@@ -54,8 +38,6 @@ class RecordUseCases(object):
                 delta = datetime.datetime.utcnow() - record.last_updated
 
                 if delta.total_seconds() > threshold:
-
-                    # print('calling workflow... last update was too long ago... threshold {0}'.format(threshold))
 
                     tasks.run_workflow_for_record.delay(timestamp)
 

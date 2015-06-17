@@ -5,9 +5,9 @@ import os.path
 
 from redis import Redis
 from rq.decorators import job
-
 from tapirus.services import harvest
 from tapirus.utils.logger import Logger
+from tapirus.core import errors
 
 _redis_conn = Redis()
 
@@ -28,4 +28,32 @@ def run_workflow_for_record(timestamp):
                           "--date", str(timestamp.date()),
                           "--hour", str(timestamp.hour)])
 
-    return p.wait()
+    stdout, stderr = p.communicate()
+
+    if stderr:
+
+        Logger.error(stderr)
+
+        message = '{0} ({1}, {2}) failed'.format(
+            classname, str(timestamp.date()), timestamp.hour
+        )
+
+        raise errors.ProcessFailureError(
+            message
+        )
+
+    else:
+
+        Logger.info(stdout)
+
+        if p.returncode == 0:
+            return True
+        else:
+
+            message = '{0} ({1}, {2}) failed'.format(
+                classname, str(timestamp.date()), timestamp.hour
+            )
+
+            raise errors.ProcessFailureError(
+                message
+            )

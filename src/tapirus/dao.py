@@ -1,18 +1,14 @@
-import os
-import os.path
 import datetime
 
 from sqlalchemy import Column, ForeignKey, DateTime, String, Integer
 from sqlalchemy import desc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import sqlalchemy.exc
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
-
-
-from tapirus.entities import Record, LogFile
+from tapirus.entities import Record, LogFile, Error
 from tapirus.utils import config
-
 
 _Base = declarative_base()
 
@@ -24,20 +20,36 @@ def _start_session():
 
 def _session():
 
-    db = config.get("sqlite")
+    # mysql+pymysql://<username>:<password>@<host>/<dbname>
 
-    dbfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../{0}".format(db["filename"]))
+    db = config.get('datastore')
 
-    # TODO: ?
-    _Engine = create_engine('sqlite:///{0}'.format(dbfile),
-                            connect_args={'check_same_thread': False},
-                            echo=False)
+    # dbfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../{0}".format(db["filename"]))
 
-    _Base.metadata.create_all(_Engine)
+    # _Engine = create_engine('sqlite:///{0}'.format(dbfile),
+    #                         connect_args={'check_same_thread': False},
+    #                         echo=False)
 
-    _Session = sessionmaker(bind=_Engine)
+    _Engine = create_engine(
+        '{store}+{driver}://{username}:{password}@{host}/{database}'.format(
+            store=db['store'],
+            driver=db['driver'],
+            username=db['username'],
+            password=db['password'],
+            host=db['host'],
+            database=db['database']
+        ),
+        echo=False
+    )
 
-    return _Session()
+    try:
+        _Base.metadata.create_all(_Engine)
+    except sqlalchemy.exc.InternalError:
+        raise
+    else:
+        _Session = sessionmaker(bind=_Engine)
+
+        return _Session()
 
 
 class _RecordORM(_Base):
@@ -46,8 +58,8 @@ class _RecordORM(_Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     timestamp = Column(DateTime, unique=True, nullable=False)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow(), nullable=False)
-    status = Column(String, nullable=False)
-    uri = Column(String, nullable=True)
+    status = Column(String(20), nullable=False)
+    uri = Column(String(256), nullable=True)
 
 
 class _LogFileORM(_Base):
@@ -55,8 +67,17 @@ class _LogFileORM(_Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     record = Column(Integer, ForeignKey("records.id"), nullable=False)
-    log = Column(String, unique=True)
-    filepath = Column(String, nullable=True)
+    log = Column(String(256), unique=True)
+    filepath = Column(String(256), nullable=True)
+
+
+# class _ErrorORM(_Base):
+#     __tablename__ = "errors"
+#
+#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+#     code = Column(Integer)
+#     data = Column(String)
+#     timestamp = Column(DateTime, default=datetime.datetime.utcnow(), nullable=False)
 
 
 class RecordDAO(object):
@@ -330,3 +351,135 @@ class LogFileDAO(object):
             return session.query(_LogFileORM).filter(_LogFileORM.id == id).count() == 0
         finally:
             session.close()
+
+
+class ErrorDAO(object):
+
+    @classmethod
+    def create(cls, error):
+
+        # assert isinstance(error, Error)
+        #
+        # session = _start_session()
+        #
+        # try:
+        #     new_error_orm = _ErrorORM(id=error.id, code=error.code, data=error.data, timestamp=error.timestamp)
+        #
+        #     session.add(new_error_orm)
+        #     session.commit()
+        #
+        #     return Error(id=new_error_orm.id, code=new_error_orm.code, data=new_error_orm.data,
+        #                  timestamp=new_error_orm.timestamp)
+        #
+        # finally:
+        #     session.close()
+
+        raise NotImplementedError
+
+    @classmethod
+    def read(cls, id):
+
+        # session = _start_session()
+        #
+        # try:
+        #     instance = session.query(_ErrorORM).filter(_ErrorORM.id == id).one()
+        #
+        # except MultipleResultsFound:
+        #     raise
+        # except NoResultFound:
+        #     raise
+        # else:
+        #
+        #     return Error(id=instance.id, code=instance.code, data=instance.data,
+        #                  timestamp=instance.timestamp)
+        # finally:
+        #     session.close()
+
+        raise NotImplementedError
+
+    # TODO: find errors with tenant in them, top 10, desc order
+    @classmethod
+    def find(cls, limit, skip, tenant):
+
+        # session = _start_session()
+        #
+        # try:
+        #
+        #     errors = session.query(_ErrorORM).filter(
+        #         _ErrorORM.data.ilike(''.join(['%', tenant, '%']))
+        #     ).order_by(
+        #         desc(_ErrorORM.timestamp)
+        #     ).limit(limit).offset(skip)
+        #
+        #     for error in errors:
+        #
+        #         yield Error(id=error.id, code=error.code, data=error.data, timestamp=error.timestamp)
+        #
+        # finally:
+        #     session.close()
+
+        return None
+
+    @classmethod
+    def list(cls, skip, limit):
+
+        # session = _start_session()
+        #
+        # try:
+        #     errors = session.query(_ErrorORM).limit(limit).offset(skip)
+        #
+        #     return [Error(id=error.id, code=error.code, data=error.data, timestamp=error.timestamp) for error in errors]
+        #
+        # finally:
+        #     session.close()
+        raise NotImplementedError
+
+    @classmethod
+    def update(cls, error):
+
+        # session = _start_session()
+        #
+        # try:
+        #
+        #     transient_instance = _ErrorORM(**error.__dict__)
+        #     session.merge(transient_instance)
+        #     session.commit()
+        #
+        #     return Error(id=transient_instance.id, code=transient_instance.code, data=transient_instance.data,
+        #                  timestamp=transient_instance.timestamp)
+        # finally:
+        #     session.close()
+        raise NotImplementedError
+
+    @classmethod
+    def count(cls):
+
+        # session = _start_session()
+        #
+        # try:
+        #     count = session.query(_ErrorORM).count()
+        #
+        #     return count
+        #
+        # finally:
+        #     session.close()
+
+        raise NotImplementedError
+
+    @classmethod
+    def delete(cls, id):
+
+        # session = _start_session()
+        #
+        # try:
+        #     persistent_instance = session.query(_ErrorORM).filter(_ErrorORM.id == id).one()
+        # except MultipleResultsFound:
+        #     raise
+        # else:
+        #     session.delete(persistent_instance)
+        #     session.commit()
+        #
+        #     return session.query(_ErrorORM).filter(_ErrorORM.id == id).count() == 0
+        # finally:
+        #     session.close()
+        raise NotImplementedError

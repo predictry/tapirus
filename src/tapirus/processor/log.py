@@ -7,7 +7,7 @@ from jsonuri import jsonuri
 
 from tapirus.model.store import is_valid_schema
 from tapirus.utils.logger import Logger
-
+from tapirus import constants
 
 LOG_FILE_COLUMN_SEPARATOR = "\t"
 
@@ -57,6 +57,8 @@ def process_log(file_name, errors):
                     if ".gif" not in path or status not in (UNSENT, HTTP_OK, HTTP_NOT_MODIFIED):
                         continue
 
+                    payload = None
+
                     try:
 
                         payload = jsonuri.deserialize(columns[11], decode_twice=True)
@@ -65,6 +67,25 @@ def process_log(file_name, errors):
                             raise ValueError("Invalid data schema, double decoding-pass")
 
                     except ValueError as e:
+
+                        if payload:
+
+                            # TODO: log to error log
+                            errors.append(
+                                (constants.ERROR_INVALIDSCHEMA_SD,
+                                 payload,
+                                 dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                 )
+                            )
+                        else:
+
+                            # TODO: log to error log
+                            errors.append(
+                                (constants.ERROR_DESERIALIZATION_SD,
+                                 columns[11],
+                                 dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                 )
+                            )
 
                         Logger.info(
                             "Error deserializing payload, double decoding, line index [{0}]\n\t{1}".format(
@@ -82,6 +103,26 @@ def process_log(file_name, errors):
 
                         except ValueError as e:
 
+                            if payload:
+
+                                # TODO: log to error log
+
+                                errors.append(
+                                    (constants.ERROR_INVALIDSCHEMA_DD,
+                                     payload,
+                                     dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                     )
+                                )
+                            else:
+
+                                # TODO: log to error log
+                                errors.append(
+                                    (constants.ERROR_DESERIALIZATION_DD,
+                                     columns[11],
+                                     dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                     )
+                                )
+
                             Logger.info(
                                 "Error deserializing payload, single decoding, line index [{0}]\n\t{1}".format(
                                     line_index, e
@@ -90,8 +131,6 @@ def process_log(file_name, errors):
 
                             failed_count += 1
                             line_index += 1
-
-                            errors.append(e)
 
                             continue
 
