@@ -11,4 +11,4 @@ boto==2.34.0
 six==1.9.0
 luigi==1.2.1
 rq==0.5.3
-jsonuri==0.1.22
+jsonuri==0.1.24
