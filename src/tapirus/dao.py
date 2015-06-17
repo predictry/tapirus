@@ -71,15 +71,6 @@ class _LogFileORM(_Base):
     filepath = Column(String(256), nullable=True)
 
 
-# class _ErrorORM(_Base):
-#     __tablename__ = "errors"
-#
-#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-#     code = Column(Integer)
-#     data = Column(String)
-#     timestamp = Column(DateTime, default=datetime.datetime.utcnow(), nullable=False)
-
-
 class RecordDAO(object):
 
     STATUS_OPTIONS = {"PENDING", "DOWNLOADED", "BUILDING", "PROCESSED"}

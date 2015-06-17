@@ -72,7 +72,7 @@ def process_log(file_name, errors):
 
                             # TODO: log to error log
                             errors.append(
-                                (constants.ERROR_INVALIDSCHEMA_SD,
+                                (constants.ERROR_INVALIDSCHEMA_DD,
                                  payload,
                                  dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
                                  )
@@ -81,7 +81,7 @@ def process_log(file_name, errors):
 
                             # TODO: log to error log
                             errors.append(
-                                (constants.ERROR_DESERIALIZATION_SD,
+                                (constants.ERROR_DESERIALIZATION_DD,
                                  columns[11],
                                  dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
                                  )
@@ -108,7 +108,7 @@ def process_log(file_name, errors):
                                 # TODO: log to error log
 
                                 errors.append(
-                                    (constants.ERROR_INVALIDSCHEMA_DD,
+                                    (constants.ERROR_INVALIDSCHEMA_SD,
                                      payload,
                                      dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
                                      )
@@ -117,7 +117,7 @@ def process_log(file_name, errors):
 
                                 # TODO: log to error log
                                 errors.append(
-                                    (constants.ERROR_DESERIALIZATION_DD,
+                                    (constants.ERROR_DESERIALIZATION_SD,
                                      columns[11],
                                      dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
                                      )

@@ -238,18 +238,19 @@ class ProcessRecordTask(luigi.Task):
                 payloads = log.process_log(logfile.filepath, errors=errors)
 
                 # TODO: log errors? We don't need to track all errors because we have the records in logs. Keeping a reference of the most recent ones should suffice
-                #
-                # for err in errors:
-                #
-                #     code, data, timestamp = err
-                #
-                #     if type(data) is not str:
-                #
-                #         data = json.dumps(data)
-                #
-                #     _ = ErrorDAO.create(Error(id=None, code=code, data=data, timestamp=timestamp))
-                #
-                # del errors[:]
+                for err in errors:
+
+                    code, data, timestamp = err
+
+                    if type(data) is not str:
+
+                        data = json.dumps(data)
+
+                    error = Error(code=code, data=data, timestamp=timestamp)
+
+                    Logger.error(str(error))
+
+                del errors[:]
 
                 for payload in payloads:
                     session, agent, user, items, actions = store.parse_entities_from_data(payload)

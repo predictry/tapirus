@@ -32,9 +32,15 @@ class LogFile(object):
 
 class Error(object):
 
-    def __init__(self, id, code, data, timestamp):
+    def __init__(self, code, data, timestamp):
 
-        self.id = id
         self.code = code
         self.data = data
         self.timestamp = timestamp
+
+
+    def __repr__(self):
+
+        return "{0},{1},{2}".format(
+            self.code, self.data, str(self.timestamp)
+        )
