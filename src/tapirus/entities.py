@@ -38,7 +38,6 @@ class Error(object):
         self.data = data
         self.timestamp = timestamp
 
-
     def __repr__(self):
 
         return "{0},{1},{2}".format(

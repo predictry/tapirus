@@ -1,11 +1,19 @@
 # Ubuntu
 FROM ubuntu:14.04
 
-RUN apt-get update
+RUN apt-get update --fix-missing
 RUN apt-get upgrade -y
+
+ENV LANGUAGE en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+RUN locale-gen en_US.UTF-8
+RUN dpkg-reconfigure locales
 
 RUN apt-get install software-properties-common python-software-properties -y
 RUN add-apt-repository ppa:nginx/stable -y
+RUN add-apt-repository -y ppa:rwky/redis
 RUN apt-get update
 RUN apt-get install build-essential -y
 RUN apt-get install nginx wget -y
@@ -17,10 +25,11 @@ RUN apt-get install python2.7 python-pip -y
 RUN apt-get install python-setuptools -y
 RUN apt-get install python-dev -y
 RUN sudo pip install virtualenv
+RUN sudo apt-get install tcl8.5 -y
 
 # Python 3.4.2
 WORKDIR /tmp/
-RUN wget http://www.python.org/ftp/python/3.4.2/Python-3.4.2.tar.xz
+RUN wget https://www.python.org/ftp/python/3.4.2/Python-3.4.2.tar.xz
 RUN tar -xvf Python-3.4.2.tar.xz
 WORKDIR /tmp/Python-3.4.2/
 RUN ls
@@ -28,6 +37,9 @@ RUN ./configure --with-ensurepip=install
 RUN make -j `nproc`
 RUN make install
 RUN rm -rf /tmp/Python-3.4.2*
+
+# Redis
+RUN sudo apt-get install -y redis-server
 
 # Add user
 RUN adduser --disabled-password --gecos "" dispatch
@@ -40,17 +52,19 @@ RUN chown -R dispatch:dispatch ${APPDIR}
 
 USER dispatch
 
-# get code from github
-ADD README.md requirements.txt ${APPDIR}/
-ADD nginx-app.conf supervisor-app.conf uwsgi.ini uwsgi_params ${APPDIR}/
-ADD config.ini logging.json ${APPDIR}/
+# copy code & config files
+ADD requirements.txt ${APPDIR}/
 ADD scripts ${APPDIR}/scripts
-ADD src ${APPDIR}/src
-ADD tests ${APPDIR}/tests
 
 # Build app env
 WORKDIR ${APPDIR}
+RUN mkdir data
 RUN bash scripts/build-env.sh
+
+ADD nginx-app.conf supervisor-app.conf uwsgi.ini uwsgi_params ${APPDIR}/
+ADD README.md config.ini logging.json ${APPDIR}/
+ADD src ${APPDIR}/src
+ADD tests ${APPDIR}/tests
 
 # Boto config
 ADD boto.cfg ${APPDIR}/boto.cfg
