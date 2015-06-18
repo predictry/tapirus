@@ -92,7 +92,8 @@ def records(args):
         'date': str(record.timestamp.date()),
         'hour': record.timestamp.hour,
         'status': record.status,
-        'uri': record.uri
+        'uri': record.uri,
+        'last_updated': str(record.last_updated)
     }
 
     status = 404 if record.status == constants.STATUS_NOT_FOUND else 200
@@ -164,7 +165,8 @@ def interval_records(args):
 
     results = [
         {'date': str(record.timestamp.date()), 'hour': record.timestamp.hour,
-         'status': record.status, 'uri': record.uri} for record in records
+         'status': record.status, 'uri': record.uri,
+         'last_updated': str(record.last_updated)} for record in records
     ]
 
     metadata = {
@@ -199,7 +201,8 @@ def timeline(args):
 
     results = [
         {'date': str(record.timestamp.date()), 'hour': record.timestamp.hour,
-         'status': record.status, 'uri': record.uri} for record in records
+         'status': record.status, 'uri': record.uri,
+         'last_updated': str(record.last_updated)} for record in records
     ]
 
     count = len(results)
