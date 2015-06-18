@@ -136,7 +136,7 @@ None
 
 The data record file is in JSON format. Structure:
 
-```JSON
+```Javascript
 {
 	"metadata": {
 		"date": "Date of record logs => YYYY-MM-DD:str",
