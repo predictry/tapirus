@@ -262,6 +262,15 @@ def handle_bad_request(err):
         'message': err_message,
     }), 500
 
+if not app.debug:
+
+    from tapirus.utils import config
+    from tapirus.utils.logger import Logger
+
+    logging = config.get("logging")
+
+    Logger.setup_logging(logging["logconfig"])
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
