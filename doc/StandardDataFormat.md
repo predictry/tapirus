@@ -131,3 +131,22 @@ None
 ```JSON
 None
 ```
+
+##Data Record
+
+The data record file is in JSON format. Structure:
+
+```JSON
+{
+	"metadata": {
+		"date": "Date of record logs => YYYY-MM-DD:str",
+		"hour": "Hour of record logs => hh:int",
+		"processed": "Timestamp of when the log was processed:ISO8601:YYYY-MM-DD HH:MM:SS"
+	},
+	"sessions": [List of Sessions => Session],
+	"agents": [List of Agents => Agent],
+	"users": [List of Users => User],
+	"items": [List of Items => Item],
+	"actions": [List of Actions => Action]
+}
+```
