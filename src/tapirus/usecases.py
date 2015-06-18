@@ -29,7 +29,8 @@ class RecordUseCases(object):
 
             if record.status == constants.STATUS_NOT_FOUND:
 
-                pass
+                # try again. it might too early, or record may have been made available
+                tasks.run_workflow_for_record.delay(timestamp)
 
             elif record.status in (constants.STATUS_PENDING, constants.STATUS_DOWNLOADED, constants.STATUS_BUILDING):
 
