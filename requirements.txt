@@ -4,9 +4,7 @@ uwsgi==2.0.8
 requests==2.5.1
 sqlalchemy==1.0.5
 pymysql==0.6.6
-py2neo==2.0.5
 webargs==0.13.0
-predictionio==0.9.2
 boto==2.34.0
 six==1.9.0
 luigi==1.2.1
