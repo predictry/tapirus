@@ -134,19 +134,25 @@ None
 
 ##Data Record
 
-The data record file is in JSON format. Structure:
+The data record file is in `hdfs` format. Structure:
+
+  - Entries are stored line by line.
+  - First line contains metadata
+  - Remaining rows contain data
+
+**First line:**
+```Javascript
+{"type": "metadata", "data": { "date": "Date of record logs => YYYY-MM-DD:str", "hour": "Hour of record logs => hh:int", "processed": "Timestamp of when the log was processed:ISO8601:YYYY-MM-DD HH:MM:SS"}}
+```
+
+**Following lines:**
 
 ```Javascript
-{
-	"metadata": {
-		"date": "Date of record logs => YYYY-MM-DD:str",
-		"hour": "Hour of record logs => hh:int",
-		"processed": "Timestamp of when the log was processed:ISO8601:YYYY-MM-DD HH:MM:SS"
-	},
-	"sessions": [List of Sessions => Session],
-	"agents": [List of Agents => Agent],
-	"users": [List of Users => User],
-	"items": [List of Items => Item],
-	"actions": [List of Actions => Action]
-}
+{"type": "Session", "data": {Session}}
+{"type": "Agent", "data": {Agent}}
+{"type": "User", "data": {User}}
+{"type": "Item", "data": {Item}}
+{"type": "Action", "data": {Action}}
 ```
+
+The order of the entities is almost, but not certainly, guaranteed. To be safe, you shouldn't make any assumptions when reading.
