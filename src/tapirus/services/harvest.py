@@ -298,7 +298,7 @@ class ProcessRecordTask(luigi.Task):
         items = []
         actions = []
 
-        filename = os.path.join(tempfile.gettempdir(), '.'.join([prefix, 'json']))
+        filename = os.path.join(tempfile.gettempdir(), '.'.join([prefix, 'hdfs']))
 
         if os.path.exists(filename):
             os.remove(filename)
@@ -347,16 +347,33 @@ class ProcessRecordTask(luigi.Task):
                         action = json.loads(line, encoding='UTF-8')
                         actions.append(action)
 
-            data = dict(
-                metadata=metadata,
-                sessions=sessions,
-                agents=agents,
-                users=users,
-                items=items,
-                actions=actions
-            )
+            json.dump(dict(type="metadata", metadata=metadata), fp)
+            fp.write('\n')
 
-            json.dump(data, fp)
+            for session in sessions:
+                data = dict(type="Session", data=session)
+                json.dump(data, fp)
+                fp.write('\n')
+
+            for agent in agents:
+                data = dict(type="Agent", data=agent)
+                json.dump(data, fp)
+                fp.write('\n')
+
+            for user in users:
+                data = dict(type="User", data=user)
+                json.dump(data, fp)
+                fp.write('\n')
+
+            for item in items:
+                data = dict(type="Item", data=item)
+                json.dump(data, fp)
+                fp.write('\n')
+
+            for action in actions:
+                data = dict(type="Action", data=action)
+                json.dump(data, fp)
+                fp.write('\n')
 
         def upload(timestamp, filepath, record=record):
 
