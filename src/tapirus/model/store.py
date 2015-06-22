@@ -588,7 +588,7 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_ADD_TO_CART, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
-                            fields={"qty": item_data[SCHEMA_KEY_QUANTITY]})
+                            fields={"quantity": item_data[SCHEMA_KEY_QUANTITY]})
 
             actions.append(action)
 
@@ -603,7 +603,7 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_BUY, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
-                            fields={"qty": item_data[SCHEMA_KEY_QUANTITY],
+                            fields={"quantity": item_data[SCHEMA_KEY_QUANTITY],
                                     "sub_total": item_data[SCHEMA_KEY_SUBTOTAL]})
 
             actions.append(action)
