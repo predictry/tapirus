@@ -1,15 +1,15 @@
 # Ubuntu
 FROM ubuntu:14.04
 
-RUN apt-get update --fix-missing
-RUN apt-get upgrade -y
-
 ENV LANGUAGE en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
 RUN locale-gen en_US.UTF-8
 RUN dpkg-reconfigure locales
+
+RUN apt-get update --fix-missing
+RUN apt-get upgrade -y
 
 RUN apt-get install software-properties-common python-software-properties -y
 RUN add-apt-repository ppa:nginx/stable -y

@@ -5,14 +5,15 @@ import os.path
 
 from redis import Redis
 from rq.decorators import job
-from tapirus.services import harvest
+from tapirus.workflows import harvest
 from tapirus.utils.logger import Logger
 from tapirus.core import errors
+from tapirus.utils import config
 
 _redis_conn = Redis()
 
 
-@job('medium', connection=_redis_conn, timeout=60*20)
+@job('medium', connection=_redis_conn, timeout=int(config.get('harvester', 'timeout')))
 def run_workflow_for_record(timestamp):
 
     assert isinstance(timestamp, datetime.datetime)
