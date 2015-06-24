@@ -21,9 +21,9 @@ RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev openssl nano -y
 RUN apt-get install supervisor -y
 RUN apt-get install libsqlite3-dev -y
-RUN apt-get install python2.7 python-pip -y
 RUN apt-get install python-setuptools -y
 RUN apt-get install python-dev -y
+RUN apt-get install python-pip=1.5.4-1 -y
 RUN sudo pip install virtualenv
 RUN sudo apt-get install tcl8.5 -y
 
