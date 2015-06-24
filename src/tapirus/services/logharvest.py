@@ -12,8 +12,7 @@ def harvest_past_hour():
     def inner():
 
         now = datetime.datetime.utcnow()
-        timestamps = {now - datetime.timedelta(hours=1),
-                      now - datetime.timedelta(hours=2)}
+        timestamps = [now - datetime.timedelta(hours=x) for x in range(1, 7*24+1)]
 
         # how do I make sure the timing is right? request for the past two hours
         for timestamp in timestamps:
