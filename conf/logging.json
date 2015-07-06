@@ -10,7 +10,7 @@
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "WARNING",
+            "level": "ERROR",
             "formatter": "simple",
             "stream": "ext://sys.stdout"
         },
@@ -21,24 +21,25 @@
             "interval": 1,
             "level": "INFO",
             "formatter": "simple",
-            "filename": "predictry.neumann.info.log",
+            "filename": "predictry.tapirus.info.log",
             "backupCount": 2,
             "encoding": "utf8"
         },
+
         "error_file_handler": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "when": "midnight",
             "interval": 1,
             "level": "ERROR",
             "formatter": "simple",
-            "filename": "predictry.neumann.error.log",
+            "filename": "predictry.tapirus.error.log",
             "backupCount": 2,
             "encoding": "utf8"
         }
     },
 
     "loggers": {
-        "neumann": {
+        "tapirus": {
             "level": "INFO",
             "handlers": ["console", "info_file_handler", "error_file_handler"],
             "propagate": 0

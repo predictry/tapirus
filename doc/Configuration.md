@@ -6,6 +6,31 @@ All configurations files should be on the base project path, when building the [
 
 ###config.ini
 Credentials, service parameters (e.g. execution timeout, db credentials...)
+```ini
+[logging]
+logconfig=logging.json
+
+[harvester] ;required
+threshold=3600
+interval=3600
+timeout=3600
+
+[datastore] ;required
+store=mysql
+driver=pymysql
+username=user
+password=password
+host=127.0.0.1
+database=appdb
+
+[s3] ;required
+bucket=myBucket
+prefix=path/pattern.
+records=records
+
+[luigi]
+configfile=client.cfg
+```
 
 [Sample](../conf/config.ini)
 

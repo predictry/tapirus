@@ -2,6 +2,7 @@ from tapirus.model.constants import *
 
 
 # TODO: Model events. Parse logs into entities and events. Feed these to data importers
+# TODO: Parse recommended item
 
 class Session(object):
 
