@@ -49,6 +49,7 @@ ENV APP app
 ENV APPDIR /${APP}
 RUN mkdir -p ${APPDIR}
 RUN chown -R dispatch:dispatch ${APPDIR}
+RUN mkdir /etc/luigi
 
 USER dispatch
 
@@ -69,6 +70,9 @@ ADD tests ${APPDIR}/tests
 # Boto config
 ADD boto.cfg ${APPDIR}/boto.cfg
 ENV BOTO_CONFIG ${APPDIR}/boto.cfg
+
+# Luigi config
+ADD client.cfg /etc/luigi/luigi.cfg
 
 USER root
 
