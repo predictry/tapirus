@@ -624,12 +624,12 @@ def parse_entities_from_data(data):
         if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
             recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
         else:
-            recommended = None
+            recommended = False
 
         if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
             parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
         else:
-            parameters = None
+            parameters = {}
 
         recommendation = dict(recommended=recommended, parameters=parameters)
 
@@ -652,12 +652,12 @@ def parse_entities_from_data(data):
         if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
             recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
         else:
-            recommended = None
+            recommended = False
 
         if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
             parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
         else:
-            parameters = None
+            parameters = {}
 
         recommendation = dict(recommended=recommended, parameters=parameters)
 
@@ -681,12 +681,12 @@ def parse_entities_from_data(data):
         if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
             recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
         else:
-            recommended = None
+            recommended = False
 
         if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
             parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
         else:
-            parameters = None
+            parameters = {}
 
         recommendation = dict(recommended=recommended, parameters=parameters)
 
