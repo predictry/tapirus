@@ -24,3 +24,17 @@ def minify(payload):
         return newdict
 
     return payload
+
+
+def boolean(word):
+
+    value = str(word).lower()
+
+    if value in ['false', '0']:
+        return False
+    elif value in ['true', '1']:
+        return True
+    else:
+        return None
+
+

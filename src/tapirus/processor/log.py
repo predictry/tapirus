@@ -21,12 +21,13 @@ def process_log(file_name, errors):
     :return:
     """
 
-    gz_fh = gzip.open(file_name)
-    utf8_codec = codecs.getreader("UTF-8")
+    # gz_fh = gzip.open(file_name)
+    # utf8_codec = codecs.getreader("UTF-8")
 
     assert isinstance(errors, list)
 
-    with utf8_codec(gz_fh) as fp:
+    # with utf8_codec(gz_fh) as fp:
+    with gzip.open(file_name) as fp:
         """
             #indeces
             #0: date
@@ -48,7 +49,7 @@ def process_log(file_name, errors):
         try:
             for line in fp:
 
-                columns = line.split(LOG_FILE_COLUMN_SEPARATOR)
+                columns = line.decode('utf-8').split(LOG_FILE_COLUMN_SEPARATOR)
 
                 if len(columns) >= 12:
 

@@ -1,5 +1,5 @@
 from tapirus.model.constants import *
-
+from tapirus.utils import text
 
 # TODO: Model events. Parse logs into entities and events. Feed these to data importers
 # TODO: Parse recommended item
@@ -165,7 +165,7 @@ class Item(object):
 
 class Action(object):
 
-    def __init__(self, name, tenant, user, agent, session, item, timestamp, fields):
+    def __init__(self, name, tenant, user, agent, session, item, timestamp, fields, recommendation):
 
         self.name = name
         self.tenant = tenant
@@ -175,6 +175,7 @@ class Action(object):
         self.item = item
         self.timestamp = timestamp
         self.fields = fields
+        self.recommendation = recommendation
 
     def __key(self):
 
@@ -232,6 +233,17 @@ class Tenant(object):
     def __ne__(self, other):
 
         return not self.__eq__(other)
+
+
+class Recommendation(object):
+
+    def __init__(self, recommended, parameters):
+        self.recommended = recommended
+        self.parameters = parameters
+
+    @property
+    def properties(self):
+        return self.__dict__
 
 
 def is_acceptable_data_type(e):
@@ -324,6 +336,23 @@ def is_valid_schema(data):
             return False
         if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
             return False
+
+    if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
+        if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION]) is not str:
+            return False
+
+        if text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION]) is None:
+            return False
+
+    if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
+        if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]) is not dict:
+            return False
+
+        # other rec parameters must be a flat dictionary/map (no nested dictionaries)
+        for k in data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]:
+
+            if _is_valid_data(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI][k]) is False:
+                return False
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_VIEW.lower():
 
@@ -556,6 +585,18 @@ def parse_entities_from_data(data):
     # Actions
     if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_VIEW:
 
+        if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
+            recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
+        else:
+            recommended = None
+
+        if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
+            parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
+        else:
+            parameters = None
+
+        recommendation = dict(recommended=recommended, parameters=parameters)
+
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
@@ -574,11 +615,23 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_VIEW, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
-                            fields={})
+                            fields={}, recommendation=recommendation)
 
             actions.append(action)
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_ADD_TO_CART:
+
+        if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
+            recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
+        else:
+            recommended = None
+
+        if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
+            parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
+        else:
+            parameters = None
+
+        recommendation = dict(recommended=recommended, parameters=parameters)
 
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
@@ -589,11 +642,24 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_ADD_TO_CART, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
-                            fields={"quantity": item_data[SCHEMA_KEY_QUANTITY]})
+                            fields={"quantity": item_data[SCHEMA_KEY_QUANTITY]},
+                            recommendation=recommendation)
 
             actions.append(action)
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_BUY:
+
+        if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
+            recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
+        else:
+            recommended = None
+
+        if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
+            parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
+        else:
+            parameters = None
+
+        recommendation = dict(recommended=recommended, parameters=parameters)
 
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
@@ -605,11 +671,24 @@ def parse_entities_from_data(data):
             action = Action(name=REL_ACTION_TYPE_BUY, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
                             fields={"quantity": item_data[SCHEMA_KEY_QUANTITY],
-                                    "sub_total": item_data[SCHEMA_KEY_SUBTOTAL]})
+                                    "sub_total": item_data[SCHEMA_KEY_SUBTOTAL]},
+                            recommendation=recommendation)
 
             actions.append(action)
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_STARTED_CHECKOUT:
+
+        if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
+            recommended = text.boolean(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION])
+        else:
+            recommended = None
+
+        if SCHEMA_KEY_RECOMMENDATION_ORI in data[SCHEMA_KEY_ACTION]:
+            parameters = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI]
+        else:
+            parameters = None
+
+        recommendation = dict(recommended=recommended, parameters=parameters)
 
         # collect items
         for item_data in data[SCHEMA_KEY_ITEMS]:
@@ -620,7 +699,7 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_STARTED_CHECKOUT, tenant=tenant, user=user.id,
                             agent=agent.id, session=session.id, item=item.id, timestamp=dt,
-                            fields={})
+                            fields={}, recommendation=recommendation)
 
             actions.append(action)
 
@@ -628,7 +707,8 @@ def parse_entities_from_data(data):
 
         action = Action(name=REL_ACTION_TYPE_SEARCH, tenant=tenant, user=user.id,
                         agent=agent.id, session=session.id, item=None, timestamp=dt,
-                        fields={"keywords": data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]})
+                        fields={"keywords": data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]},
+                        recommendation={})
 
         actions.append(action)
 
@@ -636,7 +716,7 @@ def parse_entities_from_data(data):
 
         action = Action(name=REL_ACTION_TYPE_CHECK_DELETE_ITEM, tenant=tenant, user=None,
                         agent=agent.id, session=session.id, item=data[SCHEMA_KEY_ITEM_ID],
-                        timestamp=dt, fields={})
+                        timestamp=dt, fields={}, recommendation={})
 
         actions.append(action)
 
@@ -646,7 +726,7 @@ def parse_entities_from_data(data):
 
             action = Action(name=REL_ACTION_TYPE_DELETE_ITEM, tenant=tenant, user=None,
                             agent=agent.id, session=session.id, item=item_data[SCHEMA_KEY_ITEM_ID],
-                            timestamp=dt, fields={})
+                            timestamp=dt, fields={}, recommendation={})
 
             actions.append(action)
 
