@@ -84,7 +84,10 @@ Client defined
 **name**: VIEW
 **Fields**:
 ```JSON
-None
+	"recommendation": {
+		"recommended": "bool",
+		"parameters": "<k: string, v: string>"
+	}
 ```
 
 ###Add To Cart
@@ -93,6 +96,10 @@ None
 ```JSON
 {
 	"quantity": "int"
+	"recommendation": {
+		"recommended": "bool",
+		"parameters": "<k: string, v: string>"
+	}	
 }
 ```
 
@@ -100,7 +107,12 @@ None
 **name**: STARTED_CHECKOUT
 **Fields**:
 ```JSON
-None
+{
+	"recommendation": {
+		"recommended": "bool",
+		"parameters": "<k: string, v: string>"
+	}	
+}
 ```
 
 ###Buy
@@ -109,7 +121,11 @@ None
 ```JSON
 {
 	"quantity": "int",
-	"sub_total": "float"
+	"sub_total": "float",
+	"recommendation": {
+		"recommended": "bool",
+		"parameters": "<k: string, v: string>"
+	}
 }
 ```
 
