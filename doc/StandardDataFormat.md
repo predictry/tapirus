@@ -53,8 +53,22 @@ This doc defines a standard data format for events, entities in Predictry's comp
 	"session": "string",
 	"item": "string",
 	"timestamp": "string [ISO8601]",
-	"fields": "<k: string, v: string>"
+	"fields": "<k: string, v: string>",
+	"recommendation": "<k: string, v:string>"
 }
+```
+
+The recommendation field is only present in actions where it applies, like view, add to cart, buy, although some events
+may later support it. So, it's best to check whether is present or not insteado assuming.
+
+####Recommendation
+
+```JSON
+{
+	"recommended": "bool",
+	"parameters": "<k: string, v: string>"
+}
+
 ```
 
 ##Entities
@@ -84,10 +98,7 @@ Client defined
 **name**: VIEW
 **Fields**:
 ```JSON
-	"recommendation": {
-		"recommended": "bool",
-		"parameters": "<k: string, v: string>"
-	}
+None
 ```
 
 ###Add To Cart
@@ -96,10 +107,6 @@ Client defined
 ```JSON
 {
 	"quantity": "int"
-	"recommendation": {
-		"recommended": "bool",
-		"parameters": "<k: string, v: string>"
-	}	
 }
 ```
 
@@ -107,12 +114,7 @@ Client defined
 **name**: STARTED_CHECKOUT
 **Fields**:
 ```JSON
-{
-	"recommendation": {
-		"recommended": "bool",
-		"parameters": "<k: string, v: string>"
-	}	
-}
+None
 ```
 
 ###Buy
@@ -121,11 +123,7 @@ Client defined
 ```JSON
 {
 	"quantity": "int",
-	"sub_total": "float",
-	"recommendation": {
-		"recommended": "bool",
-		"parameters": "<k: string, v: string>"
-	}
+	"sub_total": "float"
 }
 ```
 
