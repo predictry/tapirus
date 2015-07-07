@@ -59,7 +59,7 @@ This doc defines a standard data format for events, entities in Predictry's comp
 ```
 
 The recommendation field is only present in actions where it applies, like view, add to cart, buy, although some events
-may later support it. So, it's best to check whether is present or not insteado assuming.
+may later support it. So, it's best to check whether the field is present or absent, instead of assuming.
 
 ####Recommendation
 
