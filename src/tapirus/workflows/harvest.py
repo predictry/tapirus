@@ -89,18 +89,25 @@ class _ProcessedRecordTarget(luigi.Target):
 
         if RecordDAO.exists(timestamp=timestamp):
 
-            # record = RecordDAO.read(timestamp=timestamp)
+            record = RecordDAO.read(timestamp=timestamp)
 
-            for tenant_record in TenantRecordDAO.find(timestamp=timestamp):
+            if record.status != constants.STATUS_NOT_FOUND:
 
-                if aws.S3.exists(s3_key=tenant_record.uri):
-                    pass
-                else:
-
-                    tenant_record.uri = None
-                    _ = TenantRecordDAO.update(tenant_record)
-
+                if not [x for x in TenantRecordDAO.find(timestamp=timestamp)]:
                     result = False
+
+                for tenant_record in TenantRecordDAO.find(timestamp=timestamp):
+
+                    if aws.S3.exists(s3_key=tenant_record.uri):
+                        pass
+                    else:
+
+                        tenant_record.uri = None
+                        _ = TenantRecordDAO.update(tenant_record)
+
+                        result = False
+            else:
+                result = False
         else:
             result = False
 
