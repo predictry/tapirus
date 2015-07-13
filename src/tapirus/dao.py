@@ -328,7 +328,6 @@ class TenantRecordDAO(object):
         finally:
             session.close()
 
-
     @classmethod
     def get_records(cls, tenant, start_timestamp, end_timestamp):
 

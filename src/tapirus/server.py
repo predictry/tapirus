@@ -62,14 +62,14 @@ def endpoints():
 @use_args({
     'date': Arg(str, required=True, location='query'),
     'hour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
-    'tenantId': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
+    'tenant': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
                     error='Invalid tenant Id')
 })
 def records(args):
 
     date = args['date']
     hour = args['hour']
-    tenant = args['tenantId']
+    tenant = args['tenant']
 
     if not io.validate_date(date):
 
@@ -94,8 +94,8 @@ def records(args):
         'date': str(record.timestamp.date()),
         'hour': record.timestamp.hour,
         'status': record.status,
-        'records': [
-            {'tenantId': x.tenant, 'uri': x.uri} for x in tenant_records
+        'record_files': [
+            {'tenant': x.tenant, 'uri': x.uri} for x in tenant_records
         ],
         'last_updated': str(record.last_updated)
     }
@@ -111,7 +111,7 @@ def records(args):
     'startHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
     'endDate': Arg(str, required=True, location='query'),
     'endHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
-    'tenantId': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
+    'tenant': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
                     error='Invalid tenant Id')
 })
 def interval_records(args):
@@ -120,7 +120,7 @@ def interval_records(args):
     start_hour = args['startHour']
     end_date = args['endDate']
     end_hour = args['endHour']
-    tenant = args['tenantId']
+    tenant = args['tenant']
 
     if not io.validate_date(start_date):
 
@@ -179,7 +179,7 @@ def interval_records(args):
         result = {'date': str(record.timestamp.date()),
                   'hour': record.timestamp.hour,
                   'status': record.status,
-                  'records': [{'tenantId': x.tenant, 'uri': x.uri} for x in tenant_records],
+                  'record_files': [{'tenant': x.tenant, 'uri': x.uri} for x in tenant_records],
                   'last_updated': str(record.last_updated)
                   }
 
@@ -190,7 +190,7 @@ def interval_records(args):
         'startHour': start_timestamp.hour,
         'endDate': str(end_timestamp.date()),
         'endHour': end_timestamp.hour,
-        'tenantId': tenant if tenant else "*"
+        'tenant': tenant if tenant else "*"
     }
 
     count = len(results)
@@ -207,20 +207,38 @@ def interval_records(args):
     'skip': Arg(int, required=False, default=0, validate=lambda x: x >= 0,
                 error='Skip must be greater than 0', location='query'),
     'reverse': Arg(bool, required=False, default=False, location='query'),
+    'tenant': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
+                    error='Invalid tenant Id')
 })
 def timeline(args):
 
     limit = args['limit']
     skip = args['skip']
     reverse = args['reverse']
+    tenant = args['tenant']
 
     records = RecordDAO.list(skip=skip, limit=limit, reverse=reverse)
 
-    results = [
-        {'date': str(record.timestamp.date()), 'hour': record.timestamp.hour,
-         'status': record.status, 'uri': record.uri,
-         'last_updated': str(record.last_updated)} for record in records
-    ]
+    # results = [
+    #     {'date': str(record.timestamp.date()), 'hour': record.timestamp.hour,
+    #      'status': record.status, 'uri': record.uri,
+    #      'last_updated': str(record.last_updated)} for record in records
+    # ]
+
+    results = []
+
+    for record in records:
+
+        tenant_records = RecordUseCases.get_tenant_records(timestamp=record.timestamp, tenant=tenant)
+
+        result = {'date': str(record.timestamp.date()),
+                  'hour': record.timestamp.hour,
+                  'status': record.status,
+                  'record_files': [{'tenant': x.tenant, 'uri': x.uri} for x in tenant_records],
+                  'last_updated': str(record.last_updated)
+                  }
+
+        results.append(result)
 
     count = len(results)
     total = RecordDAO.count()
@@ -246,6 +264,7 @@ def timeline(args):
             },
             'count': count,
             'total': total,
+            'tenant': tenant if tenant else "*"
         },
         'records': results
     }
