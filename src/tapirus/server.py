@@ -110,7 +110,9 @@ def records(args):
     'startDate': Arg(str, required=True, location='query'),
     'startHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
     'endDate': Arg(str, required=True, location='query'),
-    'endHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query')
+    'endHour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
+    'tenantId': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
+                    error='Invalid tenant Id')
 })
 def interval_records(args):
 
@@ -118,6 +120,7 @@ def interval_records(args):
     start_hour = args['startHour']
     end_date = args['endDate']
     end_hour = args['endHour']
+    tenant = args['tenantId']
 
     if not io.validate_date(start_date):
 
@@ -167,17 +170,27 @@ def interval_records(args):
     records = RecordDAO.get_records(start_timestamp=start_timestamp,
                                     end_timestamp=end_timestamp)
 
-    results = [
-        {'date': str(record.timestamp.date()), 'hour': record.timestamp.hour,
-         'status': record.status, 'uri': record.uri,
-         'last_updated': str(record.last_updated)} for record in records
-    ]
+    results = []
+
+    for record in records:
+
+        tenant_records = RecordUseCases.get_tenant_records(timestamp=record.timestamp, tenant=tenant)
+
+        result = {'date': str(record.timestamp.date()),
+                  'hour': record.timestamp.hour,
+                  'status': record.status,
+                  'records': [{'tenantId': x.tenant, 'uri': x.uri} for x in tenant_records],
+                  'last_updated': str(record.last_updated)
+                  }
+
+        results.append(result)
 
     metadata = {
         'startDate': str(start_timestamp.date()),
         'startHour': start_timestamp.hour,
         'endDate': str(end_timestamp.date()),
-        'endHour': end_timestamp.hour
+        'endHour': end_timestamp.hour,
+        'tenantId': tenant if tenant else "*"
     }
 
     count = len(results)

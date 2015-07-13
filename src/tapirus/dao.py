@@ -305,7 +305,7 @@ class TenantRecordDAO(object):
                 except MultipleResultsFound:
                     raise
                 except NoResultFound:
-                    raise
+                    pass
                 else:
 
                     yield TenantRecord(id=instance.id, tenant=instance.tenant, timestamp=instance.timestamp,
@@ -317,11 +317,8 @@ class TenantRecordDAO(object):
                     instances = session.query(_TenantRecordORM).filter(
                         _TenantRecordORM.timestamp == timestamp
                     ).all()
-
-                except MultipleResultsFound:
-                    raise
                 except NoResultFound:
-                    raise
+                    pass
                 else:
 
                     for instance in instances:
