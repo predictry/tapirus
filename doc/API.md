@@ -10,9 +10,9 @@ Legend:
 
 |Endpoint|Purpose|Parameters|
 |--------|-------|----------|
-|/records|Request a data file for specific date hour|  **date**: date of record [yyyy-mm-dd] for file; <br/> **hour**: hour of record [hh]{0-23}|
-|/records/interval|Request data files for specific  date hour range| **startDate**: start date of records [yyyy-mm-dd] <br/> **endDate**:end date for records [yyyy-mm-dd] <br/> **startHour**: starting hour of records [hh]{0-23}<br/> **endHour**: end hour of records [hh]{0-23}|
-|/records/timeline|List of records, organised in a timeline|**skip**: number of records to skip <br/> **limit**: number of records to return <br/> **reverse**: Returns from earliest to most recent when set to *True*|
+|/records|Request a data file for specific date hour|  **date**: date of record [yyyy-mm-dd] for file; <br/> **hour**: hour of record [hh]{0-23}; <br/> **tenant: Tenant Id**|
+|/records/interval|Request data files for specific  date hour range| **startDate**: start date of records [yyyy-mm-dd] <br/> **endDate**:end date for records [yyyy-mm-dd] <br/> **startHour**: starting hour of records [hh]{0-23}<br/> **endHour**: end hour of records [hh]{0-23}; <br/> **tenant: Tenant Id**|
+|/records/timeline|List of records, organised in a timeline|**skip**: number of records to skip <br/> **limit**: number of records to return <br/> **reverse**: Returns from earliest to most recent when set to *True*; <br/> **tenant: Tenant Id**|
 
 ##Data Structures
 

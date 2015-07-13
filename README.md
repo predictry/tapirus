@@ -6,3 +6,7 @@ It provides an [API](doc/API.md) for data retrieval.
 
 ##Configuration
 Refer to the [doc file](doc/Configuration.md).
+
+
+##API
+Refer to the [API doc](doc/API.md)
