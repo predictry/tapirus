@@ -14,8 +14,7 @@ class RecordUseCases(object):
 
         if not dao.RecordDAO.exists(timestamp=timestamp):
             record = entities.Record(id=None, timestamp=timestamp, last_updated=None,
-                                     status=constants.STATUS_PENDING,
-                                     uri=None)
+                                     status=constants.STATUS_PENDING)
 
             new_record = dao.RecordDAO.create(record)
 
