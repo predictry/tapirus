@@ -311,13 +311,13 @@ class ProcessRecordTask(luigi.Task):
                 # TODO: log errors? We don't need to track all errors because we have the records in logs. Keeping a reference of the most recent ones should suffice
                 for err in errors:
 
-                    code, data, timestamp = err
+                    code, data, tmpstp = err
 
                     if type(data) is not str:
 
                         data = json.dumps(data)
 
-                    error = Error(code=code, data=data, timestamp=timestamp)
+                    error = Error(code=code, data=data, timestamp=tmpstp)
 
                     Logger.error(str(error))
 
