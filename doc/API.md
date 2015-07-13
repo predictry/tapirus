@@ -22,7 +22,7 @@ Legend:
 	"date": "Date of record => YYYY-MM-DD:str",
 	"hour": "Hour of record => hh: int",
 	"status": "Record status: {described below} => str",
-	"records": [{"tenantId": "str", "uri": "URI of record on S3 => str"}],
+	"record_files": [{"tenant": "str", "uri": "URI of record on S3 => str"}],
 	"last_updated": "Timestamp of when the record was last updated => ISO8601:YYYY-MM-DD HH:MM:SS:str"	
 }
 ```
@@ -37,6 +37,7 @@ Legend:
     "endHour": "Hour stamp of latest record returned => hh:int",
     "startDate": "Date of earliest record returned => YYYY-MM-DD:str",
     "startHour": "Hour stamp of earliest record returned => hh:int"
+    "tenant": "Tenant Id if provided, * otherwise."
   },
   "records": [List of Records => Record]
 }
@@ -59,7 +60,8 @@ Legend:
 		  }
 	  },
 	  "count": "Number of records returned => int",
-	  "total": "Total number of records => int"
+	  "total": "Total number of records => int",
+	  "tenant": "Tenant Id if provided, * otherwise."
   },
   "records": [List of Records => Record]
 }
