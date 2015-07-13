@@ -31,6 +31,12 @@ class _DownloadedRecordTarget(luigi.Target):
 
     def exists(self):
 
+        Logger.info(
+            'Checking Download status for Record @{0}-{1}'.format(
+                str(self.date), self.hour
+            )
+        )
+
         timestamp = datetime.datetime(
             year=self.date.year,
             month=self.date.month,
@@ -66,7 +72,12 @@ class _ProcessedRecordTarget(luigi.Target):
 
     def exists(self):
 
-        # check if file exists locally?
+        Logger.info(
+            'Checking Processing status for Record @{0}-{1}'.format(
+                str(self.date), self.hour
+            )
+        )
+
         timestamp = datetime.datetime(
             year=self.date.year,
             month=self.date.month,
