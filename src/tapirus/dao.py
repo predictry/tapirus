@@ -280,7 +280,7 @@ class TenantRecordDAO(object):
             raise
         else:
 
-            return TenantRecord(id=instance.id, tenant=tenant, timestamp=instance.timestamp,
+            return TenantRecord(id=instance.id, tenant=instance.tenant, timestamp=instance.timestamp,
                                 last_updated=instance.last_updated,
                                 uri=instance.uri)
         finally:
@@ -308,7 +308,7 @@ class TenantRecordDAO(object):
                     raise
                 else:
 
-                    yield TenantRecord(id=instance.id, tenant=tenant, timestamp=instance.timestamp,
+                    yield TenantRecord(id=instance.id, tenant=instance.tenant, timestamp=instance.timestamp,
                                        last_updated=instance.last_updated,
                                        uri=instance.uri)
             else:
@@ -325,7 +325,7 @@ class TenantRecordDAO(object):
                 else:
 
                     for instance in instances:
-                        yield TenantRecord(id=instance.id, tenant=tenant, timestamp=instance.timestamp,
+                        yield TenantRecord(id=instance.id, tenant=instance.tenant, timestamp=instance.timestamp,
                                            last_updated=instance.last_updated,
                                            uri=instance.uri)
         finally:
@@ -345,7 +345,7 @@ class TenantRecordDAO(object):
         )
 
         for tenant_record in tenant_records:
-            yield TenantRecord(id=tenant_record.id, tenant=tenant,
+            yield TenantRecord(id=tenant_record.id, tenant=tenant_record.tenant,
                                timestamp=tenant_record.timestamp, last_updated=tenant_record.last_updated,
                                uri=tenant_record.uri)
 
