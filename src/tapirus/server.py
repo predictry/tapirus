@@ -6,12 +6,10 @@ from flask import jsonify
 import flask
 from webargs import Arg
 from webargs.flaskparser import use_args
-
 from tapirus.utils import io
 from tapirus.dao import RecordDAO
 from tapirus.usecases import RecordUseCases
 from tapirus import constants
-
 
 app = Flask(__name__)
 
@@ -63,12 +61,15 @@ def endpoints():
 @app.route('/records/', methods=['GET'])
 @use_args({
     'date': Arg(str, required=True, location='query'),
-    'hour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query')
+    'hour': Arg(int, required=True, validate=lambda x: 0 <= x <= 23, error='Invalid hour', location='query'),
+    'tenantId': Arg(str, required=False, default=None, location='query', validate=lambda x: len(x) > 1,
+                    error='Invalid tenant Id')
 })
 def records(args):
 
     date = args['date']
     hour = args['hour']
+    tenant = args['tenantId']
 
     if not io.validate_date(date):
 
@@ -87,12 +88,15 @@ def records(args):
     record = RecordUseCases.update_record_status(timestamp=timestamp)
 
     # record = RecordDAO.read(timestamp=timestamp)
+    tenant_records = RecordUseCases.get_tenant_records(timestamp=timestamp, tenant=tenant)
 
     data = {
         'date': str(record.timestamp.date()),
         'hour': record.timestamp.hour,
         'status': record.status,
-        'uri': record.uri,
+        'records': [
+            {'tenantId': x.tenant, 'uri': x.uri} for x in tenant_records
+        ],
         'last_updated': str(record.last_updated)
     }
 

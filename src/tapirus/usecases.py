@@ -42,3 +42,14 @@ class RecordUseCases(object):
                     tasks.run_workflow_for_record.delay(timestamp)
 
             return record
+
+    @staticmethod
+    def get_tenant_records(timestamp, tenant=None):
+
+        if dao.RecordDAO.exists(timestamp=timestamp) is False:
+            return []
+        else:
+
+            tenant_records = dao.TenantRecordDAO.find(timestamp=timestamp, tenant=tenant)
+
+            return [x for x in tenant_records]

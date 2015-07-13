@@ -22,7 +22,7 @@ Legend:
 	"date": "Date of record => YYYY-MM-DD:str",
 	"hour": "Hour of record => hh: int",
 	"status": "Record status: {described below} => str",
-	"uri": "URI of record on S3 => str",
+	"records": [{"tenantId": "str", "uri": "URI of record on S3 => str"}],
 	"last_updated": "Timestamp of when the record was last updated => ISO8601:YYYY-MM-DD HH:MM:SS:str"	
 }
 ```
