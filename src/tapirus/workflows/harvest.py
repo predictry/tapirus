@@ -16,6 +16,7 @@ from tapirus.model import store
 from tapirus.utils import io
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
+from tapirus.core import errors as exceptions
 
 if os.name == 'posix':
     tempfile.tempdir = '/tmp'
@@ -328,42 +329,46 @@ class ProcessRecordTask(luigi.Task):
                 payloads = log.process_log(logfile.filepath, errors=errors)
 
                 for payload in payloads:
-                    session, agent, user, items, actions = store.parse_entities_from_data(payload)
 
-                    assert isinstance(session, store.Session)
-                    assert isinstance(agent, store.Agent)
-                    assert isinstance(user, store.User)
-                    assert isinstance(items, set)
-                    for item in items:
-                        assert isinstance(item, store.Item)
-                    assert isinstance(actions, list)
-                    for action in actions:
-                        assert isinstance(action, store.Action)
-
-                    tenant = session.tenant
-                    tenants.append(tenant)
-
-                    with open(sessionfp.format(str(self.date), self.hour, tenant), 'a') as fp:
-                        json.dump(session.properties, fp, cls=io.DateTimeEncoder)
-                        fp.write('\n')
-
-                    with open(agentfp.format(str(self.date), self.hour, tenant), 'a') as fp:
-                        json.dump(agent.properties, fp, cls=io.DateTimeEncoder)
-                        fp.write('\n')
-
-                    with open(userfp.format(str(self.date), self.hour, tenant), 'a') as fp:
-                        json.dump(user.properties, fp, cls=io.DateTimeEncoder)
-                        fp.write('\n')
-
-                    with open(itemfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                    try:
+                        session, agent, user, items, actions = store.parse_entities_from_data(payload)
+                    except exceptions.BadSchemaError:
+                        pass
+                    else:
+                        assert isinstance(session, store.Session)
+                        assert isinstance(agent, store.Agent)
+                        assert isinstance(user, store.User)
+                        assert isinstance(items, set)
                         for item in items:
-                            json.dump(item.properties, fp, cls=io.DateTimeEncoder)
+                            assert isinstance(item, store.Item)
+                        assert isinstance(actions, list)
+                        for action in actions:
+                            assert isinstance(action, store.Action)
+
+                        tenant = session.tenant
+                        tenants.append(tenant)
+
+                        with open(sessionfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                            json.dump(session.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
 
-                    with open(actionfp.format(str(self.date), self.hour, tenant), 'a') as fp:
-                        for action in actions:
-                            json.dump(action.properties, fp, cls=io.DateTimeEncoder)
+                        with open(agentfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                            json.dump(agent.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
+
+                        with open(userfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                            json.dump(user.properties, fp, cls=io.DateTimeEncoder)
+                            fp.write('\n')
+
+                        with open(itemfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                            for item in items:
+                                json.dump(item.properties, fp, cls=io.DateTimeEncoder)
+                                fp.write('\n')
+
+                        with open(actionfp.format(str(self.date), self.hour, tenant), 'a') as fp:
+                            for action in actions:
+                                json.dump(action.properties, fp, cls=io.DateTimeEncoder)
+                                fp.write('\n')
 
                 for err in errors:
 

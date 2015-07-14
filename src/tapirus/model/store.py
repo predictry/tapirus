@@ -1,6 +1,6 @@
 from tapirus.model.constants import *
 from tapirus.utils import text
-
+from tapirus.core import errors
 # TODO: Model events. Parse logs into entities and events. Feed these to data importers
 # TODO: Parse recommended item
 
@@ -560,7 +560,7 @@ def parse_entities_from_data(data):
     tenant = data[SCHEMA_KEY_TENANT_ID]
 
     if is_valid_schema(data) is False:
-        return []
+        raise errors.BadSchemaError('Invalid schema')
 
     # session = None
     agent = None

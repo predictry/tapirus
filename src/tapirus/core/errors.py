@@ -25,3 +25,7 @@ class ProcessFailureError(Exception):
 class EntityNotFoundError(Exception):
 
     pass
+
+
+class BadSchemaError(Exception):
+    pass
