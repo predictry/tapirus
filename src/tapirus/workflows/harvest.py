@@ -308,6 +308,7 @@ class ProcessRecordTask(luigi.Task):
         actionfp = os.path.join(tempfile.gettempdir(), '-'.join([prefix, 'action']))
 
         # remove files if they exist, since they'll be appended to
+        # TODO: code not effective without a tenant. remove
         for file in (sessionfp, agentfp, userfp, itemfp, actionfp):
             if os.path.exists(file):
                 Logger.info('Deleting file {0}'.format(file))
@@ -326,7 +327,7 @@ class ProcessRecordTask(luigi.Task):
             try:
                 payloads = log.process_log(logfile.filepath, errors=errors)
 
-                # TODO: log errors? We don't need to track all errors because we have the records in logs. Keeping a reference of the most recent ones should suffice
+                # TODO: doesn't contain anything until generator runs. remove
                 for err in errors:
 
                     code, data, tmpstp = err

@@ -328,15 +328,6 @@ def is_valid_schema(data):
         if not _is_valid_data(data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID]):
             return False
 
-    if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_SEARCH.lower():
-
-        if SCHEMA_KEY_KEYWORDS not in data[SCHEMA_KEY_ACTION]:
-            return False
-        if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) is not str:
-            return False
-        if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
-            return False
-
     if SCHEMA_KEY_RECOMMENDATION in data[SCHEMA_KEY_ACTION]:
         if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION]) is not str:
             return False
@@ -353,6 +344,15 @@ def is_valid_schema(data):
 
             if _is_valid_data(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_RECOMMENDATION_ORI][k]) is False:
                 return False
+
+    if data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_SEARCH.lower():
+
+        if SCHEMA_KEY_KEYWORDS not in data[SCHEMA_KEY_ACTION]:
+            return False
+        if type(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) is not str:
+            return False
+        if len(data[SCHEMA_KEY_ACTION][SCHEMA_KEY_KEYWORDS]) < 1:
+            return False
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_VIEW.lower():
 
@@ -519,18 +519,17 @@ def is_valid_schema(data):
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower():
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() in [REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower(),
+                                                              REL_ACTION_TYPE_DELETE_ITEM.lower()]:
 
-        if SCHEMA_KEY_ITEM_ID not in data:
-            return False
-        if type(data[SCHEMA_KEY_ITEM_ID]) is not str:
-            return False
-        if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
-            return False
-        if not _is_valid_data(data[SCHEMA_KEY_ITEM_ID]):
-            return False
-
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_DELETE_ITEM.lower():
+        # if SCHEMA_KEY_ITEM_ID not in data:
+        #     return False
+        # if type(data[SCHEMA_KEY_ITEM_ID]) is not str:
+        #     return False
+        # if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
+        #     return False
+        # if not _is_valid_data(data[SCHEMA_KEY_ITEM_ID]):
+        #     return False
 
         if SCHEMA_KEY_ITEMS not in data:
             return False
@@ -712,19 +711,22 @@ def parse_entities_from_data(data):
 
         actions.append(action)
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_CHECK_DELETE_ITEM:
+    # elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_CHECK_DELETE_ITEM:
+    #
+    #     action = Action(name=REL_ACTION_TYPE_CHECK_DELETE_ITEM, tenant=tenant, user=None,
+    #                     agent=agent.id, session=session.id, item=data[SCHEMA_KEY_ITEM_ID],
+    #                     timestamp=dt, fields={}, recommendation={})
+    #
+    #     actions.append(action)
 
-        action = Action(name=REL_ACTION_TYPE_CHECK_DELETE_ITEM, tenant=tenant, user=None,
-                        agent=agent.id, session=session.id, item=data[SCHEMA_KEY_ITEM_ID],
-                        timestamp=dt, fields={}, recommendation={})
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() in [REL_ACTION_TYPE_DELETE_ITEM,
+                                                              REL_ACTION_TYPE_CHECK_DELETE_ITEM]:
 
-        actions.append(action)
-
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_DELETE_ITEM:
+        act = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper()
 
         for item_data in data[SCHEMA_KEY_ITEMS]:
 
-            action = Action(name=REL_ACTION_TYPE_DELETE_ITEM, tenant=tenant, user=None,
+            action = Action(name=act, tenant=tenant, user=None,
                             agent=agent.id, session=session.id, item=item_data[SCHEMA_KEY_ITEM_ID],
                             timestamp=dt, fields={}, recommendation={})
 
