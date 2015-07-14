@@ -327,21 +327,6 @@ class ProcessRecordTask(luigi.Task):
             try:
                 payloads = log.process_log(logfile.filepath, errors=errors)
 
-                # TODO: doesn't contain anything until generator runs. remove
-                for err in errors:
-
-                    code, data, tmpstp = err
-
-                    if type(data) is not str:
-
-                        data = json.dumps(data)
-
-                    error = Error(code=code, data=data, timestamp=tmpstp)
-
-                    Logger.error(str(error))
-
-                del errors[:]
-
                 for payload in payloads:
                     session, agent, user, items, actions = store.parse_entities_from_data(payload)
 
@@ -379,6 +364,20 @@ class ProcessRecordTask(luigi.Task):
                         for action in actions:
                             json.dump(action.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
+
+                for err in errors:
+
+                    code, data, tmpstp = err
+
+                    if type(data) is not str:
+
+                        data = json.dumps(data)
+
+                    error = Error(code=code, data=data, timestamp=tmpstp)
+
+                    Logger.error(str(error))
+
+                del errors[:]
 
             except EOFError:
                 pass
