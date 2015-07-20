@@ -486,7 +486,7 @@ class ProcessRecordTask(luigi.Task):
                     json.dump(data, fp)
                     fp.write('\n')
 
-            # upload(tenant, timestamp=timestamp, filepath=filename)
+            upload(tenant, timestamp=timestamp, filepath=filename)
 
         for logfile in logfiles:
             assert isinstance(logfile, LogFile)
@@ -500,7 +500,7 @@ class ProcessRecordTask(luigi.Task):
         )
 
         record.status = constants.STATUS_PROCESSED
-        # _ = RecordDAO.update(record)
+        _ = RecordDAO.update(record)
 
         for tenant in tenants:
 
@@ -518,7 +518,7 @@ class ProcessRecordTask(luigi.Task):
             )
 
             Logger.info('Removing file {0}'.format(filename))
-            # os.remove(filename)
+            os.remove(filename)
 
 
 if __name__ == '__main__':
