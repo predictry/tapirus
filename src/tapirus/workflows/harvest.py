@@ -7,6 +7,7 @@ import gzip
 
 import luigi
 import luigi.file
+
 from tapirus import constants
 from tapirus.core import aws
 from tapirus.dao import RecordDAO, TenantRecordDAO, LogFileDAO
