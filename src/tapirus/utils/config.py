@@ -4,13 +4,11 @@ import configparser
 
 from tapirus.core import errors
 
-
 PROJECT_BASE = ''.join([os.path.dirname(os.path.abspath(__file__)), "/../../../"])
 CONFIG_FILE = ''.join([PROJECT_BASE, 'config.ini'])
 
 
 def get(section, option=None, type=None):
-
     config = configparser.ConfigParser()
 
     with open(CONFIG_FILE, "r") as fp:

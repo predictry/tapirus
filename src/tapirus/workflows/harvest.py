@@ -7,17 +7,18 @@ import gzip
 
 import luigi
 import luigi.file
-
+import tapirus.entities
+import tapirus.repo.models
 from tapirus import constants
 from tapirus.core import aws
-from tapirus.dao import RecordDAO, TenantRecordDAO, LogFileDAO
-from tapirus.entities import Record, TenantRecord, LogFile, Error
+from tapirus.core import errors as exceptions
+from tapirus.repo.dao import RecordDAO, TenantRecordDAO, LogFileDAO
+from tapirus.repo.models import Record, TenantRecord, LogFile
 from tapirus.processor import log
-from tapirus.model import store
+from tapirus.parser.v1 import pl
 from tapirus.utils import io
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
-from tapirus.core import errors as exceptions
 
 if os.name == 'posix':
     tempfile.tempdir = '/tmp'
@@ -25,8 +26,11 @@ else:
     tempfile.tempdir = 'out'
 
 
-class _DownloadedRecordTarget(luigi.Target):
+# TODO: run log read workflow
+# TODO: open files once per process...
 
+
+class _DownloadedRecordTarget(luigi.Target):
     def __init__(self, date, hour):
         self.date = date
         self.hour = hour
@@ -66,7 +70,6 @@ class _DownloadedRecordTarget(luigi.Target):
 
 
 class _ProcessedRecordTarget(luigi.Target):
-
     def __init__(self, date, hour):
 
         self.date = date
@@ -117,7 +120,6 @@ class _ProcessedRecordTarget(luigi.Target):
 
 
 class DownloadRecordLogsTask(luigi.Task):
-
     date = luigi.DateParameter()
     hour = luigi.IntParameter()
 
@@ -154,7 +156,6 @@ class DownloadRecordLogsTask(luigi.Task):
             filepath = os.path.join(tempfile.gettempdir(), filename)
 
             if not os.path.exists(os.path.dirname(filepath)):
-
                 Logger.debug('Creating directory {0}'.format(os.path.dirname(filepath)))
 
                 os.makedirs(os.path.dirname(filepath))
@@ -175,7 +176,6 @@ class DownloadRecordLogsTask(luigi.Task):
                 for logfile in logfiles:
 
                     if logfile.log == filename:
-
                         logfile.filepath = filepath
                         _ = LogFileDAO.update(logfile)
                         break
@@ -194,7 +194,6 @@ class DownloadRecordLogsTask(luigi.Task):
 
 
 class ProcessRecordTask(luigi.Task):
-
     date = luigi.DateParameter()
     hour = luigi.IntParameter()
 
@@ -293,7 +292,6 @@ class ProcessRecordTask(luigi.Task):
         logfiles = [x for x in LogFileDAO.get_logfiles(record_id=record.id)]
 
         if not logfiles:
-
             record.status = constants.STATUS_NOT_FOUND
             _ = RecordDAO.update(record)
 
@@ -308,13 +306,6 @@ class ProcessRecordTask(luigi.Task):
         userfp = os.path.join(tempfile.gettempdir(), '-'.join([prefix, 'user']))
         itemfp = os.path.join(tempfile.gettempdir(), '-'.join([prefix, 'item']))
         actionfp = os.path.join(tempfile.gettempdir(), '-'.join([prefix, 'action']))
-
-        # remove files if they exist, since they'll be appended to
-        # TODO: code not effective without a tenant. remove
-        # for file in (sessionfp, agentfp, userfp, itemfp, actionfp):
-        #     if os.path.exists(file):
-        #         Logger.info('Deleting file {0}'.format(file))
-        #         os.remove(file)
 
         tenants = []
 
@@ -332,23 +323,24 @@ class ProcessRecordTask(luigi.Task):
                 for payload in payloads:
 
                     try:
-                        session, agent, user, items, actions = store.parse_entities_from_data(payload)
+                        session, agent, user, items, actions = pl.parse_entities_from_data(payload)
                     except exceptions.BadSchemaError:
                         pass
                     else:
-                        assert isinstance(session, store.Session)
-                        assert isinstance(agent, store.Agent)
-                        assert isinstance(user, store.User)
+                        assert isinstance(session, tapirus.entities.Session)
+                        assert isinstance(agent, tapirus.entities.Agent)
+                        assert isinstance(user, tapirus.entities.User)
                         assert isinstance(items, set)
                         for item in items:
-                            assert isinstance(item, store.Item)
+                            assert isinstance(item, tapirus.entities.Item)
                         assert isinstance(actions, list)
                         for action in actions:
-                            assert isinstance(action, store.Action)
+                            assert isinstance(action, tapirus.entities.Action)
 
                         tenant = session.tenant
                         tenants.append(tenant)
 
+                        # TODO: How can I/O be reduced here?
                         with open(sessionfp.format(str(self.date), self.hour, tenant), 'a') as fp:
                             json.dump(session.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
@@ -371,17 +363,18 @@ class ProcessRecordTask(luigi.Task):
                                 json.dump(action.properties, fp, cls=io.DateTimeEncoder)
                                 fp.write('\n')
 
-                for err in errors:
+                                # TODO: process errors (Send them to a worker)
+                                # for err in errors:
+                                #
+                                #     code, data, tmpstp = err
+                                #
+                                #     if type(data) is not str:
+                                #
+                                #         data = json.dumps(data)
+                                #
+                                #     error = Error(code=code, data=data, timestamp=tmpstp)
 
-                    code, data, tmpstp = err
-
-                    if type(data) is not str:
-
-                        data = json.dumps(data)
-
-                    error = Error(code=code, data=data, timestamp=tmpstp)
-
-                    Logger.error(str(error))
+                                # Logger.error(str(err))
 
                 del errors[:]
 
@@ -523,5 +516,4 @@ class ProcessRecordTask(luigi.Task):
 
 
 if __name__ == '__main__':
-
     luigi.run()

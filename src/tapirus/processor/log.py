@@ -1,11 +1,10 @@
 import gzip
-import codecs
 
 import dateutil.parser
 import dateutil.tz
 from jsonuri import jsonuri
-
-from tapirus.model.store import is_valid_schema
+from tapirus.parser.v1.pl import is_valid_schema
+from tapirus.repo.models import Error
 from tapirus.utils.logger import Logger
 from tapirus import constants
 
@@ -71,21 +70,21 @@ def process_log(file_name, errors):
 
                         if payload:
 
-                            # TODO: log to error log
                             errors.append(
-                                (constants.ERROR_INVALIDSCHEMA_DD,
-                                 payload,
-                                 dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
-                                 )
+                                Error(
+                                    constants.ERROR_INVALIDSCHEMA_DD,
+                                    payload,
+                                    dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                )
                             )
                         else:
 
-                            # TODO: log to error log
                             errors.append(
-                                (constants.ERROR_DESERIALIZATION_DD,
-                                 columns[11],
-                                 dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
-                                 )
+                                Error(
+                                    constants.ERROR_DESERIALIZATION_DD,
+                                    columns[11],
+                                    dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                )
                             )
 
                         Logger.info(
@@ -99,29 +98,28 @@ def process_log(file_name, errors):
                             payload = jsonuri.deserialize(columns[11], decode_twice=False)
 
                             if not is_valid_schema(payload):
-
                                 raise ValueError("Invalid data schema, single decoding-pass")
 
                         except ValueError as e:
 
                             if payload:
 
-                                # TODO: log to error log
-
                                 errors.append(
-                                    (constants.ERROR_INVALIDSCHEMA_SD,
-                                     payload,
-                                     dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
-                                     )
+                                    Error(
+                                        constants.ERROR_INVALIDSCHEMA_SD,
+                                        payload,
+                                        dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                    )
                                 )
+
                             else:
 
-                                # TODO: log to error log
                                 errors.append(
-                                    (constants.ERROR_DESERIALIZATION_SD,
-                                     columns[11],
-                                     dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
-                                     )
+                                    Error(
+                                        constants.ERROR_DESERIALIZATION_SD,
+                                        columns[11],
+                                        dateutil.parser.parse(''.join([date, "T", timestamp, "Z"]))
+                                    )
                                 )
 
                             Logger.info(

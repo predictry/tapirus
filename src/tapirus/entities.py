@@ -1,77 +1,196 @@
-class Record(object):
-
-    def __init__(self, id, timestamp, last_updated, status):
-
-        self.id = id
-        self.timestamp = timestamp
-        self.last_updated = last_updated
-        self.status = status
-
-    @property
-    def properties(self):
-
-        return self.__dict__
-
-    def __str__(self):
-
-        return "Record[id={0}, timestamp={1}, last_updated={2}, status={3}]".format(
-            self.id, self.timestamp, self.last_updated, self.status
-        )
-
-
-class TenantRecord(object):
-
-    def __init__(self, id, tenant, timestamp, last_updated, uri):
-
+class Session(object):
+    def __init__(self, id, tenant, timestamp, fields):
         self.id = id
         self.tenant = tenant
         self.timestamp = timestamp
-        self.last_updated = last_updated
-        self.uri = uri
+        self.fields = fields
+
+    def __key(self):
+        return self.id, self.tenant
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.id == other.id and self.tenant == other.tenant
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "Session(id={0}, tenant={1}, timestamp={2})".format(
+            self.id, self.tenant, self.timestamp
+        )
 
     @property
     def properties(self):
-
         return self.__dict__
 
-    def __str__(self):
 
-        return "TenantRecord[id={0}, tenant={1}, timestamp={2}, last_updated={3}, uri={4}]".format(
-            self.id, self.tenant, self.timestamp, self.last_updated, self.uri
-        )
-
-
-class LogFile(object):
-
-    def __init__(self, id, record, log, filepath):
-
+class User(object):
+    def __init__(self, id, tenant, timestamp, fields):
         self.id = id
-        self.record = record
-        self.log = log
-        self.filepath = filepath
+        self.tenant = tenant
+        self.timestamp = timestamp
+        self.fields = fields
+
+    def __key(self):
+        return self.id, self.tenant
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.id == other.id and self.tenant == other.tenant
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "User(id={0}, tenant={1}, timestamp={2})".format(
+            self.id, self.tenant, self.timestamp
+        )
 
     @property
     def properties(self):
-
         return self.__dict__
 
-    def __str__(self):
 
-        return "LogFile[id={0}, record={1}, log={2}, filepath={3}]".format(
-            self.id, self.record, self.log, self.filepath
-        )
-
-
-class Error(object):
-
-    def __init__(self, code, data, timestamp):
-
-        self.code = code
-        self.data = data
+class Agent(object):
+    def __init__(self, id, tenant, timestamp, fields):
+        self.id = id
+        self.tenant = tenant
         self.timestamp = timestamp
+        self.fields = fields
 
-    def __repr__(self):
+    def __key(self):
+        return self.id, self.tenant
 
-        return "{0},{1},{2}".format(
-            self.code, self.data, str(self.timestamp)
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.id == other.id and self.tenant == other.tenant
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "Agent(id={0}, tenant={1}, timestamp={2})".format(
+            self.id, self.tenant, self.timestamp
         )
+
+    @property
+    def properties(self):
+        return self.__dict__
+
+
+class Item(object):
+    def __init__(self, id, tenant, timestamp, fields):
+        self.id = id
+        self.tenant = tenant
+        self.timestamp = timestamp
+        self.fields = fields
+
+    def __key(self):
+        return self.id, self.tenant
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.id == other.id and self.tenant == other.tenant
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "Item(id={0}, tenant={1}, timestamp={2})".format(
+            self.id, self.tenant, self.timestamp
+        )
+
+    @property
+    def properties(self):
+        return self.__dict__
+
+
+class Action(object):
+    def __init__(self, name, tenant, user, agent, session, item, timestamp, fields, recommendation):
+        self.name = name
+        self.tenant = tenant
+        self.user = user
+        self.agent = agent
+        self.session = session
+        self.item = item
+        self.timestamp = timestamp
+        self.fields = fields
+        self.recommendation = recommendation
+
+    def __key(self):
+        return self.name, self.tenant, self.session, self.item, self.timestamp
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.name == other.name and self.tenant == other.tenant and self.session == other.session and \
+               self.item == other.item and self.timestamp == other.timestamp
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "Action(name={0}, tenant={1}, user={2}, agent={3}, session={4}, item={5}, timestamp={6})".format(
+            self.name, self.tenant, self.user, self.agent, self.session, self.item, self.timestamp
+        )
+
+    @property
+    def properties(self):
+        return self.__dict__
+
+
+class Tenant(object):
+    def __init__(self, name, api_key, fields):
+        self.name = name
+        self.api_key = api_key
+        self.fields = fields
+
+    def __key(self):
+        return self.name
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return self.name == other.name
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class Recommendation(object):
+    def __init__(self, recommended, parameters):
+        self.recommended = recommended
+        self.parameters = parameters
+
+    @property
+    def properties(self):
+        return self.__dict__

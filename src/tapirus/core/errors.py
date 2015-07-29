@@ -13,7 +13,6 @@ class InvalidLabelError(Exception):
 
 
 class ConfigurationError(Exception):
-
     pass
 
 

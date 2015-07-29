@@ -1,22 +1,19 @@
 import datetime
 
 from tapirus.repo import dao
-from tapirus import entities
-import tapirus.constants
-import tapirus.repo.models
+from tapirus.repo import models
 from tapirus.utils import config
 from tapirus import constants
 from tapirus import tasks
 
 
-class RecordUseCases(object):
-
+class RecordDomain(object):
     @staticmethod
     def update_record_status(timestamp):
 
         if not dao.RecordDAO.exists(timestamp=timestamp):
-            record = tapirus.repo.models.Record(id=None, timestamp=timestamp, last_updated=None,
-                                     status=tapirus.constants.STATUS_PENDING)
+            record = models.Record(id=None, timestamp=timestamp, last_updated=None,
+                                   status=constants.STATUS_PENDING)
 
             new_record = dao.RecordDAO.create(record)
 
@@ -28,20 +25,19 @@ class RecordUseCases(object):
 
             record = dao.RecordDAO.read(timestamp=timestamp)
 
-            if record.status == tapirus.constants.STATUS_NOT_FOUND:
+            if record.status == constants.STATUS_NOT_FOUND:
 
                 # try again. it might too early, or record may have been made available
                 tasks.run_workflow_for_record.delay(timestamp)
 
-            elif record.status in (tapirus.constants.STATUS_PENDING, tapirus.constants.STATUS_DOWNLOADED,
-                                   tapirus.constants.STATUS_BUILDING):
+            elif record.status in (constants.STATUS_PENDING, constants.STATUS_DOWNLOADED,
+                                   constants.STATUS_BUILDING):
 
                 threshold = int(config.get('harvester', 'threshold'))
 
                 delta = datetime.datetime.utcnow() - record.last_updated
 
                 if delta.total_seconds() > threshold:
-
                     tasks.run_workflow_for_record.delay(timestamp)
 
             return record

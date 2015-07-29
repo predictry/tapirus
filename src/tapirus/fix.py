@@ -5,7 +5,7 @@ import os.path
 
 from redis import Redis
 from rq.decorators import job
-from tapirus.workflows import harvest
+from tapirus import bukalapakfix
 from tapirus.utils.logger import Logger
 from tapirus.core import errors
 from tapirus.utils import config
@@ -14,11 +14,11 @@ _redis_conn = Redis()
 
 
 @job('medium', connection=_redis_conn, timeout=int(config.get('harvester', 'timeout')))
-def run_workflow_for_record(timestamp):
+def run_bukalapak_fix(timestamp):
     assert isinstance(timestamp, datetime.datetime)
 
-    filepath = os.path.abspath(harvest.__file__)
-    classname = harvest.ProcessRecordTask.__name__
+    filepath = os.path.abspath(bukalapakfix.__file__)
+    classname = bukalapakfix.ProcessRecordTask.__name__
 
     Logger.info([sys.executable, filepath, classname,
                  "--date", str(timestamp.date()),

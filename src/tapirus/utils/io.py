@@ -10,14 +10,13 @@ def delete_file(file_path):
     :return:
     """
 
-    #todo: check for IO errors/exceptions
-    #todo: return True/False
+    # todo: check for IO errors/exceptions
+    # todo: return True/False
 
     os.remove(file_path)
 
 
 def parse_date(d):
-
     try:
         return datetime.datetime.strptime(d, "%Y-%m-%d")
     except ValueError:
@@ -32,7 +31,6 @@ def parse_hour(h):
 
 
 def parse_timestamp(date, hour):
-
     string = '-'.join([date, hour])
 
     try:

@@ -1,6 +1,6 @@
 import boto.sqs
 from boto.sqs.message import Message
-from boto.s3.connection import S3Connection, Bucket
+from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from boto.exception import S3ResponseError
 
