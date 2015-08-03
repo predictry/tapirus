@@ -4,6 +4,7 @@ import tempfile
 import datetime
 import json
 import gzip
+import concurrent.futures
 
 import luigi
 import luigi.file
@@ -311,6 +312,8 @@ class ProcessRecordTask(luigi.Task):
 
                 Logger.error('Error uploading file to S3: \n{0}'.format(status))
 
+            return status
+
         def pack(tenant):
 
             sessions = []
@@ -406,7 +409,7 @@ class ProcessRecordTask(luigi.Task):
                     json.dump(data, fp)
                     fp.write('\n')
 
-            upload(tenant, filepath=filename)
+            return upload(tenant, filepath=filename)
 
         for logfile in logfiles:
 
@@ -485,8 +488,16 @@ class ProcessRecordTask(luigi.Task):
         tenants = list(set(tenants))
 
         # TODO: run in parallel
-        for tenant in tenants:
-            pack(tenant)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            for tenant, result in zip(tenants, executor.map(pack, tenants)):
+                Logger.info(
+                    'Uploaded record for tenant {0}, code: {1}'.format(
+                        tenant, result
+                    )
+                )
+
+        # for tenant in tenants:
+        #     pack(tenant)
 
         for logfile in logfiles:
             assert isinstance(logfile, LogFile)
