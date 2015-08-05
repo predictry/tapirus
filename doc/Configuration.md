@@ -5,7 +5,7 @@ All configurations files should be on the base project path, when building the [
 ##[Tap](https://github.com/predictry/tapirus)
 
 ###config.ini
-Credentials, service parameters (e.g. execution timeout, db credentials...)
+Credentials, service parameters (e.g. execution timeout, db credentials, messaging service channels...)
 ```ini
 [logging]
 logconfig=logging.json
@@ -30,6 +30,13 @@ records=records
 
 [luigi]
 configfile=client.cfg
+
+[log-error]
+host=127.0.0.1
+port=1234
+username=user
+password=word
+topic=log.error
 ```
 
 [Sample](../conf/config.ini)

@@ -60,3 +60,8 @@ class Error(object):
         return "{0},{1},{2}".format(
             self.code, self.data, str(self.timestamp)
         )
+
+    @property
+    def properties(self):
+
+        return self.__dict__
