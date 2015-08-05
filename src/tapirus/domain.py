@@ -52,3 +52,13 @@ class RecordDomain(object):
             tenant_records = dao.TenantRecordDAO.find(timestamp=timestamp, tenant=tenant)
 
             return [x for x in tenant_records]
+
+
+class LogErrorDomain(object):
+
+    @staticmethod
+    def process_log_error(error):
+        tasks.send_error_to_operator.delay(error)
+
+
+

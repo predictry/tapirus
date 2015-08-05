@@ -3,6 +3,7 @@ import sys
 import subprocess
 import os.path
 import urllib.parse
+import json
 
 from redis import Redis
 from rq.decorators import job
@@ -13,13 +14,21 @@ from tapirus.utils.logger import Logger
 from tapirus.core import errors
 from tapirus.utils import config
 from tapirus.repo.models import Error
+from tapirus.parser.v1 import pl
+from tapirus.utils import io
 
 _redis_conn = Redis()
 
 
-@job('low', connection=_redis_conn, timeout=10)
+@job('low', connection=_redis_conn, timeout=60)
 def send_error_to_operator(error):
     assert isinstance(error, Error)
+
+    faults = pl.detect_schema_errors(
+        error
+    )
+
+    err = Error(error.code, faults, error.timestamp)
 
     cfg = config.get('log-error')
 
@@ -36,9 +45,18 @@ def send_error_to_operator(error):
     s = requests.session()
     s.auth = auth
 
-    response = s.post(url=url, json=error.properties)
+    response = s.post(url=url, json=json.dumps(err.properties, cls=io.DateTimeEncoder))
 
-    if response.status_code != 200:
+    if response.status_code == 200:
+
+        Logger.info(
+            'Successfully sent "log error" to Operator, {0}'.format(
+                str(err)
+            )
+        )
+
+    else:
+
         Logger.error(
             'There was problem sending "log error" to the Operator: returned status {0}'.format(
                 response.status_code

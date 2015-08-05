@@ -57,8 +57,8 @@ class Error(object):
         self.timestamp = timestamp
 
     def __repr__(self):
-        return "{0},{1},{2}".format(
-            self.code, self.data, str(self.timestamp)
+        return "Error[{0},{1}]".format(
+            self.code, str(self.timestamp)
         )
 
     @property

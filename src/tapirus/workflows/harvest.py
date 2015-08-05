@@ -14,12 +14,13 @@ from tapirus import constants
 from tapirus.core import aws
 from tapirus.core import errors as exceptions
 from tapirus.repo.dao import RecordDAO, TenantRecordDAO, LogFileDAO
-from tapirus.repo.models import Record, TenantRecord, LogFile
+from tapirus.repo.models import Record, TenantRecord, LogFile, Error
 from tapirus.processor import log
 from tapirus.parser.v1 import pl
 from tapirus.utils import io
 from tapirus.utils import config
 from tapirus.utils.logger import Logger
+
 
 if os.name == 'posix':
     tempfile.tempdir = '/tmp'
@@ -345,7 +346,7 @@ class ProcessRecordTask(luigi.Task):
                     'processed': str(datetime.datetime.now())
                 }
 
-                if os.path.exists(sessionfp.format(str(timestamp.date()), timestamp.hour, tenant)):
+                if os.path.exists(sessionfp.format(*template(tenant))):
                     with open(sessionfp.format(str(timestamp.date()), timestamp.hour, tenant), 'r') as inp:
 
                         for line in inp:
@@ -353,29 +354,29 @@ class ProcessRecordTask(luigi.Task):
 
                             sessions.append(session)
 
-                if os.path.exists(agentfp.format(template(tenant))):
-                    with open(agentfp.format(template(tenant)), 'r') as inp:
+                if os.path.exists(agentfp.format(*template(tenant))):
+                    with open(agentfp.format(*template(tenant)), 'r') as inp:
 
                         for line in inp:
                             agent = json.loads(line, encoding='UTF-8')
                             agents.append(agent)
 
-                if os.path.exists(userfp.format(template(tenant))):
-                    with open(userfp.format(template(tenant)), 'r') as inp:
+                if os.path.exists(userfp.format(*template(tenant))):
+                    with open(userfp.format(*template(tenant)), 'r') as inp:
 
                         for line in inp:
                             user = json.loads(line, encoding='UTF-8')
                             users.append(user)
 
-                if os.path.exists(itemfp.format(template(tenant))):
-                    with open(itemfp.format(template(tenant)), 'r') as inp:
+                if os.path.exists(itemfp.format(*template(tenant))):
+                    with open(itemfp.format(*template(tenant)), 'r') as inp:
 
                         for line in inp:
                             item = json.loads(line, encoding='UTF-8')
                             items.append(item)
 
-                if os.path.exists(actionfp.format(template(tenant))):
-                    with open(actionfp.format(template(tenant)), 'r') as inp:
+                if os.path.exists(actionfp.format(*template(tenant))):
+                    with open(actionfp.format(*template(tenant)), 'r') as inp:
 
                         for line in inp:
                             action = json.loads(line, encoding='UTF-8')
@@ -443,40 +444,32 @@ class ProcessRecordTask(luigi.Task):
                         tenants.append(tenant)
 
                         # TODO: How can I/O be reduced here?
-                        with open(sessionfp.format(template(tenant)), 'a') as fp:
+                        with open(sessionfp.format(*template(tenant)), 'a') as fp:
                             json.dump(session.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
 
-                        with open(agentfp.format(template(tenant)), 'a') as fp:
+                        with open(agentfp.format(*template(tenant)), 'a') as fp:
                             json.dump(agent.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
 
-                        with open(userfp.format(template(tenant)), 'a') as fp:
+                        with open(userfp.format(*template(tenant)), 'a') as fp:
                             json.dump(user.properties, fp, cls=io.DateTimeEncoder)
                             fp.write('\n')
 
-                        with open(itemfp.format(template(tenant)), 'a') as fp:
+                        with open(itemfp.format(*template(tenant)), 'a') as fp:
                             for item in items:
                                 json.dump(item.properties, fp, cls=io.DateTimeEncoder)
                                 fp.write('\n')
 
-                        with open(actionfp.format(template(tenant)), 'a') as fp:
+                        with open(actionfp.format(*template(tenant)), 'a') as fp:
                             for action in actions:
                                 json.dump(action.properties, fp, cls=io.DateTimeEncoder)
                                 fp.write('\n')
 
-                                # TODO: process errors (Send them to a worker)
-                                # for err in errors:
-                                #
-                                #     code, data, tmpstp = err
-                                #
-                                #     if type(data) is not str:
-                                #
-                                #         data = json.dumps(data)
-                                #
-                                #     error = Error(code=code, data=data, timestamp=tmpstp)
-
-                                # Logger.error(str(err))
+                # process errors (Send them to a worker)
+                from tapirus.domain import LogErrorDomain
+                for err in errors:
+                    LogErrorDomain.process_log_error(err)
 
                 del errors[:]
 
@@ -487,7 +480,6 @@ class ProcessRecordTask(luigi.Task):
 
         tenants = list(set(tenants))
 
-        # TODO: run in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
             for tenant, result in zip(tenants, executor.map(pack, tenants)):
                 Logger.info(
@@ -495,9 +487,6 @@ class ProcessRecordTask(luigi.Task):
                         tenant, result
                     )
                 )
-
-        # for tenant in tenants:
-        #     pack(tenant)
 
         for logfile in logfiles:
             assert isinstance(logfile, LogFile)
@@ -517,7 +506,7 @@ class ProcessRecordTask(luigi.Task):
 
             for file in (sessionfp, agentfp, userfp, itemfp, actionfp):
 
-                filepath = file.format(template(tenant))
+                filepath = file.format(*template(tenant))
 
                 if os.path.exists(filepath):
                     Logger.info('Removing file {0}'.format(filepath))
@@ -525,7 +514,7 @@ class ProcessRecordTask(luigi.Task):
 
             filename = os.path.join(
                 tempfile.gettempdir(),
-                '.'.join([prefix.format(template(tenant)), 'hdfs'])
+                '.'.join([prefix.format(*template(tenant)), 'hdfs'])
             )
 
             Logger.info('Removing file {0}'.format(filename))
