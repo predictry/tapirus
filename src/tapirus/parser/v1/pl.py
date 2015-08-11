@@ -1521,6 +1521,19 @@ def parse_entities_from_data(data):
 
                 if k != SCHEMA_KEY_ITEM_ID and is_acceptable_data_type(v):
                     fields[k] = v
+                else:
+
+                    if k == SCHEMA_KEY_RETURN:
+                        rt = {}
+
+                        if type(item_data[k]) is dict:
+                            for rkey, rval in item_data[k].items():
+
+                                if is_acceptable_data_type(rval):
+                                    rt[rkey] = rval
+
+                        if rt:
+                            fields[SCHEMA_KEY_RETURN] = rt
 
             item.fields = fields
             # TODO: Location
