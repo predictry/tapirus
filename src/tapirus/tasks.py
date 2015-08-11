@@ -45,7 +45,8 @@ def send_error_to_operator(error):
     s = requests.session()
     s.auth = auth
 
-    response = s.post(url=url, json=json.dumps(err.properties, cls=io.DateTimeEncoder))
+    response = s.post(url=url, data=json.dumps(err.properties, cls=io.DateTimeEncoder),
+                      headers={'Content-Type': 'text/plain'})
 
     if response.status_code == 200:
 
