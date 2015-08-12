@@ -28,7 +28,7 @@ def send_error_to_operator(error):
         error
     )
 
-    err = Error(error.code, faults, error.timestamp)
+    # err = Error(error.code, faults, error.timestamp)
 
     cfg = config.get('log-error')
 
@@ -45,24 +45,28 @@ def send_error_to_operator(error):
     s = requests.session()
     s.auth = auth
 
-    response = s.post(url=url, data=json.dumps(err.properties, cls=io.DateTimeEncoder),
-                      headers={'Content-Type': 'text/plain'})
+    for fault in faults:
 
-    if response.status_code == 200:
+        err = Error(error.code, fault, error.timestamp)
 
-        Logger.info(
-            'Successfully sent "log error" to Operator, {0}'.format(
-                str(err)
+        response = s.post(url=url, data=json.dumps(err.properties, cls=io.DateTimeEncoder),
+                          headers={'Content-Type': 'text/plain'})
+
+        if response.status_code == 200:
+
+            Logger.info(
+                'Successfully sent "log error" to Operator, {0}'.format(
+                    str(err)
+                )
             )
-        )
 
-    else:
+        else:
 
-        Logger.error(
-            'There was problem sending "log error" to the Operator: returned status {0}'.format(
-                response.status_code
+            Logger.error(
+                'There was problem sending "log error" to the Operator: returned status {0}'.format(
+                    response.status_code
+                )
             )
-        )
 
 
 @job('medium', connection=_redis_conn, timeout=int(config.get('harvester', 'timeout')))
