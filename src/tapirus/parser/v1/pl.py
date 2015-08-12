@@ -50,6 +50,15 @@ def is_acceptable_data_type(e):
     return True
 
 
+def is_basic_data_type(e):
+
+    if type(e) in [bool, int, float, complex, str, bytes]:
+
+        return True
+
+    return False
+
+
 def _is_valid_data(value):
     chars = ("[", "]", ".")
 
@@ -169,6 +178,30 @@ def is_valid_schema(data):
                     if type(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) is not str:
                         return False
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
+                        return False
+
+            if SCHEMA_KEY_CATEGORIES in item:
+
+                if type(item[SCHEMA_KEY_CATEGORIES]) is not list:
+                    return False
+
+                for e in item[SCHEMA_KEY_CATEGORIES]:
+
+                    if type(e) is not str:
+                        return False
+                    if len(e) < 1:
+                        return False
+
+            if SCHEMA_KEY_TAGS in item:
+
+                if type(item[SCHEMA_KEY_TAGS]) is not list:
+                    return False
+
+                for e in item[SCHEMA_KEY_TAGS]:
+
+                    if type(e) is not str:
+                        return False
+                    if len(e) < 1:
                         return False
 
     elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_ADD_TO_CART.lower():
@@ -824,6 +857,98 @@ def detect_schema_errors(error):
                                                             'Item',
                                                             SCHEMA_KEY_LOCATION,
                                                             SCHEMA_KEY_CITY),
+                                                        ErrorCause.INVALID_VALUE,
+                                                        None
+                                                    )
+                                                )
+
+                            if SCHEMA_KEY_CATEGORIES in item:
+
+                                if type(item[SCHEMA_KEY_CATEGORIES]) is not list:
+                                    faults.append(
+                                        fault(
+                                            mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS, 'Item',
+                                                SCHEMA_KEY_CATEGORIES),
+                                            ErrorCause.WRONG_DATA_TYPE,
+                                            expected(DataType.LIST)
+                                        )
+                                    )
+
+                                else:
+
+                                    for e in item[SCHEMA_KEY_CATEGORIES]:
+
+                                        if type(e) is not str:
+                                            faults.append(
+                                                fault(
+                                                    mix(
+                                                        SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS,
+                                                        'Item',
+                                                        SCHEMA_KEY_CATEGORIES,
+                                                        'value'
+                                                    ),
+                                                    ErrorCause.WRONG_DATA_TYPE,
+                                                    expected(DataType.TEXT)
+                                                )
+                                            )
+
+                                        else:
+
+                                            if len(e) < 1:
+                                                faults.append(
+                                                    fault(
+                                                        mix(
+                                                            SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS,
+                                                            'Item',
+                                                            SCHEMA_KEY_CATEGORIES,
+                                                            'value'
+                                                        ),
+                                                        ErrorCause.INVALID_VALUE,
+                                                        None
+                                                    )
+                                                )
+
+                            if SCHEMA_KEY_TAGS in item:
+
+                                if type(item[SCHEMA_KEY_TAGS]) is not list:
+                                    faults.append(
+                                        fault(
+                                            mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS, 'Item',
+                                                SCHEMA_KEY_TAGS),
+                                            ErrorCause.WRONG_DATA_TYPE,
+                                            expected(DataType.LIST)
+                                        )
+                                    )
+
+                                else:
+
+                                    for e in item[SCHEMA_KEY_TAGS]:
+
+                                        if type(e) is not str:
+                                            faults.append(
+                                                fault(
+                                                    mix(
+                                                        SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS,
+                                                        'Item',
+                                                        SCHEMA_KEY_TAGS,
+                                                        'value'
+                                                    ),
+                                                    ErrorCause.WRONG_DATA_TYPE,
+                                                    expected(DataType.TEXT)
+                                                )
+                                            )
+
+                                        else:
+
+                                            if len(e) < 1:
+                                                faults.append(
+                                                    fault(
+                                                        mix(
+                                                            SCHEMA_KEY_ACTION, REL_ACTION_TYPE_VIEW, SCHEMA_KEY_ITEMS,
+                                                            'Item',
+                                                            SCHEMA_KEY_TAGS,
+                                                            'value'
+                                                        ),
                                                         ErrorCause.INVALID_VALUE,
                                                         None
                                                     )
@@ -1524,16 +1649,44 @@ def parse_entities_from_data(data):
                 else:
 
                     if k == SCHEMA_KEY_RETURN:
-                        rt = {}
+                        extrafield = {}
 
                         if type(item_data[k]) is dict:
                             for rkey, rval in item_data[k].items():
 
                                 if is_acceptable_data_type(rval):
-                                    rt[rkey] = rval
+                                    extrafield[rkey] = rval
 
-                        if rt:
-                            fields[SCHEMA_KEY_RETURN] = rt
+                        if extrafield:
+                            fields[k] = extrafield
+
+                    elif k == SCHEMA_KEY_CATEGORIES:
+
+                        extrafield = []
+
+                        if type(item_data[k]) is list:
+
+                            for rval in item_data[k]:
+
+                                if is_basic_data_type(rval):
+                                    extrafield.append(rval)
+
+                        if extrafield:
+                            fields[k] = extrafield
+
+                    elif k == SCHEMA_KEY_TAGS:
+
+                        extrafield = []
+
+                        if type(item_data[k]) is list:
+
+                            for rval in item_data[k]:
+
+                                if is_basic_data_type(rval):
+                                    extrafield.append(rval)
+
+                        if extrafield:
+                            fields[k] = extrafield
 
             item.fields = fields
             # TODO: Location
