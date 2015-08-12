@@ -26,6 +26,14 @@ class DataType(enum.Enum):
 # TODO: Model events. Parse logs into entities and events. Feed these to data importers
 # TODO: Parse recommended item
 
+def is_basic_data_type(e):
+
+    if type(e) in [bool, int, float, complex, str, bytes]:
+
+        return True
+
+    return False
+
 
 def is_acceptable_data_type(e):
     """
@@ -39,7 +47,7 @@ def is_acceptable_data_type(e):
         if type(e) is list or set:
 
             for elem in e:
-                if type(elem) is dict:
+                if not is_basic_data_type(elem):
                     return False
         else:
             return True
@@ -48,15 +56,6 @@ def is_acceptable_data_type(e):
         return False
 
     return True
-
-
-def is_basic_data_type(e):
-
-    if type(e) in [bool, int, float, complex, str, bytes]:
-
-        return True
-
-    return False
 
 
 def _is_valid_data(value):
@@ -1644,7 +1643,7 @@ def parse_entities_from_data(data):
             fields = {}
             for k, v in item_data.items():
 
-                if k != SCHEMA_KEY_ITEM_ID and is_acceptable_data_type(v):
+                if k != SCHEMA_KEY_ITEM_ID and is_basic_data_type(v):
                     fields[k] = v
                 else:
 
