@@ -23,9 +23,6 @@ class DataType(enum.Enum):
     BOOLEAN = 'Boolean'
 
 
-# TODO: Model events. Parse logs into entities and events. Feed these to data importers
-# TODO: Parse recommended item
-
 def is_basic_data_type(e):
 
     if type(e) in [bool, int, float, complex, str, bytes]:
@@ -337,17 +334,7 @@ def is_valid_schema(data):
                     if len(item[SCHEMA_KEY_LOCATION][SCHEMA_KEY_CITY]) < 1:
                         return False
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() in [REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower(),
-                                                              REL_ACTION_TYPE_DELETE_ITEM.lower()]:
-
-        # if SCHEMA_KEY_ITEM_ID not in data:
-        #     return False
-        # if type(data[SCHEMA_KEY_ITEM_ID]) is not str:
-        #     return False
-        # if len(data[SCHEMA_KEY_ITEM_ID]) < 1:
-        #     return False
-        # if not _is_valid_data(data[SCHEMA_KEY_ITEM_ID]):
-        #     return False
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_DELETE_ITEM.lower():
 
         if SCHEMA_KEY_ITEMS not in data:
             return False
@@ -355,18 +342,9 @@ def is_valid_schema(data):
         if type(data[SCHEMA_KEY_ITEMS]) is not list:
             return False
 
-        for item in data[SCHEMA_KEY_ITEMS]:
+        for e in data[SCHEMA_KEY_ITEMS]:
 
-            if type(item) is not dict:
-                return False
-
-            if SCHEMA_KEY_ITEM_ID not in item:
-                return False
-            if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
-                return False
-            if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
-                return False
-            if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
+            if type(e) is not str:
                 return False
 
     return True
@@ -1497,8 +1475,7 @@ def detect_schema_errors(error):
                                                     )
                                                 )
 
-        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() in [REL_ACTION_TYPE_CHECK_DELETE_ITEM.lower(),
-                                                                  REL_ACTION_TYPE_DELETE_ITEM.lower()]:
+        elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].lower() == REL_ACTION_TYPE_DELETE_ITEM.lower():
 
             if SCHEMA_KEY_ITEMS not in data:
                 faults.append(
@@ -1522,65 +1499,39 @@ def detect_schema_errors(error):
 
                 else:
 
-                    for item in data[SCHEMA_KEY_ITEMS]:
+                    for e in data[SCHEMA_KEY_ITEMS]:
 
-                        if type(item) is not dict:
+                        if type(e) is not str:
                             faults.append(
                                 fault(
-                                    mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS, 'Item'),
+                                    mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
+                                        SCHEMA_KEY_ITEM_ID),
                                     ErrorCause.WRONG_DATA_TYPE,
-                                    expected(DataType.MAP)
+                                    expected(DataType.TEXT)
                                 )
                             )
 
                         else:
 
-                            if SCHEMA_KEY_ITEM_ID not in item:
+                            if len(e) < 1:
                                 faults.append(
                                     fault(
-                                        mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS, 'Item',
+                                        mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
                                             SCHEMA_KEY_ITEM_ID),
-                                        ErrorCause.MISSING_KEY,
+                                        ErrorCause.INVALID_VALUE,
                                         None
                                     )
                                 )
 
-                            else:
-
-                                if type(item[SCHEMA_KEY_ITEM_ID]) is not str:
-                                    faults.append(
-                                        fault(
-                                            mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
-                                                'Item',
-                                                SCHEMA_KEY_ITEM_ID),
-                                            ErrorCause.WRONG_DATA_TYPE,
-                                            expected(DataType.TEXT)
-                                        )
+                            if not _is_valid_data(e):
+                                faults.append(
+                                    fault(
+                                        mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
+                                            SCHEMA_KEY_ITEM_ID),
+                                        ErrorCause.INVALID_VALUE,
+                                        None
                                     )
-
-                                else:
-
-                                    if len(item[SCHEMA_KEY_ITEM_ID]) < 1:
-                                        faults.append(
-                                            fault(
-                                                mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
-                                                    'Item',
-                                                    SCHEMA_KEY_ITEM_ID),
-                                                ErrorCause.INVALID_VALUE,
-                                                None
-                                            )
-                                        )
-
-                                    if not _is_valid_data(item[SCHEMA_KEY_ITEM_ID]):
-                                        faults.append(
-                                            fault(
-                                                mix(SCHEMA_KEY_ACTION, REL_ACTION_TYPE_DELETE_ITEM, SCHEMA_KEY_ITEMS,
-                                                    'Item',
-                                                    SCHEMA_KEY_ITEM_ID),
-                                                ErrorCause.INVALID_VALUE,
-                                                None
-                                            )
-                                        )
+                                )
 
     return faults
 
@@ -1758,14 +1709,11 @@ def parse_entities_from_data(data):
 
         actions.append(action)
 
-    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() in [REL_ACTION_TYPE_DELETE_ITEM,
-                                                              REL_ACTION_TYPE_CHECK_DELETE_ITEM]:
+    elif data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper() == REL_ACTION_TYPE_DELETE_ITEM:
 
-        act = data[SCHEMA_KEY_ACTION][SCHEMA_KEY_NAME].upper()
-
-        for item_data in data[SCHEMA_KEY_ITEMS]:
-            action = Action(name=act, tenant=tenant, user=None,
-                            agent=agent.id, session=session.id, item=item_data[SCHEMA_KEY_ITEM_ID],
+        for item_id in data[SCHEMA_KEY_ITEMS]:
+            action = Action(name=REL_ACTION_TYPE_DELETE_ITEM, tenant=tenant, user=None,
+                            agent=agent.id, session=session.id, item=item_id,
                             timestamp=dt, fields={}, recommendation={})
 
             actions.append(action)
