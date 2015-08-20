@@ -25,7 +25,13 @@ Python specific requirements are in the [requirements.txt](requirements.txt) fil
 
 
 ##Deployment
-To run the application, you can a peek at the sample [supervisor](conf/supervisor-app.conf) configuration file.
+
+**Production/Server**
+
+To run the application, you can use the scripts [build.sh](scripts/build.sh) and [run.sh](scripts/run.sh); they build
+and run a docker container for the application, respectively.
+Getting a peek at the sample [supervisor](conf/supervisor-app.conf) configuration file you can see which services
+are required to run the application.
 
 It runs uWSGI, Redis server, RQ workers, Luigi server, Nginx, and application specific services. All of these dependencies
 are downloaded and setup in the Dockerfile. Though you need to have your configuration files on the project's
@@ -33,7 +39,12 @@ base path. You can copy the sample files from `conf/` and modify them according 
 You need a SQL database running, with a database created for the application. Just specify this database, along with
 connection details in the `datastore` section of the `config.ini` file.
 
+**Development/Local**
+
 To run the application locally though, you just need the Redis server, an RQ worker, and Luigi server.
+Before that, you can build a virtual env for the app with the [build-env.sh](scripts/build-env.sh) script.
+Currently, Tapirus doesn't require any volume mounting. Downloaded files and Record files are kept in the container
+for the duration of processing only, and erased immediately after.
 
 
 ##Third Party Services
