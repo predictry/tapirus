@@ -40,6 +40,7 @@ channel=tap.error.channel
 type=topic
 username=user
 password=password
+enabled=True
 ```
 
 [Sample](../conf/config.ini)

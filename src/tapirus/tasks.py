@@ -24,11 +24,19 @@ _redis_conn = Redis()
 def send_error_to_operator(error):
     assert isinstance(error, Error)
 
+    go = config.get('log-error', 'enabled', bool)
+
+    if go is False:
+
+        Logger.info(
+            'Error processing is disabled. Skipping error.'
+        )
+
+        return
+
     faults = pl.detect_schema_errors(
         error
     )
-
-    # err = Error(error.code, faults, error.timestamp)
 
     cfg = config.get('log-error')
 
