@@ -14,23 +14,58 @@ def get(section, option=None, type=None):
     with open(CONFIG_FILE, "r") as fp:
         config.read_file(fp)
 
-        if option:
+        try:
 
-            try:
-                value = config.get(section, option)
-            except configparser.NoOptionError as exc:
-                raise errors.ConfigurationError(exc)
-            else:
+            if option:
 
-                if type and hasattr(type, '__call__'):
-                    return type(value)
+                if type:
+
+                    if type in [str, int, float, complex]:
+                        value = type(config.get(section, option))
+
+                    elif type == bool:
+                        value = config.getboolean(section, option)
+                    else:
+                        raise errors.ConfigurationError(
+                            '{0} is an invalid data type. `type` must be a basic data type: '
+                            'str, bool, int, float or complex'.format(
+                                str(type)
+                            )
+                        )
                 else:
-                    return value
-        else:
 
-            try:
-                data = dict(config.items(section))
-            except configparser.NoSectionError as exc:
-                raise errors.ConfigurationError(exc)
+                    value = config.get(section, option)
+
+                return value
+
             else:
+
+                data = dict(config.items(section))
+
                 return data
+
+        except configparser.NoOptionError as exc:
+                    raise errors.ConfigurationError(exc)
+        except configparser.NoSectionError as exc:
+            raise errors.ConfigurationError(exc)
+
+
+def save(section, option, value):
+    config = configparser.ConfigParser()
+
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as fp:
+            config.read_file(fp)
+
+    with open(CONFIG_FILE, "w") as fp:
+
+        try:
+
+            if config.has_section(section) is False:
+                config.add_section(section)
+
+            config.set(section, option, str(value))
+
+            config.write(fp)
+        except configparser.Error as exc:
+            raise errors.ConfigurationError(exc)
