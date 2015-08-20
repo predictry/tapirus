@@ -45,7 +45,7 @@ def get(section, option=None, type=None):
                 return data
 
         except configparser.NoOptionError as exc:
-                    raise errors.ConfigurationError(exc)
+            raise errors.ConfigurationError(exc)
         except configparser.NoSectionError as exc:
             raise errors.ConfigurationError(exc)
 
