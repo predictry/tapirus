@@ -65,6 +65,9 @@ class ConfigurationFileTest(unittest.TestCase):
     def test_004_should_fail_to_parse_read_invalid_data_type(self):
 
         self.assertRaises(errors.ConfigurationError, config.get, 'sample', 'bool', 1)
+        self.assertRaises(errors.ConfigurationError, config.get, 'sample', 'float', dict)
 
+    def test_005_should_receive_fallback_value(self):
 
-
+        self.assertEqual(config.get('database', 'blank', fallback=True), True)
+        self.assertEqual(config.get('queue', fallback={"k": "a", "j": "b"}), {"k": "a", "j": "b"})

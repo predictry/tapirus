@@ -18,7 +18,7 @@ def harvest_past_hour():
         for timestamp in timestamps:
             tasks.run_workflow_for_record.delay(timestamp)
 
-    period = int(config.get('harvester', 'interval', 3600))
+    period = config.get('harvester', 'interval', type=int, fallback=3600)
     schedule.every(period).seconds.do(inner)
 
     Logger.info('Initiating log harvesting worker...')

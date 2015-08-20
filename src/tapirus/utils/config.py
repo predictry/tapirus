@@ -7,8 +7,10 @@ from tapirus.core import errors
 PROJECT_BASE = ''.join([os.path.dirname(os.path.abspath(__file__)), "/../../../"])
 CONFIG_FILE = ''.join([PROJECT_BASE, 'config.ini'])
 
+_UNSET = object()
 
-def get(section, option=None, type=None):
+
+def get(section, option=None, type=None, fallback=_UNSET):
     config = configparser.ConfigParser()
 
     with open(CONFIG_FILE, "r") as fp:
@@ -44,10 +46,12 @@ def get(section, option=None, type=None):
 
                 return data
 
-        except configparser.NoOptionError as exc:
-            raise errors.ConfigurationError(exc)
-        except configparser.NoSectionError as exc:
-            raise errors.ConfigurationError(exc)
+        except (configparser.NoOptionError, configparser.NoSectionError) as exc:
+
+            if fallback is _UNSET:
+                raise errors.ConfigurationError(exc)
+            else:
+                return fallback
 
 
 def save(section, option, value):

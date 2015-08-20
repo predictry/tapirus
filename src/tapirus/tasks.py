@@ -24,7 +24,7 @@ _redis_conn = Redis()
 def send_error_to_operator(error):
     assert isinstance(error, Error)
 
-    go = config.get('log-error', 'enabled', bool)
+    go = config.get('log-error', 'enabled', type=bool)
 
     if go is False:
 
