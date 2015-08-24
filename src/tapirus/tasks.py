@@ -55,16 +55,21 @@ def send_error_to_operator(error):
 
     for fault in faults:
 
-        err = Error(error.code, fault, error.timestamp)
+        err = {
+            'code': error.code,
+            'data': fault,
+            'timestamp': error.timestamp,
+            'payload': error.data
+        }
 
-        response = s.post(url=url, data=json.dumps(err.properties, cls=io.DateTimeEncoder),
+        response = s.post(url=url, data=json.dumps(err, cls=io.DateTimeEncoder),
                           headers={'Content-Type': 'text/plain'})
 
         if response.status_code == 200:
 
             Logger.info(
-                'Successfully sent "log error" to Operator, {0}'.format(
-                    str(err)
+                'Successfully sent "log error" to Operator, [{0}, {1}]'.format(
+                    str(error.code), str(error.timestamp)
                 )
             )
 
