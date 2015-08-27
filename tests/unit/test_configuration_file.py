@@ -1,5 +1,6 @@
 import unittest
 import os.path
+import os
 
 from tapirus.utils import config
 from tapirus.core import errors
@@ -35,7 +36,7 @@ class ConfigurationFileTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         config.CONFIG_FILE = cls.tmp_config
-        print(config.CONFIG_FILE)
+        os.remove(os.path.join(config.PROJECT_BASE, 'test-config.ini'))
 
     def test_001_should_create_configuration_file(self):
 

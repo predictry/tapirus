@@ -8,6 +8,7 @@ from tapirus import tasks
 
 
 class RecordDomain(object):
+
     @staticmethod
     def update_record_status(timestamp):
 
@@ -59,6 +60,3 @@ class LogErrorDomain(object):
     @staticmethod
     def process_log_error(error):
         tasks.send_error_to_operator.delay(error)
-
-
-
