@@ -7,9 +7,10 @@ from flask import Response
 from flask import jsonify
 from flask import request
 import flask
-import tapirus.constants
 from webargs import Arg
 from webargs.flaskparser import use_args
+
+import tapirus.constants
 from tapirus.utils import io
 from tapirus.repo.dao import RecordDAO
 from tapirus.domain import RecordDomain
@@ -472,13 +473,13 @@ def handle_bad_request(err):
     }), 500
 
 
-if not app.debug:
-    from tapirus.utils import config
-    from tapirus.utils.logger import Logger
+import os.path
+from tapirus.utils import config
+from tapirus.utils.logger import Logger
 
-    logging = config.get("logging")
+logging = config.get("logging")
 
-    Logger.setup_logging(logging["logconfig"])
+Logger.setup_logging(os.path.join(config.PROJECT_BASE, logging["logconfig"]))
 
 
 if __name__ == '__main__':
