@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payload Debugging</title>
+    <style>
+        table, th, td {
+           border: 1px solid black;
+        }
+
+        h1 {
+            color: maroon;
+            margin-left: 40px;
+        }
+
+        .code {
+            font-family: font-family: Consolas, monaco, monospace;
+        }
+
+        .boxed {
+          border: 1px solid green ;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payload Debugging</h1>
+    {% if message %}
+    <p>{{message}}</p>
+    {% endif %}
+    <div>
+        <div class="form">
+            <form method=post action="/dev/playground">
+                <textarea maxlength="1024" rows="15" cols="50" name="data">
+                    {% if data %}
+                        {{data}}
+                    {% endif %}
+                </textarea>
+                <br>
+                <input type="checkbox" name="doublepass" value="doublepass" checked> Double Pass <br>
+                <button name="submit" type="submit">Deserialize</button>
+            </form>
+        </div>
+        <br><br>
+        <div class="code">{% if payload %}{{payload}}{% endif %}</div>
+    </div>
+
+    {% if faults %}
+    <div class="analysis">
+        {% for fault in faults %}
+        <h4>Key: {{fault.key}}</h4>
+        <p>Cause: {{fault.cause}}</p>
+        <p>Message: {{fault.message}}</p>
+        <p>Timestamp: {{fault.timestamp}}</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Key</th>
+                <th>Vaue</th>
+            </tr>
+            </thead>
+            <tbody style="border=1">
+                {% for k, val in fault.tags.items() %}
+                <tr>
+                    <td>{{k}}</td>
+                    <td>{{val}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>

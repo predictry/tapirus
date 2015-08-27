@@ -1,8 +1,11 @@
 import urllib.parse
 import datetime
+from functools import wraps
 
-from flask import Flask, Response
+from flask import Flask
+from flask import Response
 from flask import jsonify
+from flask import request
 import flask
 import tapirus.constants
 from webargs import Arg
@@ -12,7 +15,25 @@ from tapirus.repo.dao import RecordDAO
 from tapirus.domain import RecordDomain
 from tapirus import constants
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../../static", template_folder="../../static/templates")
+
+
+def templated(template=None):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            template_name = template
+            if template_name is None:
+                template_name = request.endpoint \
+                    .replace('.', '/') + '.html'
+            ctx = f(*args, **kwargs)
+            if ctx is None:
+                ctx = {}
+            elif not isinstance(ctx, dict):
+                return ctx
+            return flask.render_template(template_name, **ctx)
+        return decorated_function
+    return decorator
 
 
 def list_endpoints():
@@ -257,9 +278,174 @@ def timeline(args):
     return jsonify(data), 200
 
 
+@app.route('/dev/playground', methods=['GET', 'POST'])
+@templated('payload.html')
+def debug():
+
+    print(request)
+
+    if request.method == 'POST':
+
+        data = request.form['data']
+        doublepass = request.form['doublepass']
+
+        from tapirus.parser.v1 import pl
+        from tapirus.repo import models
+        from jsonuri import jsonuri
+
+        flags = {'decode.double': False}
+
+        if doublepass:
+            flags['decode.double'] = True
+
+        payload = None
+        errors = []
+
+        if not data:
+            return dict(errors=errors, message='Empty Payload')
+
+        if flags['decode.double']:
+
+            try:
+
+                payload = jsonuri.deserialize(data, decode_twice=True)
+
+                if not pl.is_valid_schema(payload):
+                    raise ValueError("Invalid data schema, double decoding-pass")
+
+            except ValueError:
+
+                if payload:
+
+                    faults = pl.detect_schema_errors(
+                        models.Error(
+                            constants.ERROR_INVALIDSCHEMA_DD,
+                            payload,
+                            None
+                        )
+                    )
+
+                    errors.extend(faults)
+
+                else:
+
+                    faults = pl.detect_schema_errors(
+                        models.Error(
+                            constants.ERROR_DESERIALIZATION_DD,
+                            data,
+                            None
+                        )
+                    )
+
+                    errors.extend(faults)
+
+                try:
+
+                    payload = jsonuri.deserialize(data, decode_twice=False)
+
+                    if not pl.is_valid_schema(payload):
+                        raise ValueError("Invalid data schema, single decoding-pass")
+
+                except ValueError:
+
+                    if payload:
+
+                        faults = pl.detect_schema_errors(
+                            models.Error(
+                                constants.ERROR_INVALIDSCHEMA_SD,
+                                payload,
+                                None
+                            )
+                        )
+
+                        errors.extend(faults)
+
+                    else:
+
+                        faults = pl.detect_schema_errors(
+                            models.Error(
+                                constants.ERROR_DESERIALIZATION_SD,
+                                data,
+                                None
+                            )
+                        )
+
+                        errors.extend(faults)
+
+        else:
+
+            try:
+
+                payload = jsonuri.deserialize(data, decode_twice=False)
+
+                if not pl.is_valid_schema(payload):
+                    raise ValueError("Invalid data schema, single decoding-pass")
+
+            except ValueError:
+
+                if payload:
+
+                    faults = pl.detect_schema_errors(
+                        models.Error(
+                            constants.ERROR_INVALIDSCHEMA_SD,
+                            payload,
+                            None
+                        )
+                    )
+
+                    errors.extend(faults)
+
+                else:
+
+                    faults = pl.detect_schema_errors(
+                        models.Error(
+                            constants.ERROR_DESERIALIZATION_SD,
+                            data,
+                            None
+                        )
+                    )
+
+                    errors.extend(faults)
+
+        if payload:
+            import json
+            payload = json.dumps(payload, indent=4)
+
+        return dict(data=data, payload=payload, doublepass=flags['decode.double'], faults=errors)
+
+    else:
+
+        return dict()
+
+
 @app.route('/', methods=['GET'])
 def index():
-    return Response('Go!', status=200, mimetype='text/plain')
+
+    def url(path):
+
+        return ''.join([request.scheme, '://', request.host, path])
+
+    data = {
+        'api': {
+            'records': {
+                'href': url('/records/')
+            },
+            'interval': {
+                'href': url('/records/interval')
+            },
+            'timeline': {
+                'href': url('/records/timeline')
+            }
+        },
+        'help': {
+            'href': url('/help')
+        },
+        'playground': {
+            'href': url('/dev/playground')
+        }
+    }
+
+    return jsonify(data), 200
 
 
 @app.errorhandler(400)
@@ -293,6 +479,7 @@ if not app.debug:
     logging = config.get("logging")
 
     Logger.setup_logging(logging["logconfig"])
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
