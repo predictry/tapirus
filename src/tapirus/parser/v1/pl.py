@@ -1560,6 +1560,14 @@ def parse_entities_from_data(data):
         else:
             parameters = {}
 
+        # Check for any recommended items
+        if 'items' in data:
+            for it in data['items']:
+                if ('rec' in it) and (it['rec'] == 'true'):
+                    recommended = True
+                    break
+
+
         return dict(recommended=recommended, parameters=parameters)
 
     # session = None
