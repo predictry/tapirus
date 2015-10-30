@@ -62,6 +62,8 @@ def process_log(file_name, errors):
                     try:
 
                         payload = jsonuri.deserialize(columns[11], decode_twice=True)
+                        if ('items' in payload) and (payload['items'] is not list):
+                            payload['items'] = [payload['items']]
 
                         if not is_valid_schema(payload):
                             raise ValueError("Invalid data schema, double decoding-pass")
