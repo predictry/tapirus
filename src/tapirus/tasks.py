@@ -20,7 +20,7 @@ from tapirus.utils import io
 _redis_conn = Redis()
 
 
-@job('low', connection=_redis_conn, timeout=60)
+@job('low', connection=_redis_conn, timeout=60, result_ttl=30)
 def send_error_to_operator(error):
     assert isinstance(error, Error)
 
@@ -82,7 +82,7 @@ def send_error_to_operator(error):
             )
 
 
-@job('medium', connection=_redis_conn, timeout=int(config.get('harvester', 'timeout')))
+@job('medium', connection=_redis_conn, timeout=int(config.get('harvester', 'timeout')), result_ttl=30)
 def run_workflow_for_record(timestamp):
     assert isinstance(timestamp, datetime.datetime)
 
