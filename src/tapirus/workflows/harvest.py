@@ -467,9 +467,9 @@ class ProcessRecordTask(luigi.Task):
                                 fp.write('\n')
 
                 # process errors (Send them to a worker)
-                from tapirus.domain import LogErrorDomain
-                for err in errors:
-                    LogErrorDomain.process_log_error(err)
+                # from tapirus.domain import LogErrorDomain
+                # for err in errors:
+                #    LogErrorDomain.process_log_error(err)
 
                 del errors[:]
 
