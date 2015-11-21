@@ -56,7 +56,7 @@ class _DownloadedRecordTarget(luigi.Target):
 
             record = RecordDAO.read(timestamp=timestamp)
 
-            if record.status in (constants.STATUS_PENDING,):
+            if record.status in (constants.STATUS_PENDING, constants.STATUS_NOT_FOUND):
                 return False
 
         else:
