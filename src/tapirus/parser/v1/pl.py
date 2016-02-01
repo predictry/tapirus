@@ -1582,6 +1582,8 @@ def parse_entities_from_data(data):
     # User
     if SCHEMA_KEY_USER in data:
         user = User(id=data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_ID], tenant=tenant, timestamp=dt, fields={})
+        if SCHEMA_KEY_USER_EMAIL in data[SCHEMA_KEY_USER]:
+            user.fields[SCHEMA_KEY_USER_EMAIL] = data[SCHEMA_KEY_USER][SCHEMA_KEY_USER_EMAIL]
     else:
         user = User(id=data[SCHEMA_KEY_SESSION_ID], tenant=tenant, timestamp=dt, fields={})
 
